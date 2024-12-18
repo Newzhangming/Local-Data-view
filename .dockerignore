@@ -1,0 +1,12 @@
+.env.*
+node_modules
+.next
+.DS_Store
+.dockerignore
+.gitignore
+Dockerfile
+.fcignore
+*.md
+alidns.mjs
+push-docker.sh
+docker-compose.yaml
