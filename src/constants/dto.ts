@@ -1,15 +1,3 @@
-export const StatusMap = [
-  { value: "unprocessed", label: "未处理" },
-  { value: "processing", label: "处理中" },
-  { value: "processed", label: "已处理" },
-];
-
-export const CaseType = {
-  fault: { label: "故障", color: "red" },
-  repair: { label: "维修", color: "blue" },
-  new_car: { label: "新车", color: "green" },
-  illegal_parking: { label: "违停", color: "cyan" },
-};
 
 export interface BaseResp<T> {
   msg: string;
@@ -22,8 +10,8 @@ export interface BaseResp<T> {
 export interface MessagesReq {
   id?: string;
   nickname?: string;
-  at?: string;
-  topic?: string;
+  to?: string;
+  room_id?: string;
   content?: string;
   note?: string;
   from?: string; // dashboard/list
@@ -34,19 +22,19 @@ export interface MessagesReq {
 export interface MessageBaseDto {
   id: string;
   nickname: string;
-  at: string;
-  topic: string;
+  to: string;
+  room_id: string;
   content: string;
   note: string;
 }
 
-export interface LoginDto {
-  name: string;
-  password: string;
+export interface RoomsReq {
+  current?: number;
+  pageSize?: number;
 }
 
-export interface LoginResp {
-  name: string;
+export interface RoomBaseDto {
   id: string;
-  token: string;
+  room_name: string;
 }
+

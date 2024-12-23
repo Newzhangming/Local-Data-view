@@ -7,44 +7,30 @@ import dayjs from "dayjs";
 import React, { useCallback, useRef, useState } from "react";
 
 import Ellipsis from "@/components/ellipsis";
-import { MessageBaseDto, MessagesReq } from "@/constants/dto";
-import { getMessages } from "@/services/message";
+import { RoomBaseDto, RoomsReq } from "@/constants/dto";
+import { getRooms } from "@/services/room";
 import { getStorage, setStorage } from "@/utils/storage";
 
 export default function Page() {
-  const columns: ProColumns<MessageBaseDto>[] = [
+  const columns: ProColumns<RoomBaseDto>[] = [
     {
       hideInSearch: true,
       title: "序号",
       render: (text, record, index) => `${index + 1}`,
     },
     {
-      title: "微信群",
-      dataIndex: "room_id",
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-      width: '13%'
-    }, {
-      title: "微信昵称",
-      dataIndex: "nickname",
+      title: "群ID",
+      dataIndex: "id",
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
     },
     {
-      title: "对谁",
-      dataIndex: "to",
+      title: "群名称",
+      dataIndex: "room_name",
       hideInSearch: true,
       copyable: false,
       renderText: (text: string) => <Ellipsis text={text} />,
-      align: "left",
-    },
-    {
-      title: "说了什么",
-      dataIndex: "content",
-      hideInSearch: true,
-      copyable: false,
       align: "left",
     },
     {
@@ -64,9 +50,9 @@ export default function Page() {
   const actionRef = useRef<ActionType>(null);
   const { message } = App.useApp();
 
-  const getRequestData = useCallback(async (params: MessagesReq) => {
+  const getRequestData = useCallback(async (params: RoomsReq) => {
     const input = { ...params, from: "list" };
-    return getMessages(input).then((res) => {
+    return getRooms(input).then((res) => {
       if (res.msg !== "success") {
         message.error(res.msg);
         return { data: [], success: false, total: 0 };
@@ -76,7 +62,7 @@ export default function Page() {
   }, []);
 
   return (
-    <ProTable<MessageBaseDto>
+    <ProTable<RoomBaseDto>
       columns={columns}
       actionRef={actionRef}
       request={getRequestData}
