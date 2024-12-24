@@ -13,3 +13,8 @@ export const getRooms = (
   return httpService.get<BaseResp<RoomBaseDto[]>>(url);
 };
 
+export const getRoomIdNames = (): Promise<BaseResp<RoomBaseDto[]>> => {
+  const url = "/v1/room/id_names";
+  return httpService.get<BaseResp<RoomBaseDto[]>>(url);
+};
+

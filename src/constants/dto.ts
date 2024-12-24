@@ -14,7 +14,7 @@ export interface MessagesReq {
   room_id?: string;
   content?: string;
   note?: string;
-  from?: string; // dashboard/list
+
   current?: number;
   pageSize?: number;
 }
