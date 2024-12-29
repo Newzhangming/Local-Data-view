@@ -6,7 +6,7 @@ export default function Sidebar() {
   return (
     <div className={"flex flex-col h-full bg-secondary rounded-none gap-3 p-5"}>
       <div className={"flex flex-row gap-2"}>
-        <MessageOutlined />
+        <MessageOutlined/>
         <Link href={"/messages"} className={"text-xl"}>
           微信消息
         </Link>
@@ -15,6 +15,12 @@ export default function Sidebar() {
         <UsergroupAddOutlined/>
         <Link href={"/rooms"} className={"text-xl"}>
           微信群
+        </Link>
+      </div>
+      <div className={"flex flex-row gap-2"}>
+        <UsergroupAddOutlined/>
+        <Link href={"/human"} className={"text-xl"}>
+          人才库
         </Link>
       </div>
     </div>

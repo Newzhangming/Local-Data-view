@@ -38,3 +38,11 @@ export interface RoomBaseDto {
   room_name: string;
 }
 
+export interface HumanReq {
+  content: string;
+}
+
+export interface HumanResp {
+  role: string;
+  content: string;
+}
