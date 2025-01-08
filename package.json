@@ -1,7 +1,7 @@
 {
   "name": "sad-admin",
-  "version": "0.0.6",
-  "description": "供需AI分析统计管理系统",
+  "version": "0.0.9",
+  "description": "标旗建筑人员AI分析管理系统",
   "private": true,
   "scripts": {
     "dev": "next dev -p 4030",

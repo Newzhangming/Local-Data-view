@@ -1,0 +1,12 @@
+import { BaseResp, HumanReq, ManagerResp } from "@/constants/dto";
+import HttpService from "@/utils/http-service";
+
+const httpService = new HttpService(process.env.NEXT_PUBLIC_HOST2!);
+const headers = { "Access-Token": process.env.NEXT_PUBLIC_ACCESS_KEY2! };
+
+export const queryHuman = (
+  input: HumanReq,
+): Promise<BaseResp<ManagerResp[]>> => {
+  const url = `/v1/fastgpt`;
+  return httpService.post<BaseResp<ManagerResp[]>>(url, input, { headers });
+};

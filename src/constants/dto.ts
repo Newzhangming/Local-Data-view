@@ -46,3 +46,8 @@ export interface HumanResp {
   role: string;
   content: string;
 }
+
+export interface ManagerResp {
+  result: boolean;
+  msg: string;
+}

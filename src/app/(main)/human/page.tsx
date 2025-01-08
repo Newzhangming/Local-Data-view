@@ -6,7 +6,7 @@ import { HumanReq, HumanResp } from "@/constants/dto";
 import { queryHuman } from "@/services/human";
 
 export default function Page() {
-  const [result, setResult] = useState<HumanResp>({ role:'', content:'' });
+  const [result, setResult] = useState<HumanResp>({ role: '', content: '' });
   return (
     <>
       <ProForm

@@ -23,6 +23,12 @@ export default function Sidebar() {
           人才库
         </Link>
       </div>
+      <div className={"flex flex-row gap-2"}>
+        <UsergroupAddOutlined/>
+        <Link href={"/manager"} className={"text-xl"}>
+          人才库v2
+        </Link>
+      </div>
     </div>
   );
 }

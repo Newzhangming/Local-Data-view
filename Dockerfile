@@ -1,4 +1,4 @@
-FROM oven/bun:1.1.38-slim AS base
+FROM oven/bun:1.1.42-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps

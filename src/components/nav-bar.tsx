@@ -33,7 +33,7 @@ export default function NavBar() {
       <Link href={"/"}>
         <Image src={logo} alt={"武汉鱼在水出版社"} width={40} />
       </Link>
-      <div className={"text-3xl"}>标旗供需AI分析统计管理系统</div>
+      <div className={"text-3xl"}>标旗建筑人才AI分析统计管理系统</div>
       <div className={"flex items-center"}>
         <ThemeToggler />
         <DropdownMenu>

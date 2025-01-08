@@ -26,7 +26,6 @@ class HttpService {
         if (token) {
           config.headers.token = token;
         }
-        config.headers["Access-Token"] = process.env.NEXT_PUBLIC_ACCESS_KEY!;
         return config;
       },
       (error) => {
