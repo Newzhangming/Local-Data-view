@@ -1,4 +1,4 @@
-import { MessageOutlined, UsergroupAddOutlined } from "@ant-design/icons";
+import { MessageOutlined, ProjectOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import React from "react";
 
@@ -27,6 +27,12 @@ export default function Sidebar() {
         <UsergroupAddOutlined/>
         <Link href={"/manager"} className={"text-xl"}>
           人才库v2
+        </Link>
+      </div>
+      <div className={"flex flex-row gap-2"}>
+        <ProjectOutlined/>
+        <Link href={"/projects"} className={"text-xl"}>
+          项目列表
         </Link>
       </div>
     </div>

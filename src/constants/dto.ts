@@ -51,3 +51,17 @@ export interface ManagerResp {
   result: boolean;
   msg: string;
 }
+
+export interface ProjectReq {
+  current?: number;
+  pageSize?: number;
+}
+
+export interface ProjectDto {
+  proj_no: string;
+  proj_name: string;
+  data_level: string;
+  proj_type: string;
+  total_area: number;
+  updated_at: string,
+}

@@ -1,6 +1,6 @@
 {
   "name": "sad-admin",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "标旗建筑人员AI分析管理系统",
   "private": true,
   "scripts": {
