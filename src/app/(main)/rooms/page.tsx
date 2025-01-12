@@ -1,59 +1,59 @@
-"use client";
+'use client';
 
-import type { ActionType, ProColumns } from "@ant-design/pro-components";
-import { ProTable } from "@ant-design/pro-components";
-import { App } from "antd";
-import dayjs from "dayjs";
-import React, { useCallback, useRef, useState } from "react";
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { ProTable } from '@ant-design/pro-components';
+import { App } from 'antd';
+import dayjs from 'dayjs';
+import React, { useCallback, useRef, useState } from 'react';
 
-import Ellipsis from "@/components/ellipsis";
-import { RoomBaseDto, RoomsReq } from "@/constants/dto";
-import { getRooms } from "@/services/room";
-import { getStorage, setStorage } from "@/utils/storage";
+import Ellipsis from '@/components/ellipsis';
+import { RoomBaseDto, RoomsReq } from '@/constants/dto';
+import { getRooms } from '@/services/room';
+import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const columns: ProColumns<RoomBaseDto>[] = [
     {
       hideInSearch: true,
-      title: "序号",
+      title: '序号',
       render: (text, record, index) => `${index + 1}`,
     },
     {
-      title: "群ID",
-      dataIndex: "id",
+      title: '群ID',
+      dataIndex: 'id',
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
     },
     {
-      title: "群名称",
-      dataIndex: "room_name",
+      title: '群名称',
+      dataIndex: 'room_name',
       hideInSearch: true,
       copyable: false,
       renderText: (text: string) => <Ellipsis text={text} />,
-      align: "left",
+      align: 'left',
     },
     {
-      title: "日期",
-      dataIndex: "createdAt",
-      tooltip: "创建时间",
+      title: '日期',
+      dataIndex: 'createdAt',
+      tooltip: '创建时间',
       hideInSearch: true,
-      renderText: (value) => dayjs(value).format("MM-DD HH:mm:ss"),
-      align: "center",
-    }
+      renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
+      align: 'center',
+    },
   ];
 
   const [pageInfo, setPageInfo] = useState({
     current: 1,
-    pageSize: Number(getStorage("listPageSize")) || 10,
+    pageSize: Number(getStorage('listPageSize')) || 10,
   });
   const actionRef = useRef<ActionType>(null);
   const { message } = App.useApp();
 
   const getRequestData = useCallback(async (params: RoomsReq) => {
-    const input = { ...params, from: "list" };
+    const input = { ...params, from: 'list' };
     return getRooms(input).then((res) => {
-      if (res.msg !== "success") {
+      if (res.msg !== 'success') {
         message.error(res.msg);
         return { data: [], success: false, total: 0 };
       }
@@ -76,7 +76,7 @@ export default function Page() {
         pageSize: pageInfo.pageSize,
         onShowSizeChange: (_, pageSize) => {
           setPageInfo({ pageSize, current: 1 });
-          setStorage("listPageSize", pageSize);
+          setStorage('listPageSize', pageSize);
         },
       }}
       dateFormatter="string"

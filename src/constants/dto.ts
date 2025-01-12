@@ -1,4 +1,3 @@
-
 export interface BaseResp<T> {
   msg: string;
   data: T;
@@ -63,5 +62,5 @@ export interface ProjectDto {
   data_level: string;
   proj_type: string;
   total_area: number;
-  updated_at: string,
+  updated_at: string;
 }

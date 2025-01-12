@@ -1,11 +1,6 @@
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  CancelTokenSource,
-} from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelTokenSource } from 'axios';
 
-import { getStorage, removeStorage } from "@/utils/storage";
+import { getStorage, removeStorage } from '@/utils/storage';
 
 class HttpService {
   private instance: AxiosInstance;
@@ -22,7 +17,7 @@ class HttpService {
   private setupInterceptors(): void {
     this.instance.interceptors.request.use(
       (config) => {
-        const token = getStorage("token");
+        const token = getStorage('token');
         if (token) {
           config.headers.token = token;
         }
@@ -39,15 +34,15 @@ class HttpService {
       },
       (error) => {
         if (axios.isCancel(error)) {
-          console.log("Request canceled:", error.message);
+          console.log('Request canceled:', error.message);
         } else {
           // 处理其他错误
         }
         if (error.status === 403) {
-          removeStorage("token");
-          return Promise.resolve({ data: { msg: "鉴权码缺失" } });
+          removeStorage('token');
+          return Promise.resolve({ data: { msg: '鉴权码缺失' } });
         } else if (error.status === 429) {
-          return Promise.resolve({ data: { msg: "您请求太快，休息一下再来" } });
+          return Promise.resolve({ data: { msg: '您请求太快，休息一下再来' } });
         }
 
         return Promise.reject(error);
@@ -60,29 +55,13 @@ class HttpService {
     return response.data;
   }
 
-  public async post<T>(
-    url: string,
-    data?: object,
-    config?: AxiosRequestConfig,
-  ): Promise<T> {
-    const response: AxiosResponse<T> = await this.instance.post(
-      url,
-      data,
-      config,
-    );
+  public async post<T>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.instance.post(url, data, config);
     return response.data;
   }
 
-  public async put<T>(
-    url: string,
-    data?: object,
-    config?: AxiosRequestConfig,
-  ): Promise<T> {
-    const response: AxiosResponse<T> = await this.instance.put(
-      url,
-      data,
-      config,
-    );
+  public async put<T>(url: string, data?: object, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.instance.put(url, data, config);
     return response.data;
   }
 
@@ -101,7 +80,7 @@ class HttpService {
 
   public cancelAllRequests(): void {
     this.cancelTokenSources.forEach((source) => {
-      source.cancel("All requests were canceled");
+      source.cancel('All requests were canceled');
     });
     this.cancelTokenSources.clear();
   }

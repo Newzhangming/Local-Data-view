@@ -1,80 +1,81 @@
-"use client";
+'use client';
 
-import type { ActionType, BaseQueryFilterProps, ProColumns } from "@ant-design/pro-components";
-import { ProTable } from "@ant-design/pro-components";
-import { App } from "antd";
-import dayjs from "dayjs";
-import React, { ReactNode, useCallback, useRef, useState } from "react";
+import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
+import { ProTable } from '@ant-design/pro-components';
+import { App } from 'antd';
+import dayjs from 'dayjs';
+import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
-import Ellipsis from "@/components/ellipsis";
-import { MessageBaseDto, MessagesReq, RoomBaseDto } from "@/constants/dto";
-import { getMessages } from "@/services/message";
-import { getRoomIdNames } from "@/services/room";
-import { getStorage, setStorage } from "@/utils/storage";
+import Ellipsis from '@/components/ellipsis';
+import { MessageBaseDto, MessagesReq, RoomBaseDto } from '@/constants/dto';
+import { getMessages } from '@/services/message';
+import { getRoomIdNames } from '@/services/room';
+import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const columns: ProColumns<MessageBaseDto>[] = [
     {
       hideInSearch: true,
-      title: "序号",
+      title: '序号',
       render: (text, record, index) => `${index + 1}`,
-      width: '4%'
+      width: '4%',
     },
     {
-      title: "搜索群",
-      dataIndex: "room_id",
+      title: '搜索群',
+      dataIndex: 'room_id',
       hideInSearch: false,
-      hidden:true,
+      hidden: true,
       request: async () => {
         const { data } = await getRoomIdNames();
         return data.map((item: RoomBaseDto) => ({ label: item.room_name, value: item.id }));
       },
-      align: "left",
+      align: 'left',
     },
     {
-      title: "微信群",
-      dataIndex: "room_name",
+      title: '微信群',
+      dataIndex: 'room_name',
       hideInSearch: true,
       copyable: true,
       ellipsis: false,
-      width: '13%'
-    }, {
-      title: "微信昵称",
-      dataIndex: "nickname",
+      width: '13%',
+    },
+    {
+      title: '微信昵称',
+      dataIndex: 'nickname',
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
-      width: '10%'
+      width: '10%',
     },
     {
-      title: "对谁",
-      dataIndex: "to",
+      title: '对谁',
+      dataIndex: 'to',
       hideInSearch: true,
       copyable: false,
-      renderText: (text: string) => <Ellipsis text={text}/>,
-      align: "left",
-      width: '10%'
+      renderText: (text: string) => <Ellipsis text={text} />,
+      align: 'left',
+      width: '10%',
     },
     {
-      title: "说了什么",
-      dataIndex: "content",
+      title: '说了什么',
+      dataIndex: 'content',
       hideInSearch: true,
       copyable: false,
-      align: "left",
+      align: 'left',
     },
     {
-      title: "日期",
-      dataIndex: "createdAt",
-      tooltip: "创建时间",
+      title: '日期',
+      dataIndex: 'createdAt',
+      tooltip: '创建时间',
       hideInSearch: true,
-      renderText: (value) => dayjs(value).format("MM-DD HH:mm:ss"),
-      align: "center",
-    }
+      renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
+      align: 'center',
+    },
   ];
 
   const [pageInfo, setPageInfo] = useState({
     current: 1,
-    pageSize: Number(getStorage("listPageSize")) || 10,
+    pageSize: Number(getStorage('listPageSize')) || 10,
   });
   const actionRef = useRef<ActionType>(null);
   const { message } = App.useApp();
@@ -82,7 +83,7 @@ export default function Page() {
   const getRequestData = useCallback(async (params: MessagesReq) => {
     const input: MessagesReq = { ...params, room_id: params.room_id ?? '', nickname: params.nickname ?? '' };
     return getMessages(input).then((res) => {
-      if (res.msg !== "success") {
+      if (res.msg !== 'success') {
         message.error(res.msg);
         return { data: [], success: false, total: 0 };
       }
@@ -90,11 +91,7 @@ export default function Page() {
     });
   }, []);
 
-  const searchOptionRender = (
-    searchConfig: Omit<BaseQueryFilterProps, "submitter" | "isForm">,
-    props: Omit<BaseQueryFilterProps, "searchConfig">,
-    dom: ReactNode[],
-  ) => {
+  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
     const [reset, query] = dom;
     return [query, reset];
   };
@@ -106,7 +103,7 @@ export default function Page() {
       request={getRequestData}
       rowKey="id"
       search={{
-        labelWidth: "auto",
+        labelWidth: 'auto',
         span: 4,
         optionRender: searchOptionRender,
       }}
@@ -117,8 +114,8 @@ export default function Page() {
         showQuickJumper: true,
         pageSize: pageInfo.pageSize,
         onShowSizeChange: (_, pageSize) => {
-          setPageInfo({ pageSize, current: 1, });
-          setStorage("listPageSize", pageSize);
+          setPageInfo({ pageSize, current: 1 });
+          setStorage('listPageSize', pageSize);
         },
       }}
       dateFormatter="string"

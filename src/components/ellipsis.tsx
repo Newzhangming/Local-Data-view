@@ -1,9 +1,9 @@
-import { Tooltip, Typography } from "antd";
-import React from "react";
+import { Tooltip, Typography } from 'antd';
+import React from 'react';
 
 const { Paragraph } = Typography;
 
-export default function Ellipsis(props: { text: string, lines?: number }) {
+export default function Ellipsis(props: { text: string; lines?: number }) {
   const { text, lines } = props;
   if (!text) return null;
   return (

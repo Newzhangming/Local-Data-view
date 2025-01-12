@@ -4,13 +4,13 @@ export function setStorage(
   ttl = 15 * 24 * 3600 * 1000, // the half month
 ): void {
   const item = { value, expiry: Date.now() + ttl };
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     localStorage.setItem(key, JSON.stringify(item));
   }
 }
 
 export function getStorage(key: string) {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     const rawValue = localStorage.getItem(key);
     if (!rawValue) return null;
 
@@ -26,7 +26,7 @@ export function getStorage(key: string) {
 }
 
 export function removeStorage(key: string) {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     localStorage.removeItem(key);
   }
 }
