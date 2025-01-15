@@ -1,11 +1,11 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App, Descriptions, Divider, Drawer, Table } from 'antd';
 import dayjs from 'dayjs';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
 import { ProjectDto, ProjectReq } from '@/constants/dto';
@@ -123,6 +123,11 @@ export default function Page() {
     });
   }, []);
 
+  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
+    const [reset, query] = dom;
+    return [query, reset];
+  };
+
   return (
     <>
       <ProTable<ProjectDto>
@@ -130,7 +135,11 @@ export default function Page() {
         actionRef={actionRef}
         request={getRequestData}
         rowKey="id"
-        search={false}
+        search={{
+          labelWidth: 'auto',
+          span: 4,
+          optionRender: searchOptionRender,
+        }}
         toolBarRender={undefined}
         options={false}
         pagination={{

@@ -1,83 +1,38 @@
 'use client';
 
 import { EyeOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import { ActionType, ProColumns, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App } from 'antd';
 import dayjs from 'dayjs';
 import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
-import { CompanyDto, CompanyReq } from '@/constants/dto';
-import { queryCompanies } from '@/services/company';
+import { TaskDto, TaskReq } from '@/constants/task';
+import { addTask, queryTasks } from '@/services/task';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
-  const [open, setOpen] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [currentItem, setCurrentItem] = useState<CompanyDto>();
-
-  const columns: ProColumns<CompanyDto>[] = [
+  const columns: ProColumns<TaskDto>[] = [
     {
       hideInSearch: true,
       title: '序号',
       render: (text, record, index) => `${index + 1}`,
     },
     {
-      title: '公司名',
-      dataIndex: 'name',
+      title: '项目名称',
+      dataIndex: 'proj_name',
       hideInSearch: false,
       copyable: false,
       renderText: (text: string) => <Ellipsis text={text} />,
       align: 'left',
     },
     {
-      title: '企业社会信用代码',
-      dataIndex: 'social_credit_code',
+      title: '采集进度',
+      dataIndex: 'status',
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
-    },
-    {
-      title: '资质类别',
-      dataIndex: 'cert_type',
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-    },
-    {
-      title: '证书名称',
-      dataIndex: 'cert_name',
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-    },
-    {
-      title: '资质证书编号',
-      dataIndex: 'cert_no',
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-    },
-    {
-      title: '发证日期',
-      dataIndex: 'cert_date',
-      hideInSearch: true,
-      renderText: (value) => {
-        if (!value) return '';
-        return dayjs(value).format('YYYY-MM-DD');
-      },
-      align: 'center',
-    },
-    {
-      title: '证书过期于',
-      dataIndex: 'cert_expire',
-      hideInSearch: true,
-      renderText: (value) => {
-        if (!value) return '';
-        return dayjs(value).format('YYYY-MM-DD');
-      },
-      align: 'center',
     },
     {
       title: '更新日期',
@@ -104,23 +59,32 @@ export default function Page() {
     current: 1,
     pageSize: Number(getStorage('listPageSize')) || 10,
   });
+  const [loading, setLoading] = useState(false);
   const actionRef = useRef<ActionType>(null);
+  const actionFormRef = useRef<ProFormInstance>(null);
+
   const { message } = App.useApp();
 
-  const getRequestData = useCallback(async (params: CompanyReq) => {
-    const input = { ...params, from: 'list' };
-    return queryCompanies(input).then((res) => {
-      if (res.msg !== 'success') {
-        message.error(res.msg);
-        return { data: [], success: false, total: 0 };
-      }
-      return { data: res.data, success: true, total: res.total };
-    });
-  }, []);
+  const getRequestData = useCallback(
+    async (params: TaskReq) => {
+      setLoading(true);
+      const input = { ...params, from: 'list' };
+      return queryTasks(input).then((res) => {
+        setLoading(false);
+        if (res.msg !== 'success') {
+          message.error(res.msg);
+          return { data: [], success: false, total: 0 };
+        }
+        return { data: res.data, success: true, total: res.total };
+      });
+    },
+    [loading],
+  );
 
   return (
     <>
-      <ProTable<CompanyDto>
+      <ProTable<TaskDto>
+        loading={loading}
         columns={columns}
         actionRef={actionRef}
         request={getRequestData}
@@ -143,6 +107,19 @@ export default function Page() {
         }}
         tooltip={undefined}
       />
+      <ProForm
+        submitter={{ searchConfig: { submitText: '添加' } }}
+        formRef={actionFormRef}
+        onFinish={async (values: { proj_name: string }) => {
+          const result = await addTask(values);
+          if (result.msg === 'success') {
+            actionRef.current?.reload();
+            actionFormRef.current?.resetFields();
+          }
+        }}
+      >
+        <ProFormText rules={[{ required: true, message: '请输入正确的项目名', min: 3, max: 30 }]} name="proj_name" label="项目名称" placeholder="请输入项目名称" />
+      </ProForm>
     </>
   );
 }

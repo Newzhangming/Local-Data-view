@@ -4,7 +4,7 @@ export interface BaseResp<T> {
   total?: number;
 }
 
-interface PageReq {
+export interface PageReq {
   current?: number;
   pageSize?: number;
 }

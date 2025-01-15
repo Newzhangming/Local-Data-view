@@ -1,6 +1,6 @@
 {
   "name": "cpm-admin",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "标旗建筑人员AI分析管理系统",
   "private": true,
   "scripts": {
