@@ -1,6 +1,6 @@
 {
   "name": "cpm-admin",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "标旗建筑人员AI分析管理系统",
   "private": true,
   "scripts": {
@@ -14,7 +14,7 @@
     "@ant-design/icons": "^5.5.2",
     "@ant-design/nextjs-registry": "^1.0.2",
     "@ant-design/pro-components": "^2.8.3",
-    "antd": "^5.23.0",
+    "antd": "^5.23.1",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -25,12 +25,12 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
-    "@stylistic/eslint-plugin": "^2.12.1",
-    "@types/node": "^22.10.5",
-    "@types/react": "^19.0.4",
-    "@types/react-dom": "^19.0.2",
-    "@typescript-eslint/eslint-plugin": "^8.19.1",
-    "@typescript-eslint/parser": "^8.19.1",
+    "@stylistic/eslint-plugin": "^2.13.0",
+    "@types/node": "^22.10.6",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
     "autoprefixer": "^10.4.20",
     "bun-types": "latest",
     "eslint": "^9.18.0",
@@ -39,9 +39,9 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^15.14.0",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.19.1"
+    "typescript-eslint": "^8.20.0"
   }
 }

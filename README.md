@@ -3,18 +3,18 @@
 ## Docker
 ### Build
 > 开发环境
-- `docker rm -f sad-admin;docker rmi -f sad-admin;docker build -t sad-admin -f Dockerfile --no-cache --progress=plain .`
+- `docker rm -f cpm-admin;docker rmi -f cpm-admin;docker build -t cpm-admin -f Dockerfile --no-cache --progress=plain .`
 > 生成环境
-- `docker build -t sad-admin:latest .`
+- `docker build -t cpm-admin:latest .`
 
 ### Run
 > 生成环境
-- `docker rm -f sad-admin;docker run -p 3003:3000 --name sad-admin sad-admin:latest`
-- `docker pull kennytian/sad-admin:latest;docker rm -f sad-admin;docker run -p 3003:3000 --name sad-admin --restart=on-failure:10 -d kennytian/sad-admin:latest;docker logs -f sad-admin`
+- `docker rm -f cpm-admin;docker run -p 3003:3000 --name cpm-admin cpm-admin:latest`
+- `docker pull kennytian/cpm-admin:latest;docker rm -f cpm-admin;docker run -p 3003:3000 --name cpm-admin --restart=on-failure:10 -d kennytian/cpm-admin:latest;docker logs -f cpm-admin`
 
 ### Push
 #### AMD64
-- `docker buildx build --platform linux/amd64 --tag kennytian/sad-admin:0.0.6 --tag kennytian/sad-admin:latest --push .`
+- `docker buildx build --platform linux/amd64 --tag kennytian/cpm-admin:0.0.6 --tag kennytian/cpm-admin:latest --push .`
 #### ARM64
-- `docker buildx build --platform linux/arm64 --tag kennytian/sad-admin:0.0.6 --tag kennytian/sad-admin:latest --push .`
+- `docker buildx build --platform linux/arm64 --tag kennytian/cpm-admin:0.0.6 --tag kennytian/cpm-admin:latest --push .`
 

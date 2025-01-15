@@ -1,4 +1,4 @@
-import { MessageOutlined, ProjectOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { BuildOutlined, CommentOutlined, HomeOutlined, MessageOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import React from 'react';
 
@@ -12,27 +12,27 @@ export default function Sidebar() {
         </Link>
       </div>
       <div className={'flex flex-row gap-2'}>
-        <UsergroupAddOutlined />
+        <CommentOutlined />
         <Link href={'/rooms'} className={'text-xl'}>
           微信群
         </Link>
       </div>
       <div className={'flex flex-row gap-2'}>
         <UsergroupAddOutlined />
-        <Link href={'/human'} className={'text-xl'}>
-          人才库
-        </Link>
-      </div>
-      <div className={'flex flex-row gap-2'}>
-        <UsergroupAddOutlined />
         <Link href={'/manager'} className={'text-xl'}>
-          人才库v2
+          项目经理
         </Link>
       </div>
       <div className={'flex flex-row gap-2'}>
-        <ProjectOutlined />
+        <HomeOutlined />
+        <Link href={'/companies'} className={'text-xl'}>
+          施工单位
+        </Link>
+      </div>
+      <div className={'flex flex-row gap-2'}>
+        <BuildOutlined />
         <Link href={'/projects'} className={'text-xl'}>
-          项目列表
+          工程项目
         </Link>
       </div>
     </div>
