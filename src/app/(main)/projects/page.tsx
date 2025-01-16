@@ -3,7 +3,7 @@
 import { EyeOutlined } from '@ant-design/icons';
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { App, Descriptions, Divider, Drawer, Table } from 'antd';
+import { App, Descriptions, Divider, Drawer, Table, Tag } from 'antd';
 import dayjs from 'dayjs';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
@@ -18,6 +18,8 @@ export default function Page() {
   const [loading, setLoading] = useState<boolean>(true);
   const [currentItem, setCurrentItem] = useState<ProjectDto>();
   const [detail, setDetail] = useState<ProjectDetailDto>();
+
+  const DataLevel = { A: 'green', B: 'orange', C: 'magenta', D: 'red' };
 
   const showDrawer = (data: ProjectDto) => () => {
     setOpen(true);
@@ -56,14 +58,14 @@ export default function Page() {
     {
       title: '项目分类',
       dataIndex: 'proj_type',
-      hideInSearch: false,
+      hideInSearch: true,
       copyable: true,
       ellipsis: false,
     },
     {
       title: '总面积(万平方米)',
       dataIndex: 'total_area',
-      hideInSearch: false,
+      hideInSearch: true,
       copyable: true,
       ellipsis: false,
       renderText: (text: number) => (text ? `${(text / 10000).toFixed(2)}` : 0),
@@ -71,9 +73,15 @@ export default function Page() {
     {
       title: '数据等级',
       dataIndex: 'data_level',
+      valueType: 'select',
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
+      request: async () => Object.keys(DataLevel).map((value) => ({ label: value, value })),
+      render: (_, record) => {
+        const color = DataLevel[record.data_level as keyof typeof DataLevel];
+        return <Tag color={color}>{record.data_level}</Tag>;
+      },
     },
     {
       title: '更新日期',
@@ -134,7 +142,7 @@ export default function Page() {
         columns={columns}
         actionRef={actionRef}
         request={getRequestData}
-        rowKey="id"
+        rowKey="proj_no"
         search={{
           labelWidth: 'auto',
           span: 4,

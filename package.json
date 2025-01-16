@@ -1,6 +1,6 @@
 {
   "name": "cpm-admin",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "标旗建筑人员AI分析管理系统",
   "private": true,
   "scripts": {
@@ -26,7 +26,7 @@
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@stylistic/eslint-plugin": "^2.13.0",
-    "@types/node": "^22.10.6",
+    "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
@@ -35,7 +35,7 @@
     "bun-types": "latest",
     "eslint": "^9.18.0",
     "eslint-config-next": "^15.1.4",
-    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-prettier": "^5.2.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^15.14.0",

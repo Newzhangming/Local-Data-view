@@ -1,9 +1,9 @@
 'use client';
 
-import { EyeOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ClockCircleOutlined, EyeOutlined, SyncOutlined } from '@ant-design/icons';
 import { ActionType, ProColumns, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { App } from 'antd';
+import { App, StepProps, Steps, Tag } from 'antd';
 import dayjs from 'dayjs';
 import React, { useCallback, useRef, useState } from 'react';
 
@@ -29,10 +29,49 @@ export default function Page() {
     },
     {
       title: '采集进度',
-      dataIndex: 'status',
+      dataIndex: 'processing',
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
+      render: (_, obj: TaskDto) => {
+        const mapping: { [key: string]: string } = { proj_base: '基本信息', proj_wb: '招投标', proj_contract: '合同', proj_permit: '施工', proj_af: '验收' };
+        const items: StepProps[] = Object.entries(obj).reduce((acc, [key, value]) => {
+          const title = mapping[key];
+          if (title) {
+            acc.push({ title, status: value !== 0 ? 'finish' : 'wait' });
+          }
+          return acc;
+        }, [] as StepProps[]);
+        return <Steps size="small" items={items} />;
+      },
+    },
+    {
+      title: '采集状态',
+      dataIndex: 'status',
+      hideInSearch: false,
+      copyable: false,
+      ellipsis: false,
+      render: (_, obj: TaskDto) => {
+        if (obj.status === '未开始') {
+          return (
+            <Tag icon={<ClockCircleOutlined />} color="default">
+              {obj.status}
+            </Tag>
+          );
+        } else if (obj.status === '采集中') {
+          return (
+            <Tag icon={<SyncOutlined spin />} color="processing">
+              {obj.status}
+            </Tag>
+          );
+        } else if (obj.status === '已采完') {
+          return (
+            <Tag icon={<CheckCircleOutlined />} color="success">
+              {obj.status}
+            </Tag>
+          );
+        }
+      },
     },
     {
       title: '更新日期',
