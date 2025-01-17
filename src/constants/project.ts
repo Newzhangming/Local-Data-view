@@ -5,11 +5,15 @@ export interface ProjectDetailDto {
   data_level: string;
   proj_type: string;
   proj_use: string;
+  region: string;
   address: string;
   scale_desc: string;
   total_area: number;
   created_at: Date;
-  contract: null;
+  contract: {
+    sign_date: Date;
+    data_level: string;
+  };
   proj_units: ProjUnit[];
   companies: AcceptanceFilingCompany[];
   winning_bidder: WinningBidder[];
@@ -86,6 +90,8 @@ export interface ConstructionPermit {
   cp_date: Date;
   cp_amount: number;
   cp_area: number;
+  company: CompanyCompany;
+  manager: ManagerManager;
 }
 
 export interface ProjUnit {

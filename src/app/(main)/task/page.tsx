@@ -38,7 +38,7 @@ export default function Page() {
         const items: StepProps[] = Object.entries(obj).reduce((acc, [key, value]) => {
           const title = mapping[key];
           if (title) {
-            acc.push({ title, status: value !== 0 ? 'finish' : 'wait' });
+            acc.push({ title, status: value > 0 ? 'finish' : 'wait' });
           }
           return acc;
         }, [] as StepProps[]);
