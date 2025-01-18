@@ -27,6 +27,8 @@ export default function Page() {
     },
     {
       title: '经理姓名',
+      order: 10,
+      colSize: 1,
       dataIndex: 'name',
       hideInSearch: false,
       copyable: false,
@@ -35,6 +37,8 @@ export default function Page() {
     },
     {
       title: '身份证号',
+      colSize: 1.1,
+      order: 9,
       dataIndex: 'id_card',
       hideInSearch: false,
       copyable: true,
@@ -42,6 +46,7 @@ export default function Page() {
     },
     {
       title: '证书名称',
+      colSize: 1.1,
       dataIndex: 'cert_name',
       hideInSearch: false,
       copyable: true,

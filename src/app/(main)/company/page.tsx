@@ -13,10 +13,6 @@ import { queryCompanies } from '@/services/company';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
-  const [open, setOpen] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [currentItem, setCurrentItem] = useState<CompanyDto>();
-
   const columns: ProColumns<CompanyDto>[] = [
     {
       hideInSearch: true,
@@ -25,6 +21,7 @@ export default function Page() {
     },
     {
       title: '公司名',
+      colSize: 1.6,
       dataIndex: 'name',
       hideInSearch: false,
       copyable: false,
@@ -34,6 +31,7 @@ export default function Page() {
     {
       title: '企业社会信用代码',
       dataIndex: 'social_credit_code',
+      colSize: 1.6,
       hideInSearch: false,
       copyable: true,
       ellipsis: false,

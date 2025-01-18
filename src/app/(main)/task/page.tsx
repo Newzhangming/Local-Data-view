@@ -10,7 +10,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import Ellipsis from '@/components/ellipsis';
 import { TaskDto, TaskReq } from '@/constants/task';
 import { addTask, queryTasks } from '@/services/task';
-import { getStorage, setStorage } from '@/utils/storage';
+import { setStorage } from '@/utils/storage';
 
 export default function Page() {
   const columns: ProColumns<TaskDto>[] = [
@@ -94,10 +94,7 @@ export default function Page() {
     },
   ];
 
-  const [pageInfo, setPageInfo] = useState({
-    current: 1,
-    pageSize: Number(getStorage('listPageSize')) || 10,
-  });
+  const [pageInfo, setPageInfo] = useState({ current: 1, pageSize: 6 });
   const [loading, setLoading] = useState(false);
   const actionRef = useRef<ActionType>(null);
   const actionFormRef = useRef<ProFormInstance>(null);

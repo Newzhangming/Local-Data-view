@@ -55,6 +55,8 @@ export default function Page() {
     },
     {
       title: '项目编号',
+      order: 10,
+      colSize: 1.1,
       dataIndex: 'proj_no',
       hideInSearch: false,
       copyable: true,
@@ -62,6 +64,8 @@ export default function Page() {
     },
     {
       title: '项目名称',
+      order: 9,
+      colSize: 1.2,
       dataIndex: 'proj_name',
       hideInSearch: false,
       copyable: false,
