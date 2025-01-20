@@ -1,6 +1,5 @@
 'use client';
 
-import { EyeOutlined } from '@ant-design/icons';
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App, Descriptions, Divider, Drawer, Table } from 'antd';
@@ -58,18 +57,6 @@ export default function Page() {
       hideInSearch: true,
       renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
       align: 'center',
-    },
-    {
-      title: '操作',
-      dataIndex: 'options',
-      hideInSearch: true,
-      align: 'center',
-      render: (_, record) => (
-        <a>
-          <EyeOutlined />
-          查看
-        </a>
-      ),
     },
   ];
 

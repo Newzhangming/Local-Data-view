@@ -13,6 +13,8 @@ export interface ProjectDetailDto {
   contract: {
     sign_date: Date;
     data_level: string;
+    cont_no: string;
+    company: { id: true; name: string };
   };
   proj_units: ProjUnit[];
   companies: AcceptanceFilingCompany[];

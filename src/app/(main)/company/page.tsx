@@ -1,6 +1,5 @@
 'use client';
 
-import { EyeOutlined } from '@ant-design/icons';
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App } from 'antd';
@@ -84,18 +83,6 @@ export default function Page() {
       renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
       align: 'center',
     },
-    {
-      title: '操作',
-      dataIndex: 'options',
-      hideInSearch: true,
-      align: 'center',
-      render: (_, record) => (
-        <a>
-          <EyeOutlined />
-          查看
-        </a>
-      ),
-    },
   ];
 
   const [pageInfo, setPageInfo] = useState({
@@ -128,11 +115,7 @@ export default function Page() {
         actionRef={actionRef}
         request={getRequestData}
         rowKey="id"
-        search={{
-          labelWidth: 'auto',
-          span: 4,
-          optionRender: searchOptionRender,
-        }}
+        search={{ labelWidth: 'auto', span: 4, optionRender: searchOptionRender }}
         toolBarRender={undefined}
         options={false}
         pagination={{

@@ -1,7 +1,7 @@
 {
   "name": "cpm-admin",
-  "version": "0.1.15",
-  "description": "标旗建筑人员AI分析管理系统",
+  "version": "0.1.19",
+  "description": "标旗建筑人才AI分析管理系统",
   "private": true,
   "scripts": {
     "dev": "next dev -p 4030",
@@ -13,8 +13,8 @@
   "dependencies": {
     "@ant-design/icons": "^5.5.2",
     "@ant-design/nextjs-registry": "^1.0.2",
-    "@ant-design/pro-components": "^2.8.3",
-    "antd": "^5.23.1",
+    "@ant-design/pro-components": "^2.8.4",
+    "antd": "^5.23.2",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -35,7 +35,7 @@
     "bun-types": "latest",
     "eslint": "^9.18.0",
     "eslint-config-next": "^15.1.5",
-    "eslint-plugin-prettier": "^5.2.2",
+    "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^15.14.0",

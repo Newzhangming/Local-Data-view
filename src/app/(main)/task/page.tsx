@@ -1,16 +1,15 @@
 'use client';
 
-import { CheckCircleOutlined, ClockCircleOutlined, EyeOutlined, SyncOutlined } from '@ant-design/icons';
-import { ActionType, ProColumns, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
+import { CheckCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { ActionType, type BaseQueryFilterProps, ProColumns, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App, StepProps, Steps, Tag } from 'antd';
 import dayjs from 'dayjs';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
 import { TaskDto, TaskReq } from '@/constants/task';
 import { addTask, queryTasks } from '@/services/task';
-import { setStorage } from '@/utils/storage';
 
 export default function Page() {
   const columns: ProColumns<TaskDto>[] = [
@@ -22,6 +21,7 @@ export default function Page() {
     {
       title: '项目名称',
       dataIndex: 'proj_name',
+      colSize: 2,
       hideInSearch: false,
       copyable: false,
       renderText: (text: string) => <Ellipsis text={text} />,
@@ -30,7 +30,7 @@ export default function Page() {
     {
       title: '采集进度',
       dataIndex: 'processing',
-      hideInSearch: false,
+      hideInSearch: true,
       copyable: true,
       ellipsis: false,
       render: (_, obj: TaskDto) => {
@@ -48,9 +48,15 @@ export default function Page() {
     {
       title: '采集状态',
       dataIndex: 'status',
+      valueType: 'select',
       hideInSearch: false,
       copyable: false,
       ellipsis: false,
+      request: async () => [
+        { label: '未开始', value: '未开始' },
+        { label: '采集中', value: '采集中' },
+        { label: '已采完', value: '已采完' },
+      ],
       render: (_, obj: TaskDto) => {
         if (obj.status === '未开始') {
           return (
@@ -80,18 +86,6 @@ export default function Page() {
       renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
       align: 'center',
     },
-    {
-      title: '操作',
-      dataIndex: 'options',
-      hideInSearch: true,
-      align: 'center',
-      render: (_, record) => (
-        <a>
-          <EyeOutlined />
-          查看
-        </a>
-      ),
-    },
   ];
 
   const [pageInfo, setPageInfo] = useState({ current: 1, pageSize: 6 });
@@ -117,6 +111,11 @@ export default function Page() {
     [loading],
   );
 
+  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
+    const [reset, query] = dom;
+    return [query, reset];
+  };
+
   return (
     <>
       <ProTable<TaskDto>
@@ -124,8 +123,8 @@ export default function Page() {
         columns={columns}
         actionRef={actionRef}
         request={getRequestData}
-        rowKey="id"
-        search={false}
+        rowKey="proj_name"
+        search={{ labelWidth: 'auto', span: 4, optionRender: searchOptionRender }}
         toolBarRender={undefined}
         options={false}
         pagination={{
@@ -134,13 +133,11 @@ export default function Page() {
           pageSize: pageInfo.pageSize,
           onShowSizeChange: (_, pageSize) => {
             setPageInfo({ pageSize, current: 1 });
-            setStorage('listPageSize', pageSize);
+            // setStorage('listPageSize', pageSize);
           },
         }}
         dateFormatter="string"
-        onReset={() => {
-          actionRef.current?.reload();
-        }}
+        onReset={actionRef.current?.reload}
         tooltip={undefined}
       />
       <ProForm

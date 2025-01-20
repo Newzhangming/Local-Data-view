@@ -255,9 +255,7 @@ export default function Page() {
           },
         }}
         dateFormatter="string"
-        onReset={() => {
-          actionRef.current?.reload();
-        }}
+        onReset={actionRef.current?.reload}
         tooltip={undefined}
       />
       <Drawer
@@ -308,9 +306,10 @@ export default function Page() {
         <div className={'text-base font-medium my-4'}>结论：{wbResultText}</div>
         <Divider />
         <Descriptions title="合同登记信息">
-          <Descriptions.Item label="项目编号">{currentItem?.proj_no || ''}</Descriptions.Item>
+          <Descriptions.Item label="合同编号">{detail?.contract?.cont_no || ''}</Descriptions.Item>
           <Descriptions.Item label="数据等级">{detail?.contract?.data_level || ''}</Descriptions.Item>
           <Descriptions.Item label="合同签订日期">{detail?.contract?.sign_date ? dayjs(detail?.contract?.sign_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
+          <Descriptions.Item label="承包单位">{detail?.contract?.company?.name || ''}</Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium my-4'}>结论：{wbContractText}</div>
         <Divider />
