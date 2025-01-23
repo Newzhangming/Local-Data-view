@@ -3,8 +3,7 @@
 import { CheckCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import { ActionType, type BaseQueryFilterProps, ProColumns, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { App, StepProps, Steps, Tag } from 'antd';
-import dayjs from 'dayjs';
+import { message, StepProps, Steps, Tag } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -12,12 +11,8 @@ import { TaskDto, TaskReq } from '@/constants/task';
 import { addTask, queryTasks } from '@/services/task';
 
 export default function Page() {
+  const [messageApi, contextHolder] = message.useMessage();
   const columns: ProColumns<TaskDto>[] = [
-    {
-      hideInSearch: true,
-      title: '序号',
-      render: (text, record, index) => `${index + 1}`,
-    },
     {
       title: '项目名称',
       dataIndex: 'proj_name',
@@ -82,8 +77,8 @@ export default function Page() {
     {
       title: '更新日期',
       dataIndex: 'updated_at',
+      valueType: 'dateTime',
       hideInSearch: true,
-      renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
       align: 'center',
     },
   ];
@@ -93,8 +88,6 @@ export default function Page() {
   const actionRef = useRef<ActionType>(null);
   const actionFormRef = useRef<ProFormInstance>(null);
 
-  const { message } = App.useApp();
-
   const getRequestData = useCallback(
     async (params: TaskReq) => {
       setLoading(true);
@@ -102,7 +95,7 @@ export default function Page() {
       return queryTasks(input).then((res) => {
         setLoading(false);
         if (res.msg !== 'success') {
-          message.error(res.msg);
+          messageApi.error(res.msg);
           return { data: [], success: false, total: 0 };
         }
         return { data: res.data, success: true, total: res.total };
@@ -118,6 +111,7 @@ export default function Page() {
 
   return (
     <>
+      {contextHolder}
       <ProTable<TaskDto>
         loading={loading}
         columns={columns}
@@ -145,13 +139,16 @@ export default function Page() {
         formRef={actionFormRef}
         onFinish={async (values: { proj_name: string }) => {
           const result = await addTask(values);
-          if (result.msg === 'success') {
+          if (result?.msg === 'success') {
+            messageApi.success('添加成功');
             actionRef.current?.reload();
             actionFormRef.current?.resetFields();
+          } else {
+            messageApi.error(result?.msg || '添加失败');
           }
         }}
       >
-        <ProFormText rules={[{ required: true, message: '请输入正确的项目名', min: 3, max: 30 }]} name="proj_name" label="项目名称" placeholder="请输入项目名称" />
+        <ProFormText rules={[{ required: true, message: '项目名长度3~70字符', min: 3, max: 70 }]} name="proj_name" label="项目名称" placeholder="请输入项目名称" />
       </ProForm>
     </>
   );

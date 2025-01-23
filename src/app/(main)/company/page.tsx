@@ -1,23 +1,19 @@
 'use client';
 
+import { EditTwoTone } from '@ant-design/icons';
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App } from 'antd';
-import dayjs from 'dayjs';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
-import { CompanyDto, CompanyReq } from '@/constants/dto';
+import { CompanyDto } from '@/constants/company';
+import { CompanyReq } from '@/constants/dto';
 import { queryCompanies } from '@/services/company';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const columns: ProColumns<CompanyDto>[] = [
-    {
-      hideInSearch: true,
-      title: '序号',
-      render: (text, record, index) => `${index + 1}`,
-    },
     {
       title: '公司名',
       colSize: 1.6,
@@ -32,13 +28,6 @@ export default function Page() {
       dataIndex: 'social_credit_code',
       colSize: 1.6,
       hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-    },
-    {
-      title: '资质类别',
-      dataIndex: 'cert_type',
-      hideInSearch: true,
       copyable: true,
       ellipsis: false,
     },
@@ -59,29 +48,35 @@ export default function Page() {
     {
       title: '发证日期',
       dataIndex: 'cert_date',
+      valueType: 'date',
       hideInSearch: true,
-      renderText: (value) => {
-        if (!value) return '';
-        return dayjs(value).format('YYYY-MM-DD');
-      },
       align: 'center',
     },
     {
       title: '证书过期于',
       dataIndex: 'cert_expire',
+      valueType: 'date',
       hideInSearch: true,
-      renderText: (value) => {
-        if (!value) return '';
-        return dayjs(value).format('YYYY-MM-DD');
-      },
       align: 'center',
     },
     {
       title: '更新日期',
       dataIndex: 'updated_at',
       hideInSearch: true,
-      renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
+      valueType: 'dateTime',
       align: 'center',
+    },
+    {
+      title: '操作',
+      dataIndex: 'options',
+      hideInSearch: true,
+      align: 'center',
+      render: (_, record) => (
+        <a href={`./company/edit/${record.id}`}>
+          编辑
+          <EditTwoTone />
+        </a>
+      ),
     },
   ];
 
@@ -128,9 +123,7 @@ export default function Page() {
           },
         }}
         dateFormatter="string"
-        onReset={() => {
-          actionRef.current?.reload();
-        }}
+        onReset={actionRef.current?.reload}
         tooltip={undefined}
       />
     </>

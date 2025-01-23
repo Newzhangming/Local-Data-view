@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelTokenSource } from 'axios';
 
-import { getStorage, removeStorage } from '@/utils/storage';
+import { getStorage } from '@/utils/storage';
 
 class HttpService {
   private instance: AxiosInstance;
@@ -38,8 +38,8 @@ class HttpService {
         } else {
           // 处理其他错误
         }
-        if (error.status === 403) {
-          removeStorage('token');
+        if (error.status === 401) {
+          // removeStorage('token');
           return Promise.resolve({ data: { msg: '鉴权码缺失' } });
         } else if (error.status === 429) {
           return Promise.resolve({ data: { msg: '您请求太快，休息一下再来' } });

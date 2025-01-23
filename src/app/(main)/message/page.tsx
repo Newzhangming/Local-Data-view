@@ -3,7 +3,6 @@
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { App } from 'antd';
-import dayjs from 'dayjs';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -68,7 +67,7 @@ export default function Page() {
       dataIndex: 'createdAt',
       tooltip: '创建时间',
       hideInSearch: true,
-      renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
+      valueType: 'dateTime',
       align: 'center',
     },
   ];
@@ -119,9 +118,7 @@ export default function Page() {
         },
       }}
       dateFormatter="string"
-      onReset={() => {
-        actionRef.current?.reload();
-      }}
+      onReset={actionRef.current?.reload}
       tooltip={undefined}
     />
   );

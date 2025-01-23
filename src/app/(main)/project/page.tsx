@@ -3,8 +3,9 @@
 import { EyeOutlined } from '@ant-design/icons';
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { App, Descriptions, Divider, Drawer, Table, Tag } from 'antd';
+import { Descriptions, Divider, Drawer, message, Table, Tag } from 'antd';
 import dayjs from 'dayjs';
+import { useRouter } from 'next/navigation';
 import React, { Fragment, ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -14,6 +15,8 @@ import { getProject, getProjects } from '@/services/project';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
+  const [messageApi, contextHolder] = message.useMessage();
+  const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentItem, setCurrentItem] = useState<ProjectDto>();
@@ -48,11 +51,6 @@ export default function Page() {
   };
 
   const columns: ProColumns<ProjectDto>[] = [
-    {
-      hideInSearch: true,
-      title: '序号',
-      render: (text, record, index) => `${index + 1}`,
-    },
     {
       title: '项目编号',
       order: 10,
@@ -104,7 +102,7 @@ export default function Page() {
       title: '更新日期',
       dataIndex: 'updated_at',
       hideInSearch: true,
-      renderText: (value) => dayjs(value).format('MM-DD HH:mm:ss'),
+      valueType: 'dateTime',
       align: 'center',
     },
     {
@@ -114,8 +112,8 @@ export default function Page() {
       align: 'center',
       render: (_, record) => (
         <a onClick={showDrawer(record)}>
-          <EyeOutlined />
           查看
+          <EyeOutlined />
         </a>
       ),
     },
@@ -135,12 +133,15 @@ export default function Page() {
     pageSize: Number(getStorage('listPageSize')) || 10,
   });
   const actionRef = useRef<ActionType>(null);
-  const { message } = App.useApp();
 
   const getRequestData = useCallback(async (params: ProjectReq) => {
     return getProjects(params).then((res) => {
-      if (res.msg !== 'success') {
-        message.error(res.msg);
+      if (res.msg === '鉴权码缺失') {
+        messageApi.error(res.msg).then(() => {
+          router.replace('/auth', { scroll: false });
+        });
+      } else if (res.msg !== 'success') {
+        messageApi.error(res.msg);
         return { data: [], success: false, total: 0 };
       }
       return { data: res.data, success: true, total: res.total };
@@ -223,6 +224,9 @@ export default function Page() {
   if (!detail?.acceptance_filings?.[0]?.af_date) {
     conclusion.push({ position: 'af', msg: '竣工验收备案可日期不达标', value: false });
   }
+  if ((detail?.acceptance_filings?.[0]?.actual_area || 0) < 60000) {
+    conclusion.push({ position: 'af', msg: '竣工验收备案实际面积小于6万平米', value: false });
+  }
   let afText = conclusion
     .filter((item) => !item.value && item.position === 'af')
     .map((item) => item.msg)
@@ -233,6 +237,7 @@ export default function Page() {
 
   return (
     <>
+      {contextHolder}
       <ProTable<ProjectDto>
         columns={columns}
         actionRef={actionRef}

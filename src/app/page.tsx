@@ -11,7 +11,7 @@ export default function MainLayout() {
         <div className={'h-[100vh] w-[180px] hidden md:block'}>
           <Sidebar />
         </div>
-        <div className={'p-5 w-full'}>标旗建筑人才AI分析统计管理系统</div>
+        <div className={'p-5 w-full'}>{process.env.NEXT_PUBLIC_APP_NAME}</div>
       </div>
     </>
   );

@@ -1,4 +1,5 @@
-import { BaseResp, HumanReq, Manager2Resp, ManagerReq, ManagerResp } from '@/constants/dto';
+import { BaseResp, HumanReq, IdReq, Manager2Resp, ManagerReq, ManagerResp } from '@/constants/dto';
+import { ManagerDto, ManagerUpdateReq } from '@/constants/manager';
 import HttpService from '@/utils/http-service';
 import { objectToQueryString } from '@/utils/strings';
 
@@ -15,4 +16,15 @@ export const queryManagers = (input: ManagerReq): Promise<BaseResp<Manager2Resp[
   delete input.current;
   const url = `/v1/managers?${objectToQueryString({ pageIndex, ...input })}`;
   return httpService.get<BaseResp<Manager2Resp[]>>(url, { headers });
+};
+
+export const queryManager = (input: IdReq): Promise<BaseResp<ManagerDto>> => {
+  const url = `/v1/manager?id=${input.id}`;
+  return httpService.get<BaseResp<ManagerDto>>(url, { headers });
+};
+
+export const updateManager = (input: IdReq & ManagerUpdateReq): Promise<BaseResp<ManagerDto>> => {
+  const { id, ...data } = input;
+  const url = `/v1/manager?id=${id}`;
+  return httpService.put<BaseResp<ManagerDto>>(url, data, { headers });
 };
