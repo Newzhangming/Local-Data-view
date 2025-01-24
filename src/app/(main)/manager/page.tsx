@@ -7,14 +7,15 @@ import { Divider, message, theme } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
-import { Manager2Resp, ManagerReq } from '@/constants/dto';
+import { ManagerReq } from '@/constants/dto';
+import { ManagerDto } from '@/constants/manager';
 import { queryManagers } from '@/services/manager';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
-  const columns: ProColumns<Manager2Resp>[] = [
+  const columns: ProColumns<ManagerDto>[] = [
     {
       title: '姓名',
       order: 10,
@@ -82,17 +83,17 @@ export default function Page() {
       hideInSearch: true,
       align: 'center',
       render: (_, record) => (
-        <div>
+        <>
           <a href={`./manager/edit/${record.id}`}>
             编辑
             <EditTwoTone />
           </a>
           <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
-          <a href={`./manager/edit/${record.id}`}>
+          <a href={`./manager/view/${record.id}`}>
             查看
             <EyeTwoTone />
           </a>
-        </div>
+        </>
       ),
     },
   ];
@@ -119,7 +120,7 @@ export default function Page() {
   return (
     <>
       {contextHolder}
-      <ProTable<Manager2Resp>
+      <ProTable<ManagerDto>
         columns={columns}
         actionRef={actionRef}
         request={getRequestData}

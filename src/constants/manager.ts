@@ -9,8 +9,11 @@ export interface ManagerUpdateReq {
 export interface ManagerDto {
   id: string;
   name: string;
+  gender: string;
   id_card: string;
   cert_name: string;
+  lending_no: string;
+  lending_to: string;
   cert_status: string;
   projects: Project[];
   experiences: Experience[];

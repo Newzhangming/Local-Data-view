@@ -56,18 +56,6 @@ export interface ManagerResp {
   msg: string;
 }
 
-export interface Manager2Resp {
-  id: string;
-  name: string;
-  gender: string;
-  id_card: string;
-  cert_name: string;
-  lending_to: string;
-  lending_no: string;
-  valid_date: string;
-  updated_at: string;
-}
-
 export type ProjectReq = PageReq;
 
 export interface ProjectDto {

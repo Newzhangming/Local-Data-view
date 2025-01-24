@@ -301,8 +301,12 @@ export default function Page() {
                 <Descriptions.Item label="中标日期">{item?.wb_date ? dayjs(item?.wb_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
                 <Descriptions.Item label="招标类型">{item?.tender_type || ''}</Descriptions.Item>
                 <Descriptions.Item label="中标金额(万)">{item?.wb_amount || ''}</Descriptions.Item>
-                <Descriptions.Item label="中标单位">{item?.company?.name || ''}</Descriptions.Item>
-                <Descriptions.Item label="项目负责人">{item?.manager?.name || ''}</Descriptions.Item>
+                <Descriptions.Item label="中标单位">
+                  <a href={`./company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                </Descriptions.Item>
+                <Descriptions.Item label="项目经理">
+                  <a href={`./manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                </Descriptions.Item>
                 <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
               </Fragment>
             );
@@ -314,7 +318,9 @@ export default function Page() {
           <Descriptions.Item label="合同编号">{detail?.contract?.cont_no || ''}</Descriptions.Item>
           <Descriptions.Item label="数据等级">{detail?.contract?.data_level || ''}</Descriptions.Item>
           <Descriptions.Item label="合同签订日期">{detail?.contract?.sign_date ? dayjs(detail?.contract?.sign_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
-          <Descriptions.Item label="承包单位">{detail?.contract?.company?.name || ''}</Descriptions.Item>
+          <Descriptions.Item label="承包单位">
+            <a href={`./company/view/${detail?.contract?.company?.id}`}>{detail?.contract?.company?.name || ''}</a>
+          </Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium my-4'}>结论：{wbContractText}</div>
         <Divider />
@@ -325,8 +331,12 @@ export default function Page() {
                 <Descriptions.Item label="施工许可编号">{item?.cp_no || ''}</Descriptions.Item>
                 <Descriptions.Item label="数据等级">{item?.data_level || ''}</Descriptions.Item>
                 <Descriptions.Item label="发证日期">{item?.cp_date ? dayjs(item?.cp_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
-                <Descriptions.Item label="所属单位">{item?.company?.name || ''}</Descriptions.Item>
-                <Descriptions.Item label="项目经理">{item?.manager?.name || ''}</Descriptions.Item>
+                <Descriptions.Item label="所属单位">
+                  <a href={`./company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                </Descriptions.Item>
+                <Descriptions.Item label="项目经理">
+                  <a href={`./manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                </Descriptions.Item>
                 <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
               </Fragment>
             );

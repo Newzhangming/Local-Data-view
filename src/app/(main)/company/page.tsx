@@ -1,9 +1,9 @@
 'use client';
 
-import { EditTwoTone } from '@ant-design/icons';
+import { EditTwoTone, EyeTwoTone } from '@ant-design/icons';
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { App } from 'antd';
+import { App, Divider, theme } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -13,6 +13,7 @@ import { queryCompanies } from '@/services/company';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
+  const { token } = theme.useToken();
   const columns: ProColumns<CompanyDto>[] = [
     {
       title: '公司名',
@@ -72,10 +73,17 @@ export default function Page() {
       hideInSearch: true,
       align: 'center',
       render: (_, record) => (
-        <a href={`./company/edit/${record.id}`}>
-          编辑
-          <EditTwoTone />
-        </a>
+        <>
+          <a href={`./company/edit/${record.id}`}>
+            编辑
+            <EditTwoTone />
+          </a>
+          <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
+          <a href={`./company/view/${record.id}`}>
+            查看
+            <EyeTwoTone />
+          </a>
+        </>
       ),
     },
   ];
