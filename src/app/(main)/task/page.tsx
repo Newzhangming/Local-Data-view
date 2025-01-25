@@ -1,17 +1,28 @@
 'use client';
 
-import { CheckCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import { ActionType, type BaseQueryFilterProps, ProColumns, ProForm, ProFormInstance, ProFormText } from '@ant-design/pro-components';
-import { ProTable } from '@ant-design/pro-components';
-import { message, StepProps, Steps, Tag } from 'antd';
+import { ArrowDownOutlined, ArrowUpOutlined, CheckCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { ActionType, type BaseQueryFilterProps, ModalForm, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
+import { Avatar, Button, Divider, message, StepProps, Steps, Tag } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
 import { TaskDto, TaskReq } from '@/constants/task';
-import { addTask, queryTasks } from '@/services/task';
+import { addTask, queryTasks, updateTask } from '@/services/task';
+import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const [messageApi, contextHolder] = message.useMessage();
+
+  const [pageInfo, setPageInfo] = useState({ current: 1, pageSize: Number(getStorage('listPageSize')) || 10 });
+  const [loading, setLoading] = useState(false);
+
+  const actionRef = useRef<ActionType>(null);
+
+  const onSort = (id: string, action: 'up' | 'down') => async () => {
+    await updateTask({ id, action });
+    actionRef.current?.reload();
+  };
+
   const columns: ProColumns<TaskDto>[] = [
     {
       title: '项目名称',
@@ -75,6 +86,30 @@ export default function Page() {
       },
     },
     {
+      title: '排序',
+      dataIndex: 'sort',
+      align: 'center',
+      hideInSearch: true,
+      copyable: false,
+      ellipsis: false,
+      render: (_, obj: TaskDto) => {
+        return (
+          <>
+            <Avatar size={20} style={{ backgroundColor: '#ffbf00' }} icon={<ArrowUpOutlined onClick={onSort(obj.id, 'up')} />} />
+            <Divider type={'vertical'} />
+            <Avatar size={20} style={{ backgroundColor: '#00a2ae' }} icon={<ArrowDownOutlined onClick={onSort(obj.id, 'down')} />} />
+          </>
+        );
+      },
+    },
+    {
+      title: '采集账号',
+      dataIndex: 'rpa_account',
+      hideInSearch: true,
+      copyable: false,
+      ellipsis: false,
+    },
+    {
       title: '更新日期',
       dataIndex: 'updated_at',
       valueType: 'dateTime',
@@ -82,11 +117,6 @@ export default function Page() {
       align: 'center',
     },
   ];
-
-  const [pageInfo, setPageInfo] = useState({ current: 1, pageSize: 6 });
-  const [loading, setLoading] = useState(false);
-  const actionRef = useRef<ActionType>(null);
-  const actionFormRef = useRef<ProFormInstance>(null);
 
   const getRequestData = useCallback(
     async (params: TaskReq) => {
@@ -104,10 +134,34 @@ export default function Page() {
     [loading],
   );
 
+  const onAddTask = useCallback(async (params: { proj_name: string }) => {
+    const result = await addTask(params);
+    if (result?.msg === 'success') {
+      messageApi.success('添加成功');
+      actionRef.current?.reload();
+    } else {
+      messageApi.error(result?.msg || '添加失败');
+    }
+  }, []);
+
   const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
     const [reset, query] = dom;
     return [query, reset];
   };
+
+  const toolBarRender = () => [
+    <ModalForm
+      layout={'horizontal'}
+      title="添加项目"
+      autoFocusFirstInput
+      modalProps={{ destroyOnClose: true }}
+      onFinish={onAddTask}
+      submitTimeout={5000}
+      trigger={<Button type="primary">添加项目</Button>}
+    >
+      <ProFormText rules={[{ required: true, message: '项目名长度3~70字符', min: 3, max: 70 }]} name="proj_name" label="项目名称" placeholder="请输入项目名称" />
+    </ModalForm>,
+  ];
 
   return (
     <>
@@ -119,37 +173,20 @@ export default function Page() {
         request={getRequestData}
         rowKey="proj_name"
         search={{ labelWidth: 'auto', span: 4, optionRender: searchOptionRender }}
-        toolBarRender={undefined}
-        options={false}
+        toolbar={{ title: '任务列表', subTitle: '可以使用「排序」来调整采集任务的优先级' }}
+        toolBarRender={toolBarRender}
         pagination={{
           pageSizeOptions: [10, 15, 20, 25, 30],
           showQuickJumper: true,
           pageSize: pageInfo.pageSize,
           onShowSizeChange: (_, pageSize) => {
             setPageInfo({ pageSize, current: 1 });
-            // setStorage('listPageSize', pageSize);
+            setStorage('listPageSize', pageSize);
           },
         }}
         dateFormatter="string"
         onReset={actionRef.current?.reload}
-        tooltip={undefined}
       />
-      <ProForm
-        submitter={{ searchConfig: { submitText: '添加' } }}
-        formRef={actionFormRef}
-        onFinish={async (values: { proj_name: string }) => {
-          const result = await addTask(values);
-          if (result?.msg === 'success') {
-            messageApi.success('添加成功');
-            actionRef.current?.reload();
-            actionFormRef.current?.resetFields();
-          } else {
-            messageApi.error(result?.msg || '添加失败');
-          }
-        }}
-      >
-        <ProFormText rules={[{ required: true, message: '项目名长度3~70字符', min: 3, max: 70 }]} name="proj_name" label="项目名称" placeholder="请输入项目名称" />
-      </ProForm>
     </>
   );
 }

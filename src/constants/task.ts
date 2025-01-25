@@ -3,6 +3,8 @@ import { PageReq } from './dto';
 export type TaskReq = PageReq;
 
 export interface TaskDto {
+  id: string;
+
   name: string;
 
   proj_name: string;
@@ -19,6 +21,12 @@ export interface TaskDto {
 
   status: string;
 
+  rpa_account: string;
+
+  server_name: string;
+
+  sort: number;
+
   // 更新时间
-  updated_at: string;
+  updated_at: Date;
 }

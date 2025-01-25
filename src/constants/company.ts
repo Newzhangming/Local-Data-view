@@ -19,26 +19,39 @@ export interface CompanyUpdateReq {
   cert_name: string;
 
   // 发证日期
-  cert_date: string;
+  cert_date: Date;
 
   // 发证有效期
-  cert_expire: string;
+  cert_expire: Date;
 }
 
 export interface CompanyDto extends CompanyUpdateReq {
   id: string;
 
   // 更新时间
-  updated_at: string;
+  updated_at: Date;
 
   managers: ManagerDto[];
+
+  certificates: Certificate[];
 }
 
-interface ManagerDto {
+export interface Certificate {
+  id: string;
+  cert_name: string;
+  cert_no: string;
+  cert_date: Date;
+  cert_type: string;
+  cert_expire: Date;
+  cert_office: string;
+}
+
+export interface ManagerDto {
   manager: ManagerItem;
 }
 
 interface ManagerItem {
   name: string;
   id_card: string;
+  cert_name: string;
 }

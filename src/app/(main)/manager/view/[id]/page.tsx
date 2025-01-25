@@ -45,7 +45,7 @@ export default function ManagerEdit() {
     <>
       {contextHolder}
       <Descriptions title="项目经理信息">
-        <Descriptions.Item label="姓名">{detail?.name || ''}</Descriptions.Item>
+        <Descriptions.Item label="经理姓名">{detail?.name || ''}</Descriptions.Item>
         <Descriptions.Item label="身份证">{detail?.id_card || ''}</Descriptions.Item>
         <Descriptions.Item label="性别">{detail?.gender || ''}</Descriptions.Item>
         <Descriptions.Item label="证书名称">{detail?.cert_name || ''}</Descriptions.Item>

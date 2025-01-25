@@ -18,3 +18,9 @@ export const addTask = (input: { proj_name: string }): Promise<BaseResp<TaskDto>
   const data = { proj_name: input.proj_name };
   return httpService.post<BaseResp<TaskDto>>(url, data, { headers });
 };
+
+export const updateTask = (input: { id: string; action: string }): Promise<BaseResp<TaskDto>> => {
+  const url = `/v1/task?id=${input.id}`;
+  const data = { action: input.action };
+  return httpService.put<BaseResp<TaskDto>>(url, data, { headers });
+};

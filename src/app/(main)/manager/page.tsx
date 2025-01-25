@@ -17,7 +17,7 @@ export default function Page() {
   const { token } = theme.useToken();
   const columns: ProColumns<ManagerDto>[] = [
     {
-      title: '姓名',
+      title: '经理姓名',
       order: 10,
       dataIndex: 'name',
       hideInSearch: false,
@@ -29,7 +29,7 @@ export default function Page() {
       title: '性别',
       dataIndex: 'gender',
       hideInSearch: true,
-      copyable: true,
+      copyable: false,
       ellipsis: false,
     },
     {
@@ -67,7 +67,7 @@ export default function Page() {
       dataIndex: 'valid_date',
       valueType: 'date',
       hideInSearch: true,
-      copyable: true,
+      copyable: false,
       ellipsis: false,
     },
     {
