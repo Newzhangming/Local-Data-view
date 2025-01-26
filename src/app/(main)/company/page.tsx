@@ -3,7 +3,7 @@
 import { EditTwoTone, EyeTwoTone } from '@ant-design/icons';
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { App, Divider, theme } from 'antd';
+import { Divider, message, theme } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -13,6 +13,7 @@ import { queryCompanies } from '@/services/company';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
+  const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const columns: ProColumns<CompanyDto>[] = [
     {
@@ -97,13 +98,12 @@ export default function Page() {
     pageSize: Number(getStorage('listPageSize')) || 10,
   });
   const actionRef = useRef<ActionType>(null);
-  const { message } = App.useApp();
 
   const getRequestData = useCallback(async (params: CompanyReq) => {
     const input = { ...params, from: 'list' };
     return queryCompanies(input).then((res) => {
       if (res.msg !== 'success') {
-        message.error(res.msg);
+        messageApi.error(res.msg);
         return { data: [], success: false, total: 0 };
       }
       return { data: res.data, success: true, total: res.total };
@@ -117,6 +117,7 @@ export default function Page() {
 
   return (
     <>
+      {contextHolder}
       <ProTable<CompanyDto>
         columns={columns}
         actionRef={actionRef}

@@ -1,13 +1,14 @@
 'use client';
 
-import { ArrowDownOutlined, ArrowUpOutlined, CheckCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, CheckCircleOutlined, ClockCircleOutlined, DownloadOutlined, PlusOutlined, RollbackOutlined, SyncOutlined, UploadOutlined } from '@ant-design/icons';
 import { ActionType, type BaseQueryFilterProps, ModalForm, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import { Avatar, Button, Divider, message, StepProps, Steps, Tag } from 'antd';
+import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, Upload, UploadProps } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
 import { TaskDto, TaskReq } from '@/constants/task';
 import { addTask, queryTasks, updateTask } from '@/services/task';
+import { MDHHmmss } from '@/utils/date';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
@@ -18,7 +19,7 @@ export default function Page() {
 
   const actionRef = useRef<ActionType>(null);
 
-  const onSort = (id: string, action: 'up' | 'down') => async () => {
+  const onUpdate = (id: string, action: 'up' | 'down' | 'reset') => async () => {
     await updateTask({ id, action });
     actionRef.current?.reload();
   };
@@ -37,7 +38,7 @@ export default function Page() {
       title: '采集进度',
       dataIndex: 'processing',
       hideInSearch: true,
-      copyable: true,
+      copyable: false,
       ellipsis: false,
       render: (_, obj: TaskDto) => {
         const mapping: { [key: string]: string } = { proj_base: '基本信息', proj_wb: '招投标', proj_contract: '合同', proj_permit: '施工', proj_af: '验收' };
@@ -95,9 +96,9 @@ export default function Page() {
       render: (_, obj: TaskDto) => {
         return (
           <>
-            <Avatar size={20} style={{ backgroundColor: '#ffbf00' }} icon={<ArrowUpOutlined onClick={onSort(obj.id, 'up')} />} />
+            <Avatar size={20} style={{ backgroundColor: '#ffbf00' }} icon={<ArrowUpOutlined onClick={onUpdate(obj.id, 'up')} />} />
             <Divider type={'vertical'} />
-            <Avatar size={20} style={{ backgroundColor: '#00a2ae' }} icon={<ArrowDownOutlined onClick={onSort(obj.id, 'down')} />} />
+            <Avatar size={20} style={{ backgroundColor: '#00a2ae' }} icon={<ArrowDownOutlined onClick={onUpdate(obj.id, 'down')} />} />
           </>
         );
       },
@@ -110,11 +111,34 @@ export default function Page() {
       ellipsis: false,
     },
     {
-      title: '更新日期',
-      dataIndex: 'updated_at',
-      valueType: 'dateTime',
+      title: '添加日期',
+      dataIndex: 'created_at',
       hideInSearch: true,
       align: 'center',
+      renderText: (text: string) => MDHHmmss(text),
+    },
+    {
+      title: '采集日期',
+      dataIndex: 'updated_at',
+      hideInSearch: true,
+      align: 'center',
+      renderText: (text: string) => MDHHmmss(text),
+    },
+    {
+      title: '操作',
+      dataIndex: 'options',
+      hideInSearch: true,
+      align: 'center',
+      render: (_, record) => (
+        <>
+          <Popconfirm placement="bottomRight" title={'重新采集吗？'} okText="确定" cancelText="取消" onConfirm={onUpdate(record.id, 'reset')}>
+            <a>
+              重采
+              <RollbackOutlined />
+            </a>
+          </Popconfirm>
+        </>
+      ),
     },
   ];
 
@@ -149,6 +173,24 @@ export default function Page() {
     return [query, reset];
   };
 
+  const props: UploadProps = {
+    name: 'file',
+    action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
+    headers: {
+      authorization: 'authorization-text',
+    },
+    onChange(info) {
+      if (info.file.status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (info.file.status === 'done') {
+        messageApi.success(`${info.file.name} file uploaded successfully`);
+      } else if (info.file.status === 'error') {
+        messageApi.error(`${info.file.name} file upload failed.`);
+      }
+    },
+  };
+
   const toolBarRender = () => [
     <ModalForm
       layout={'horizontal'}
@@ -157,9 +199,36 @@ export default function Page() {
       modalProps={{ destroyOnClose: true }}
       onFinish={onAddTask}
       submitTimeout={5000}
-      trigger={<Button type="primary">添加项目</Button>}
+      trigger={
+        <Button type="primary" icon={<PlusOutlined />}>
+          添加项目
+        </Button>
+      }
     >
       <ProFormText rules={[{ required: true, message: '项目名长度3~70字符', min: 3, max: 70 }]} name="proj_name" label="项目名称" placeholder="请输入项目名称" />
+    </ModalForm>,
+    <ModalForm
+      layout={'horizontal'}
+      title="导入项目"
+      autoFocusFirstInput
+      modalProps={{ destroyOnClose: true }}
+      submitTimeout={5000}
+      trigger={
+        <Button type="default" icon={<UploadOutlined />}>
+          点击上传
+        </Button>
+      }
+    >
+      <Upload {...props}>
+        <Space>
+          <Button type={'dashed'} icon={<DownloadOutlined />}>
+            下载模板
+          </Button>
+          <Button type={'primary'} icon={<UploadOutlined />}>
+            导入项目
+          </Button>
+        </Space>
+      </Upload>
     </ModalForm>,
   ];
 
@@ -171,7 +240,7 @@ export default function Page() {
         columns={columns}
         actionRef={actionRef}
         request={getRequestData}
-        rowKey="proj_name"
+        rowKey="id"
         search={{ labelWidth: 'auto', span: 4, optionRender: searchOptionRender }}
         toolbar={{ title: '任务列表', subTitle: '可以使用「排序」来调整采集任务的优先级' }}
         toolBarRender={toolBarRender}

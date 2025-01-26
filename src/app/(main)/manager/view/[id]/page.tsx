@@ -1,6 +1,7 @@
 'use client';
 
-import { Descriptions, Divider, message, Table, type TableColumnsType } from 'antd';
+import { EyeTwoTone, HomeOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { Breadcrumb, Descriptions, Divider, message, Space, Table, type TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -41,20 +42,52 @@ export default function ManagerEdit() {
     { title: '变更信息', dataIndex: 'desc' },
   ];
 
+  const breadcrumbItems = [
+    {
+      href: '/',
+      title: (
+        <>
+          <HomeOutlined />
+          <span>首页</span>
+        </>
+      ),
+    },
+    {
+      href: '/manager',
+      title: (
+        <>
+          <UsergroupAddOutlined />
+          <span>项目经理</span>
+        </>
+      ),
+    },
+    {
+      title: (
+        <>
+          <EyeTwoTone />
+          <span>查看</span>
+        </>
+      ),
+    },
+  ];
+
   return (
     <>
       {contextHolder}
-      <Descriptions title="项目经理信息">
-        <Descriptions.Item label="经理姓名">{detail?.name || ''}</Descriptions.Item>
-        <Descriptions.Item label="身份证">{detail?.id_card || ''}</Descriptions.Item>
-        <Descriptions.Item label="性别">{detail?.gender || ''}</Descriptions.Item>
-        <Descriptions.Item label="证书名称">{detail?.cert_name || ''}</Descriptions.Item>
-        <Descriptions.Item label="证书状态">{detail?.cert_status || ''}</Descriptions.Item>
-        <Descriptions.Item label="注册公司">{detail?.lending_to || ''}</Descriptions.Item>
-        <Descriptions.Item label="注册编号">{detail?.lending_no || ''}</Descriptions.Item>
-      </Descriptions>
-      <Divider />
-      <Table rowKey={'desc'} loading={loading} dataSource={detail?.experiences} columns={columns} pagination={false} />
+      <Space direction={'vertical'} size={'large'}>
+        <Breadcrumb items={breadcrumbItems} />
+        <Descriptions title="项目经理信息">
+          <Descriptions.Item label="经理姓名">{detail?.name || ''}</Descriptions.Item>
+          <Descriptions.Item label="身份证">{detail?.id_card || ''}</Descriptions.Item>
+          <Descriptions.Item label="性别">{detail?.gender || ''}</Descriptions.Item>
+          <Descriptions.Item label="证书名称">{detail?.cert_name || ''}</Descriptions.Item>
+          <Descriptions.Item label="证书状态">{detail?.cert_status || ''}</Descriptions.Item>
+          <Descriptions.Item label="注册公司">{detail?.lending_to || ''}</Descriptions.Item>
+          <Descriptions.Item label="注册编号">{detail?.lending_no || ''}</Descriptions.Item>
+        </Descriptions>
+        <Divider />
+        <Table rowKey={'desc'} loading={loading} dataSource={detail?.experiences} columns={columns} pagination={false} />
+      </Space>
     </>
   );
 }

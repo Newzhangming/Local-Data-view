@@ -64,7 +64,7 @@ export interface ProjectDto {
   data_level: string;
   proj_type: string;
   total_area: number;
-  updated_at: string;
+  updated_at: Date;
 }
 
 export type CompanyReq = PageReq;

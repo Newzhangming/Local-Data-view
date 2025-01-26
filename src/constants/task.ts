@@ -23,10 +23,9 @@ export interface TaskDto {
 
   rpa_account: string;
 
-  server_name: string;
-
   sort: number;
 
-  // 更新时间
+  created_at: Date;
+
   updated_at: Date;
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { Descriptions, Divider, message, Table, type TableColumnsType } from 'antd';
+import { BgColorsOutlined, EyeTwoTone, HomeOutlined } from '@ant-design/icons';
+import { Breadcrumb, Descriptions, Divider, message, Space, Table, type TableColumnsType } from 'antd';
 import dayjs from 'dayjs';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -49,18 +50,50 @@ export default function CompanyEdit() {
     { title: '执业证书', dataIndex: ['manager', 'cert_name'] },
   ];
 
+  const breadcrumbItems = [
+    {
+      href: '/',
+      title: (
+        <>
+          <HomeOutlined />
+          <span>首页</span>
+        </>
+      ),
+    },
+    {
+      href: '/company',
+      title: (
+        <>
+          <BgColorsOutlined />
+          <span>施工单位</span>
+        </>
+      ),
+    },
+    {
+      title: (
+        <>
+          <EyeTwoTone />
+          <span>查看</span>
+        </>
+      ),
+    },
+  ];
+
   return (
     <>
       {contextHolder}
-      <Descriptions title="施工企业信息">
-        <Descriptions.Item label="企业名">{detail?.name || ''}</Descriptions.Item>
-        <Descriptions.Item label="企业社会信用代码">{detail?.social_credit_code || ''}</Descriptions.Item>
-        <Descriptions.Item label="企业角色">{detail?.role_type || ''}</Descriptions.Item>
-      </Descriptions>
-      <Divider />
-      <Table rowKey={'cert_no'} loading={loading} dataSource={detail?.certificates} columns={certColumns} pagination={false} />
-      <Divider />
-      <Table rowKey={'name'} loading={loading} dataSource={detail?.managers} columns={managerColumns} pagination={false} />
+      <Space direction={'vertical'} size={'large'}>
+        <Breadcrumb items={breadcrumbItems} />
+        <Descriptions title="施工企业信息">
+          <Descriptions.Item label="企业名">{detail?.name || ''}</Descriptions.Item>
+          <Descriptions.Item label="企业社会信用代码">{detail?.social_credit_code || ''}</Descriptions.Item>
+          <Descriptions.Item label="企业角色">{detail?.role_type || ''}</Descriptions.Item>
+        </Descriptions>
+        <Divider />
+        <Table rowKey={'cert_no'} loading={loading} dataSource={detail?.certificates} columns={certColumns} pagination={false} />
+        <Divider />
+        <Table rowKey={'name'} loading={loading} dataSource={detail?.managers} columns={managerColumns} pagination={false} />
+      </Space>
     </>
   );
 }

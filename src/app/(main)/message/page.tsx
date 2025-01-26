@@ -2,7 +2,7 @@
 
 import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { App } from 'antd';
+import { message } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -12,6 +12,7 @@ import { getRoomIdNames } from '@/services/room';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
+  const [messageApi, contextHolder] = message.useMessage();
   const columns: ProColumns<MessageBaseDto>[] = [
     {
       hideInSearch: true,
@@ -77,13 +78,12 @@ export default function Page() {
     pageSize: Number(getStorage('listPageSize')) || 10,
   });
   const actionRef = useRef<ActionType>(null);
-  const { message } = App.useApp();
 
   const getRequestData = useCallback(async (params: MessagesReq) => {
     const input: MessagesReq = { ...params, room_id: params.room_id ?? '', nickname: params.nickname ?? '' };
     return getMessages(input).then((res) => {
       if (res.msg !== 'success') {
-        message.error(res.msg);
+        messageApi.error(res.msg);
         return { data: [], success: false, total: 0 };
       }
       return { data: res.data, success: true, total: res.total };
@@ -96,30 +96,33 @@ export default function Page() {
   };
 
   return (
-    <ProTable<MessageBaseDto>
-      columns={columns}
-      actionRef={actionRef}
-      request={getRequestData}
-      rowKey="id"
-      search={{
-        labelWidth: 'auto',
-        span: 4,
-        optionRender: searchOptionRender,
-      }}
-      toolBarRender={undefined}
-      options={false}
-      pagination={{
-        pageSizeOptions: [10, 15, 20, 25, 30],
-        showQuickJumper: true,
-        pageSize: pageInfo.pageSize,
-        onShowSizeChange: (_, pageSize) => {
-          setPageInfo({ pageSize, current: 1 });
-          setStorage('listPageSize', pageSize);
-        },
-      }}
-      dateFormatter="string"
-      onReset={actionRef.current?.reload}
-      tooltip={undefined}
-    />
+    <>
+      {contextHolder}
+      <ProTable<MessageBaseDto>
+        columns={columns}
+        actionRef={actionRef}
+        request={getRequestData}
+        rowKey="id"
+        search={{
+          labelWidth: 'auto',
+          span: 4,
+          optionRender: searchOptionRender,
+        }}
+        toolBarRender={undefined}
+        options={false}
+        pagination={{
+          pageSizeOptions: [10, 15, 20, 25, 30],
+          showQuickJumper: true,
+          pageSize: pageInfo.pageSize,
+          onShowSizeChange: (_, pageSize) => {
+            setPageInfo({ pageSize, current: 1 });
+            setStorage('listPageSize', pageSize);
+          },
+        }}
+        dateFormatter="string"
+        onReset={actionRef.current?.reload}
+        tooltip={undefined}
+      />
+    </>
   );
 }

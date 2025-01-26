@@ -1,4 +1,4 @@
-import { BuildOutlined, HomeOutlined, SyncOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import { BgColorsOutlined, BuildOutlined, SyncOutlined, UsergroupAddOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import React from 'react';
 
@@ -21,7 +21,7 @@ export default function Sidebar() {
         </Link>
       </div>
       <div className={'flex flex-row gap-2'}>
-        <HomeOutlined />
+        <BgColorsOutlined />
         <Link href={'/company'} className={'text-xl'}>
           施工单位
         </Link>
