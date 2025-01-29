@@ -1,8 +1,20 @@
 'use client';
 
-import { ArrowDownOutlined, ArrowUpOutlined, CheckCircleOutlined, ClockCircleOutlined, DownloadOutlined, PlusOutlined, RollbackOutlined, SyncOutlined, UploadOutlined } from '@ant-design/icons';
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  DownloadOutlined,
+  EyeInvisibleOutlined,
+  EyeTwoTone,
+  PlusOutlined,
+  RollbackOutlined,
+  SyncOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 import { ActionType, type BaseQueryFilterProps, ModalForm, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
-import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, Upload, UploadProps } from 'antd';
+import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
 import React, { ReactNode, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -13,6 +25,7 @@ import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const [messageApi, contextHolder] = message.useMessage();
+  const { token } = theme.useToken();
 
   const [pageInfo, setPageInfo] = useState({ current: 1, pageSize: Number(getStorage('listPageSize')) || 10 });
   const [loading, setLoading] = useState(false);
@@ -89,6 +102,7 @@ export default function Page() {
     {
       title: '排序',
       dataIndex: 'sort',
+      minWidth: 74,
       align: 'center',
       hideInSearch: true,
       copyable: false,
@@ -107,6 +121,7 @@ export default function Page() {
       title: '采集账号',
       dataIndex: 'rpa_account',
       hideInSearch: true,
+      minWidth: 70,
       copyable: false,
       ellipsis: false,
     },
@@ -128,35 +143,42 @@ export default function Page() {
       title: '操作',
       dataIndex: 'options',
       hideInSearch: true,
+      minWidth: 120,
       align: 'center',
-      render: (_, record) => (
-        <>
-          <Popconfirm placement="bottomRight" title={'重新采集吗？'} okText="确定" cancelText="取消" onConfirm={onUpdate(record.id, 'reset')}>
-            <a>
-              重采
-              <RollbackOutlined />
+      render: (_, record) => {
+        const href = record.proj_no ? `./project/view/${record.proj_no}` : undefined;
+        const viewIcon = record.proj_no ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
+        const linkClassName = record.proj_no ? 'text-blue-500' : 'text-gray-500 hover:text-gray-500';
+        return (
+          <>
+            <Popconfirm placement="bottomRight" title={'重新采集吗？'} okText="确定" cancelText="取消" onConfirm={onUpdate(record.id, 'reset')}>
+              <a>
+                重采
+                <RollbackOutlined />
+              </a>
+            </Popconfirm>
+            <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
+            <a className={linkClassName} href={href}>
+              查看{viewIcon}
             </a>
-          </Popconfirm>
-        </>
-      ),
+          </>
+        );
+      },
     },
   ];
 
-  const getRequestData = useCallback(
-    async (params: TaskReq) => {
-      setLoading(true);
-      const input = { ...params, from: 'list' };
-      return queryTasks(input).then((res) => {
-        setLoading(false);
-        if (res.msg !== 'success') {
-          messageApi.error(res.msg);
-          return { data: [], success: false, total: 0 };
-        }
-        return { data: res.data, success: true, total: res.total };
-      });
-    },
-    [loading],
-  );
+  const getRequestData = useCallback(async (params: TaskReq) => {
+    setLoading(true);
+    const input = { ...params, from: 'list' };
+    return queryTasks(input).then((res) => {
+      setLoading(false);
+      if (res.msg !== 'success') {
+        messageApi.error(res.msg);
+        return { data: [], success: false, total: 0 };
+      }
+      return { data: res.data, success: true, total: res.total };
+    });
+  }, []);
 
   const onAddTask = useCallback(async (params: { proj_name: string }) => {
     const result = await addTask(params);

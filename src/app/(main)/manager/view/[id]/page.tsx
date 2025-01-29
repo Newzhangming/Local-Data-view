@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { Experience, ManagerDto } from '@/constants/manager';
 import { queryManager } from '@/services/manager';
 
-export default function ManagerEdit() {
+export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
   const params = useParams();
   const [loading, setLoading] = useState<boolean>(true);

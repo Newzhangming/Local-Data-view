@@ -1,42 +1,33 @@
 'use client';
 
-import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
-import { ProTable } from '@ant-design/pro-components';
-import { Descriptions, Divider, Drawer, message, Table, Tag } from 'antd';
+import { BuildOutlined, EyeTwoTone, HomeOutlined } from '@ant-design/icons';
+import { Breadcrumb, Descriptions, Divider, message, Space, Table } from 'antd';
 import dayjs from 'dayjs';
-import { useRouter } from 'next/navigation';
-import React, { Fragment, ReactNode, useCallback, useRef, useState } from 'react';
+import { useParams } from 'next/navigation';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 
-import Ellipsis from '@/components/ellipsis';
-import { ProjectDto, ProjectReq } from '@/constants/dto';
 import { ProjectDetailDto } from '@/constants/project';
-import { getProject, getProjects } from '@/services/project';
-import { getStorage, setStorage } from '@/utils/storage';
+import { getProject } from '@/services/project';
 
-export default function Page() {
+export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
-  const router = useRouter();
-  const [open, setOpen] = useState<boolean>(false);
+  const params = useParams();
   const [loading, setLoading] = useState<boolean>(true);
-  const [currentItem, setCurrentItem] = useState<ProjectDto>();
   const [detail, setDetail] = useState<ProjectDetailDto>();
 
-  const DataLevel = { A: 'green', B: 'orange', C: 'magenta', D: 'red' };
+  useEffect(() => {
+    getDetailData();
+  }, []);
 
-  const showDrawer = (data: ProjectDto) => () => {
-    setOpen(true);
-    setCurrentItem(data);
-    getDetailData(data);
-  };
-
-  const getDetailData = (data: ProjectDto) => {
+  const getDetailData = () => {
     setLoading(true);
-    getProject(data.proj_no)
+    getProject(params.id as string)
       .then((res) => {
         setLoading(false);
         if (res.msg === 'success') {
           setDetail(res.data);
+        } else {
+          messageApi.error(res.msg || '服务端错误', 5);
         }
       })
       .catch(() => {
@@ -44,83 +35,36 @@ export default function Page() {
       });
   };
 
-  const refreshDetail = () => {
-    if (currentItem) {
-      getDetailData(currentItem);
-    }
-  };
+  const refreshDetail = useCallback(() => {
+    getDetailData();
+  }, []);
 
-  const columns: ProColumns<ProjectDto>[] = [
+  const breadcrumbItems = [
     {
-      title: '项目编号',
-      order: 10,
-      colSize: 1.1,
-      dataIndex: 'proj_no',
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
+      href: '/',
+      title: (
+        <>
+          <HomeOutlined />
+          <span>首页</span>
+        </>
+      ),
     },
     {
-      title: '项目名称',
-      order: 9,
-      colSize: 2,
-      dataIndex: 'proj_name',
-      hideInSearch: false,
-      copyable: false,
-      renderText: (text: string) => <Ellipsis text={text} />,
-      align: 'left',
+      href: '/project',
+      title: (
+        <>
+          <BuildOutlined />
+          <span>工程项目</span>
+        </>
+      ),
     },
     {
-      title: '项目分类',
-      dataIndex: 'proj_type',
-      hideInSearch: true,
-      copyable: false,
-      ellipsis: false,
-    },
-    {
-      title: '总面积(万平方米)',
-      dataIndex: 'total_area',
-      hideInSearch: true,
-      copyable: false,
-      ellipsis: false,
-      renderText: (text: number) => (text ? `${(text / 10000).toFixed(2)}` : 0),
-    },
-    {
-      title: '数据等级',
-      dataIndex: 'data_level',
-      colSize: 1,
-      valueType: 'select',
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-      request: async () => Object.keys(DataLevel).map((value) => ({ label: value, value })),
-      render: (_, record) => {
-        const color = DataLevel[record.data_level as keyof typeof DataLevel];
-        return <Tag color={color}>{record.data_level}</Tag>;
-      },
-    },
-    {
-      title: '更新日期',
-      dataIndex: 'updated_at',
-      hideInSearch: true,
-      valueType: 'dateTime',
-      align: 'center',
-    },
-    {
-      title: '操作',
-      dataIndex: 'options',
-      hideInSearch: true,
-      align: 'center',
-      render: (_, record) => {
-        const href = record.proj_no ? `./project/view/${record.proj_no}` : undefined;
-        const viewIcon = record.proj_no ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
-        const linkClassName = record.proj_no ? 'text-blue-500' : 'text-gray-500 hover:text-gray-500';
-        return (
-          <a className={linkClassName} href={href}>
-            查看{viewIcon}
-          </a>
-        );
-      },
+      title: (
+        <>
+          <EyeTwoTone />
+          <span>查看</span>
+        </>
+      ),
     },
   ];
 
@@ -133,36 +77,11 @@ export default function Page() {
     return { key: `${index}`, ...item };
   });
 
-  const [pageInfo, setPageInfo] = useState({
-    current: 1,
-    pageSize: Number(getStorage('listPageSize')) || 10,
-  });
-  const actionRef = useRef<ActionType>(null);
-
-  const getRequestData = useCallback(async (params: ProjectReq) => {
-    return getProjects(params).then((res) => {
-      if (res.msg === '鉴权码缺失') {
-        messageApi.error(res.msg).then(() => {
-          router.replace('/auth', { scroll: false });
-        });
-      } else if (res.msg !== 'success') {
-        messageApi.error(res.msg);
-        return { data: [], success: false, total: 0 };
-      }
-      return { data: res.data, success: true, total: res.total };
-    });
-  }, []);
-
-  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
-    const [reset, query] = dom;
-    return [query, reset];
-  };
-
   const conclusion = [{ position: 'base', msg: '', value: true }];
-  if (currentItem?.data_level !== 'A' && currentItem?.data_level !== 'B') {
+  if (detail?.data_level !== 'A' && detail?.data_level !== 'B') {
     conclusion.push({ position: 'base', msg: '基本信息数据等级不达标', value: false });
   }
-  if ((currentItem?.total_area || 0) < 60000) {
+  if ((detail?.total_area || 0) < 60000) {
     conclusion.push({ position: 'base', msg: '基本信息总面积小于6万平米', value: false });
   }
   const address = detail?.address || '';
@@ -243,51 +162,13 @@ export default function Page() {
   return (
     <>
       {contextHolder}
-      <ProTable<ProjectDto>
-        columns={columns}
-        actionRef={actionRef}
-        request={getRequestData}
-        rowKey="proj_no"
-        search={{
-          labelWidth: 'auto',
-          span: 4,
-          optionRender: searchOptionRender,
-        }}
-        toolBarRender={undefined}
-        options={false}
-        pagination={{
-          pageSizeOptions: [10, 15, 20, 25, 30],
-          showQuickJumper: true,
-          pageSize: pageInfo.pageSize,
-          onShowSizeChange: (_, pageSize) => {
-            setPageInfo({ pageSize, current: 1 });
-            setStorage('listPageSize', pageSize);
-          },
-        }}
-        dateFormatter="string"
-        onReset={actionRef.current?.reload}
-        tooltip={undefined}
-      />
-      <Drawer
-        closable
-        destroyOnClose
-        title={<p>{currentItem?.proj_name || '项目名称'}</p>}
-        placement="right"
-        open={open}
-        loading={loading}
-        width={'70%'}
-        onClose={() => setOpen(false)}
-        extra={
-          <div className={'cursor-pointer rounded bg-antd-blue px-5 py-1 text-white'} onClick={refreshDetail}>
-            刷新
-          </div>
-        }
-      >
+      <Space direction={'vertical'} size={'large'}>
+        <Breadcrumb items={breadcrumbItems} />
         <Descriptions title="工程基本信息">
-          <Descriptions.Item label="项目编号">{currentItem?.proj_no || ''}</Descriptions.Item>
-          <Descriptions.Item label="数据等级">{currentItem?.data_level || ''}</Descriptions.Item>
-          <Descriptions.Item label="项目分类">{currentItem?.proj_type || ''}</Descriptions.Item>
-          <Descriptions.Item label="总面积(平方米)">{currentItem?.total_area || ''}</Descriptions.Item>
+          <Descriptions.Item label="项目编号">{detail?.proj_no || ''}</Descriptions.Item>
+          <Descriptions.Item label="数据等级">{detail?.data_level || ''}</Descriptions.Item>
+          <Descriptions.Item label="项目分类">{detail?.proj_type || ''}</Descriptions.Item>
+          <Descriptions.Item label="总面积(平方米)">{detail?.total_area || ''}</Descriptions.Item>
           <Descriptions.Item label="项目地址">{detail?.address || ''}</Descriptions.Item>
           <Descriptions.Item label="项目区划">{detail?.region || ''}</Descriptions.Item>
           <Descriptions.Item label="建设规模">{detail?.scale_desc || ''}</Descriptions.Item>
@@ -295,7 +176,7 @@ export default function Page() {
         <div className={'text-base font-medium my-4'}>结论：{baseResultText}</div>
         <Divider />
         <div className={'text-base font-semibold my-5'}>工程单体信息</div>
-        <Table pagination={false} dataSource={unitDataSource} columns={unitColumns} />
+        <Table loading={loading} pagination={false} dataSource={unitDataSource} columns={unitColumns} />
         <Divider />
         <Descriptions title="招投标信息">
           {detail?.winning_bidder?.map((item) => {
@@ -362,20 +243,7 @@ export default function Page() {
         </Descriptions>
         <div className={'text-base font-medium my-4'}>结论：{afText}</div>
         <Divider />
-        {/*<Descriptions title="竣工验收">*/}
-        {/*  <Descriptions.Item label="竣工验收编号">{detail?.completion_acceptances?.[0]?.id || ''}</Descriptions.Item>*/}
-        {/*  <Descriptions.Item label="数据等级">{detail?.completion_acceptances?.[0]?.data_level || ''}</Descriptions.Item>*/}
-        {/*  <Descriptions.Item label="实际开工日期">*/}
-        {/*    {detail?.completion_acceptances?.[0]?.proj_start_date ? dayjs(detail?.completion_acceptances?.[0]?.proj_start_date).format('YYYY-MM-DD') : ''}*/}
-        {/*  </Descriptions.Item>*/}
-        {/*  <Descriptions.Item label="竣工验收日期">{detail?.completion_acceptances?.[0]?.ca_date ? dayjs(detail?.completion_acceptances?.[0]?.ca_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>*/}
-        {/*  <Descriptions.Item label="实际面积(平方米)">{detail?.completion_acceptances?.[0]?.actual_area || ''}</Descriptions.Item>*/}
-        {/*  <Descriptions.Item label="实际造价(万)">{detail?.completion_acceptances?.[0]?.actual_cost || ''}</Descriptions.Item>*/}
-        {/*  <Descriptions.Item label="施工许可证编号">{detail?.completion_acceptances?.[0]?.cp_no || ''}</Descriptions.Item>*/}
-        {/*</Descriptions>*/}
-        {/*<div className={'text-base font-medium my-4'}>结论：{baseResultText}</div>*/}
-        {/*<Divider />*/}
-      </Drawer>
+      </Space>
     </>
   );
 }

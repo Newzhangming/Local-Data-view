@@ -5,7 +5,7 @@ export type TaskReq = PageReq;
 export interface TaskDto {
   id: string;
 
-  name: string;
+  proj_no?: string;
 
   proj_name: string;
 
@@ -21,7 +21,7 @@ export interface TaskDto {
 
   status: string;
 
-  rpa_account: string;
+  rpa_account?: string;
 
   sort: number;
 
