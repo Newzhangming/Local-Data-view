@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { useParams } from 'next/navigation';
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 
+import { locale } from '@/components/table-props';
 import { ProjectDetailDto } from '@/constants/project';
 import { getProject } from '@/services/project';
 
@@ -62,7 +63,7 @@ export default function ManagerView() {
       title: (
         <>
           <EyeTwoTone />
-          <span>查看</span>
+          <span>{detail?.proj_name || '查看'}</span>
         </>
       ),
     },
@@ -176,7 +177,7 @@ export default function ManagerView() {
         <div className={'text-base font-medium my-4'}>结论：{baseResultText}</div>
         <Divider />
         <div className={'text-base font-semibold my-5'}>工程单体信息</div>
-        <Table loading={loading} pagination={false} dataSource={unitDataSource} columns={unitColumns} />
+        <Table loading={loading} locale={locale} pagination={false} dataSource={unitDataSource} columns={unitColumns} />
         <Divider />
         <Descriptions title="招投标信息">
           {detail?.winning_bidder?.map((item) => {

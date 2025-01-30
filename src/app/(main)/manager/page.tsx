@@ -1,12 +1,13 @@
 'use client';
 
 import { EditTwoTone, EyeTwoTone } from '@ant-design/icons';
-import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Divider, message, theme } from 'antd';
-import React, { ReactNode, useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
+import { locale, pagination, search } from '@/components/table-props';
 import { ManagerReq } from '@/constants/dto';
 import { ManagerDto } from '@/constants/manager';
 import { queryManagers } from '@/services/manager';
@@ -112,25 +113,20 @@ export default function Page() {
     });
   }, []);
 
-  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
-    const [reset, query] = dom;
-    return [query, reset];
-  };
-
   return (
     <>
       {contextHolder}
       <ProTable<ManagerDto>
         columns={columns}
         actionRef={actionRef}
+        locale={locale}
         request={getRequestData}
         rowKey="name"
-        search={{ labelWidth: 'auto', span: 4, optionRender: searchOptionRender }}
+        search={search}
         toolBarRender={undefined}
         options={false}
         pagination={{
-          pageSizeOptions: [10, 15, 20, 25, 30],
-          showQuickJumper: true,
+          ...pagination,
           pageSize: pageInfo.pageSize,
           onShowSizeChange: (_, pageSize) => {
             setPageInfo({ pageSize, current: 1 });

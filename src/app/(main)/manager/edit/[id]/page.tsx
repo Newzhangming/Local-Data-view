@@ -12,11 +12,9 @@ import { queryManager, updateManager } from '@/services/manager';
 
 export default function ManagerEdit() {
   const [messageApi, contextHolder] = message.useMessage();
-  const params = useParams();
+  const params: Partial<IdReq> = useParams();
 
-  const getRequestData = useCallback(async (params: IdReq) => {
-    return queryManager(params).then((res) => res.data);
-  }, []);
+  const getRequestData = (params: IdReq) => useCallback(async () => queryManager(params).then((res) => res.data), []);
 
   const onFinish = useCallback(async (fromData: ManagerDto) => {
     const input = { ...params, ...fromData };
@@ -62,7 +60,7 @@ export default function ManagerEdit() {
       {contextHolder}
       <Space direction={'vertical'} size={'large'}>
         <Breadcrumb items={breadcrumbItems} />
-        <ProForm submitter={{ searchConfig: { submitText: '保存' } }} onFinish={onFinish} params={params} request={() => getRequestData({ id: params.id as string })}>
+        <ProForm submitter={{ searchConfig: { submitText: '保存' } }} onFinish={onFinish} params={params} request={getRequestData(params as IdReq)}>
           <ProForm.Group>
             <ProFormText width="sm" name="name" label="经理姓名" rules={[{ required: true, message: '请输入正确的姓名', min: 2, max: 24 }]} placeholder="请输入姓名" />
             <ProFormText width="sm" name="id_card" label="身份证" rules={[{ required: true, message: '请输入正确的身份证', len: 18 }]} placeholder="请输入身份证" />

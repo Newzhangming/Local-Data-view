@@ -6,6 +6,7 @@ import { message } from 'antd';
 import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
+import { locale, pagination } from '@/components/table-props';
 import { RoomBaseDto, RoomsReq } from '@/constants/dto';
 import { getRooms } from '@/services/room';
 import { getStorage, setStorage } from '@/utils/storage';
@@ -68,12 +69,12 @@ export default function Page() {
         actionRef={actionRef}
         request={getRequestData}
         rowKey="id"
+        locale={locale}
         search={false}
         toolBarRender={undefined}
         options={false}
         pagination={{
-          pageSizeOptions: [10, 15, 20, 25, 30],
-          showQuickJumper: true,
+          ...pagination,
           pageSize: pageInfo.pageSize,
           onShowSizeChange: (_, pageSize) => {
             setPageInfo({ pageSize, current: 1 });

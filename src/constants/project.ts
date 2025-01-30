@@ -24,6 +24,14 @@ export interface ProjectDetailDto {
   completion_acceptances: CompletionAcceptance[];
 }
 
+export interface ProjectReqDto {
+  proj_no: string;
+  proj_name: string;
+  data_level: string;
+  proj_type: string;
+  total_area: number;
+}
+
 export interface AcceptanceFiling {
   id: string;
   label: string;

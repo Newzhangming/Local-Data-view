@@ -59,6 +59,7 @@ export interface ManagerResp {
 export type ProjectReq = PageReq;
 
 export interface ProjectDto {
+  id: string;
   proj_no: string;
   proj_name: string;
   data_level: string;

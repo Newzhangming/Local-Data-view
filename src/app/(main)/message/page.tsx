@@ -1,11 +1,12 @@
 'use client';
 
-import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { message } from 'antd';
-import React, { ReactNode, useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
+import { locale, pagination, search } from '@/components/table-props';
 import { MessageBaseDto, MessagesReq, RoomBaseDto } from '@/constants/dto';
 import { getMessages } from '@/services/message';
 import { getRoomIdNames } from '@/services/room';
@@ -90,11 +91,6 @@ export default function Page() {
     });
   }, []);
 
-  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
-    const [reset, query] = dom;
-    return [query, reset];
-  };
-
   return (
     <>
       {contextHolder}
@@ -103,16 +99,12 @@ export default function Page() {
         actionRef={actionRef}
         request={getRequestData}
         rowKey="id"
-        search={{
-          labelWidth: 'auto',
-          span: 4,
-          optionRender: searchOptionRender,
-        }}
+        locale={locale}
+        search={search}
         toolBarRender={undefined}
         options={false}
         pagination={{
-          pageSizeOptions: [10, 15, 20, 25, 30],
-          showQuickJumper: true,
+          ...pagination,
           pageSize: pageInfo.pageSize,
           onShowSizeChange: (_, pageSize) => {
             setPageInfo({ pageSize, current: 1 });

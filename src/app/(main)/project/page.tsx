@@ -1,22 +1,25 @@
 'use client';
 
-import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import type { ActionType, BaseQueryFilterProps, ProColumns } from '@ant-design/pro-components';
+import { EditTwoTone, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Descriptions, Divider, Drawer, message, Table, Tag } from 'antd';
+import { Descriptions, Divider, Drawer, message, Table, Tag, theme } from 'antd';
 import dayjs from 'dayjs';
 import { useRouter } from 'next/navigation';
-import React, { Fragment, ReactNode, useCallback, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
+import { locale, pagination, search } from '@/components/table-props';
 import { ProjectDto, ProjectReq } from '@/constants/dto';
 import { ProjectDetailDto } from '@/constants/project';
 import { getProject, getProjects } from '@/services/project';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
+  const { token } = theme.useToken();
   const [messageApi, contextHolder] = message.useMessage();
   const router = useRouter();
+
   const [open, setOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [currentItem, setCurrentItem] = useState<ProjectDto>();
@@ -112,13 +115,20 @@ export default function Page() {
       hideInSearch: true,
       align: 'center',
       render: (_, record) => {
-        const href = record.proj_no ? `./project/view/${record.proj_no}` : undefined;
+        const href = record.proj_no ? `./project/view/${record.id}` : undefined;
         const viewIcon = record.proj_no ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
         const linkClassName = record.proj_no ? 'text-blue-500' : 'text-gray-500 hover:text-gray-500';
         return (
-          <a className={linkClassName} href={href}>
-            查看{viewIcon}
-          </a>
+          <>
+            <a href={`./project/edit/${record.id}`}>
+              编辑
+              <EditTwoTone />
+            </a>
+            <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
+            <a className={linkClassName} href={href}>
+              查看{viewIcon}
+            </a>
+          </>
         );
       },
     },
@@ -152,11 +162,6 @@ export default function Page() {
       return { data: res.data, success: true, total: res.total };
     });
   }, []);
-
-  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
-    const [reset, query] = dom;
-    return [query, reset];
-  };
 
   const conclusion = [{ position: 'base', msg: '', value: true }];
   if (currentItem?.data_level !== 'A' && currentItem?.data_level !== 'B') {
@@ -247,17 +252,13 @@ export default function Page() {
         columns={columns}
         actionRef={actionRef}
         request={getRequestData}
-        rowKey="proj_no"
-        search={{
-          labelWidth: 'auto',
-          span: 4,
-          optionRender: searchOptionRender,
-        }}
+        rowKey="id"
+        locale={locale}
+        search={search}
         toolBarRender={undefined}
         options={false}
         pagination={{
-          pageSizeOptions: [10, 15, 20, 25, 30],
-          showQuickJumper: true,
+          ...pagination,
           pageSize: pageInfo.pageSize,
           onShowSizeChange: (_, pageSize) => {
             setPageInfo({ pageSize, current: 1 });
@@ -295,7 +296,7 @@ export default function Page() {
         <div className={'text-base font-medium my-4'}>结论：{baseResultText}</div>
         <Divider />
         <div className={'text-base font-semibold my-5'}>工程单体信息</div>
-        <Table pagination={false} dataSource={unitDataSource} columns={unitColumns} />
+        <Table locale={locale} pagination={false} dataSource={unitDataSource} columns={unitColumns} />
         <Divider />
         <Descriptions title="招投标信息">
           {detail?.winning_bidder?.map((item) => {

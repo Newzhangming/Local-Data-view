@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
+import { locale } from '@/components/table-props';
 import { Certificate, CompanyDto, ManagerDto } from '@/constants/company';
 import { queryCompany } from '@/services/company';
 
@@ -73,7 +74,7 @@ export default function CompanyEdit() {
       title: (
         <>
           <EyeTwoTone />
-          <span>查看</span>
+          <span>{detail?.name || '查看'}</span>
         </>
       ),
     },
@@ -90,9 +91,9 @@ export default function CompanyEdit() {
           <Descriptions.Item label="企业角色">{detail?.role_type || ''}</Descriptions.Item>
         </Descriptions>
         <Divider />
-        <Table rowKey={'cert_no'} loading={loading} dataSource={detail?.certificates} columns={certColumns} pagination={false} />
+        <Table rowKey={'cert_no'} locale={locale} loading={loading} dataSource={detail?.certificates} columns={certColumns} pagination={false} />
         <Divider />
-        <Table rowKey={'name'} loading={loading} dataSource={detail?.managers} columns={managerColumns} pagination={false} />
+        <Table rowKey={'name'} locale={locale} loading={loading} dataSource={detail?.managers} columns={managerColumns} pagination={false} />
       </Space>
     </>
   );

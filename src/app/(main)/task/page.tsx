@@ -13,11 +13,12 @@ import {
   SyncOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { ActionType, type BaseQueryFilterProps, ModalForm, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
+import { ActionType, ModalForm, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
 import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
-import React, { ReactNode, useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
+import { locale, pagination, search } from '@/components/table-props';
 import { TaskDto, TaskReq } from '@/constants/task';
 import { addTask, queryTasks, updateTask } from '@/services/task';
 import { MDHHmmss } from '@/utils/date';
@@ -190,11 +191,6 @@ export default function Page() {
     }
   }, []);
 
-  const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter' | 'isForm'>, props: Omit<BaseQueryFilterProps, 'searchConfig'>, dom: ReactNode[]) => {
-    const [reset, query] = dom;
-    return [query, reset];
-  };
-
   const props: UploadProps = {
     name: 'file',
     action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
@@ -263,12 +259,12 @@ export default function Page() {
         actionRef={actionRef}
         request={getRequestData}
         rowKey="id"
-        search={{ labelWidth: 'auto', span: 4, optionRender: searchOptionRender }}
+        locale={locale}
+        search={search}
         toolbar={{ title: '任务列表', subTitle: '可以使用「排序」来调整采集任务的优先级' }}
         toolBarRender={toolBarRender}
         pagination={{
-          pageSizeOptions: [10, 15, 20, 25, 30],
-          showQuickJumper: true,
+          ...pagination,
           pageSize: pageInfo.pageSize,
           onShowSizeChange: (_, pageSize) => {
             setPageInfo({ pageSize, current: 1 });

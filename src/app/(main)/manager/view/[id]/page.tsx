@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
+import { locale } from '@/components/table-props';
 import { Experience, ManagerDto } from '@/constants/manager';
 import { queryManager } from '@/services/manager';
 
@@ -65,7 +66,7 @@ export default function ManagerView() {
       title: (
         <>
           <EyeTwoTone />
-          <span>查看</span>
+          <span>{detail?.name || '查看'}</span>
         </>
       ),
     },
@@ -86,7 +87,7 @@ export default function ManagerView() {
           <Descriptions.Item label="注册编号">{detail?.lending_no || ''}</Descriptions.Item>
         </Descriptions>
         <Divider />
-        <Table rowKey={'desc'} loading={loading} dataSource={detail?.experiences} columns={columns} pagination={false} />
+        <Table rowKey={'desc'} locale={locale} loading={loading} dataSource={detail?.experiences} columns={columns} pagination={false} />
       </Space>
     </>
   );
