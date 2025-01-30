@@ -16,6 +16,7 @@ export const getProjects = (input: ProjectReq): Promise<BaseResp<ProjectDto[]>> 
   return httpService.get<BaseResp<ProjectDto[]>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
 };
 
+// 用于 task 跳转
 export const getProject = (projNo: string): Promise<BaseResp<ProjectDetailDto>> => {
   const url = `/v1/project?proj_no=${projNo}`;
   return httpService.get<BaseResp<ProjectDetailDto>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
@@ -27,6 +28,7 @@ export const queryProject = (input: IdReq): Promise<BaseResp<ProjectDetailDto>> 
   return httpService.get<BaseResp<ProjectDetailDto>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
 };
 
+// 因为用于RPA，所以没有加Authorization认证
 export const upsertProject = (input: IdReq & ProjectReqDto): Promise<BaseResp<ProjectDto>> => {
   const url = `/v1/project/upsert`;
   return httpService.post<BaseResp<ProjectDto>>(url, input, { headers });

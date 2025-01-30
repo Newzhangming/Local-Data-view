@@ -4,15 +4,16 @@ import { BuildOutlined, EyeTwoTone, HomeOutlined } from '@ant-design/icons';
 import { Breadcrumb, Descriptions, Divider, message, Space, Table } from 'antd';
 import dayjs from 'dayjs';
 import { useParams } from 'next/navigation';
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 
 import { locale } from '@/components/table-props';
+import { IdReq } from '@/constants/dto';
 import { ProjectDetailDto } from '@/constants/project';
 import { getProject } from '@/services/project';
 
 export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
-  const params = useParams();
+  const params: Partial<IdReq> = useParams();
   const [loading, setLoading] = useState<boolean>(true);
   const [detail, setDetail] = useState<ProjectDetailDto>();
 
@@ -35,10 +36,6 @@ export default function ManagerView() {
         setLoading(false);
       });
   };
-
-  const refreshDetail = useCallback(() => {
-    getDetailData();
-  }, []);
 
   const breadcrumbItems = [
     {
