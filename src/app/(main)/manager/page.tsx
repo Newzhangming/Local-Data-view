@@ -4,6 +4,7 @@ import { EditTwoTone, EyeTwoTone } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Divider, message, theme } from 'antd';
+import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -14,6 +15,7 @@ import { queryManagers } from '@/services/manager';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
+  const router = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const columns: ProColumns<ManagerDto>[] = [
@@ -105,7 +107,11 @@ export default function Page() {
   const getRequestData = useCallback(async (params: ManagerReq) => {
     const input = { ...params, from: 'list' };
     return queryManagers(input).then((res) => {
-      if (res.msg !== 'success') {
+      if (res.msg === '鉴权码缺失') {
+        messageApi.error(res.msg).then(() => {
+          router.replace('/auth', { scroll: false });
+        });
+      } else if (res.msg !== 'success') {
         messageApi.error(res.msg);
         return { data: [], success: false, total: 0 };
       }

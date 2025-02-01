@@ -15,6 +15,7 @@ import {
 } from '@ant-design/icons';
 import { ActionType, ModalForm, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
 import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
+import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
@@ -25,6 +26,7 @@ import { MDHHmmss } from '@/utils/date';
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
+  const router = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
 
@@ -173,7 +175,11 @@ export default function Page() {
     const input = { ...params, from: 'list' };
     return queryTasks(input).then((res) => {
       setLoading(false);
-      if (res.msg !== 'success') {
+      if (res.msg === '鉴权码缺失') {
+        messageApi.error(res.msg).then(() => {
+          router.replace('/auth', { scroll: false });
+        });
+      } else if (res.msg !== 'success') {
         messageApi.error(res.msg);
         return { data: [], success: false, total: 0 };
       }
