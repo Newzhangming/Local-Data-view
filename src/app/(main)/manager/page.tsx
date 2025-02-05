@@ -87,12 +87,12 @@ export default function Page() {
       align: 'center',
       render: (_, record) => (
         <>
-          <a href={`./manager/edit/${record.id}`}>
+          <a href={`/manager/edit/${record.id}`}>
             编辑
             <EditTwoTone />
           </a>
           <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
-          <a href={`./manager/view/${record.id}`}>
+          <a href={`/manager/view/${record.id}`}>
             查看
             <EyeTwoTone />
           </a>

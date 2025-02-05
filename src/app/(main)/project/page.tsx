@@ -115,12 +115,12 @@ export default function Page() {
       hideInSearch: true,
       align: 'center',
       render: (_, record) => {
-        const href = record.proj_no ? `./project/view/${record.proj_no}` : undefined;
+        const href = record.proj_no ? `/project/view/${record.proj_no}` : undefined;
         const viewIcon = record.proj_no ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
         const linkClassName = record.proj_no ? 'text-blue-500' : 'text-gray-500 hover:text-gray-500';
         return (
           <>
-            <a href={`./project/edit/${record.id}`}>
+            <a href={`/project/edit/${record.id}`}>
               编辑
               <EditTwoTone />
             </a>
@@ -308,10 +308,10 @@ export default function Page() {
                 <Descriptions.Item label="招标类型">{item?.tender_type || ''}</Descriptions.Item>
                 <Descriptions.Item label="中标金额(万)">{item?.wb_amount || ''}</Descriptions.Item>
                 <Descriptions.Item label="中标单位">
-                  <a href={`./company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                  <a href={`/company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <a href={`./manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                  <a href={`/manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
               </Fragment>
@@ -325,7 +325,7 @@ export default function Page() {
           <Descriptions.Item label="数据等级">{detail?.contract?.data_level || ''}</Descriptions.Item>
           <Descriptions.Item label="合同签订日期">{detail?.contract?.sign_date ? dayjs(detail?.contract?.sign_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
           <Descriptions.Item label="承包单位">
-            <a href={`./company/view/${detail?.contract?.company?.id}`}>{detail?.contract?.company?.name || ''}</a>
+            <a href={`/company/view/${detail?.contract?.company?.id}`}>{detail?.contract?.company?.name || ''}</a>
           </Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium my-4'}>结论：{wbContractText}</div>
@@ -338,10 +338,10 @@ export default function Page() {
                 <Descriptions.Item label="数据等级">{item?.data_level || ''}</Descriptions.Item>
                 <Descriptions.Item label="发证日期">{item?.cp_date ? dayjs(item?.cp_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
                 <Descriptions.Item label="所属单位">
-                  <a href={`./company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                  <a href={`/company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <a href={`./manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                  <a href={`/manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
               </Fragment>

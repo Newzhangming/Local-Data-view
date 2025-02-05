@@ -68,12 +68,13 @@ export default function ManagerView() {
 
   const unitColumns = [
     { title: '单体建（构）筑物名称', dataIndex: 'unit_name', key: 'unit_name' },
-    { title: '工程总造价(万元)', dataIndex: 'unit_cost', key: 'unit_cost' },
+    { title: '工程单体造价(万元)', dataIndex: 'unit_cost', key: 'unit_cost' },
     { title: '建筑面积(平方米)', dataIndex: 'unit_area', key: 'unit_area' },
   ];
-  const unitDataSource = detail?.proj_units?.map((item, index) => {
-    return { key: `${index}`, ...item };
-  });
+
+  const unitDataSource = detail?.proj_units?.map((item, index) => ({ key: `unit_${index}`, ...item }));
+  const unitCostTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_cost || 0), 0).toFixed(2) || '0');
+  const unitAreaTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_area || 0), 0).toFixed(2) || '0');
 
   const conclusion = [{ position: 'base', msg: '', value: true }];
   if (detail?.data_level !== 'A' && detail?.data_level !== 'B') {
@@ -146,9 +147,21 @@ export default function ManagerView() {
   if (!detail?.acceptance_filings?.[0]?.af_date) {
     conclusion.push({ position: 'af', msg: '竣工验收备案可日期不达标', value: false });
   }
-  if ((detail?.acceptance_filings?.[0]?.actual_area || 0) < 60000) {
+  const actual_area = detail?.acceptance_filings?.[0]?.actual_area || 0;
+  if (actual_area < 60000) {
     conclusion.push({ position: 'af', msg: '竣工验收备案实际面积小于6万平米', value: false });
   }
+  const absolute_area = Math.abs(actual_area - unitAreaTotal).toFixed(2);
+  if (actual_area && unitAreaTotal && +absolute_area > 5000) {
+    conclusion.push({ position: 'af', msg: `竣工验收备案实际面积与单体信息面积总计相差${absolute_area}平米`, value: false });
+  }
+
+  const actual_cost = detail?.acceptance_filings?.[0]?.actual_cost || 0;
+  const absolute_cost = Math.abs(actual_cost - unitCostTotal).toFixed(2);
+  if (actual_cost && unitCostTotal && +absolute_cost > 50) {
+    conclusion.push({ position: 'af', msg: `竣工验收备案实际造价与单体信息造价总计相差${absolute_cost}万`, value: false });
+  }
+
   let afText = conclusion
     .filter((item) => !item.value && item.position === 'af')
     .map((item) => item.msg)
@@ -163,7 +176,11 @@ export default function ManagerView() {
       <Space direction={'vertical'} size={'large'}>
         <Breadcrumb items={breadcrumbItems} />
         <Descriptions title="工程基本信息">
-          <Descriptions.Item label="项目编号">{detail?.proj_no || ''}</Descriptions.Item>
+          <Descriptions.Item label="项目编号">
+            <a href={`https://jzsc.mohurd.gov.cn/data/project?complexname=${detail?.proj_no}`} target={'_blank'} title={'跳转至四库一平台'}>
+              {detail?.proj_no || ''}
+            </a>
+          </Descriptions.Item>
           <Descriptions.Item label="数据等级">{detail?.data_level || ''}</Descriptions.Item>
           <Descriptions.Item label="项目分类">{detail?.proj_type || ''}</Descriptions.Item>
           <Descriptions.Item label="总面积(平方米)">{detail?.total_area || ''}</Descriptions.Item>
@@ -171,10 +188,19 @@ export default function ManagerView() {
           <Descriptions.Item label="项目区划">{detail?.region || ''}</Descriptions.Item>
           <Descriptions.Item label="建设规模">{detail?.scale_desc || ''}</Descriptions.Item>
         </Descriptions>
-        <div className={'text-base font-medium my-4'}>结论：{baseResultText}</div>
+        <div className={'text-base font-medium'}>结论：{baseResultText}</div>
         <Divider />
-        <div className={'text-base font-semibold my-5'}>工程单体信息</div>
-        <Table loading={loading} locale={locale} pagination={false} dataSource={unitDataSource} columns={unitColumns} />
+        <div className={'text-base font-semibold'}>工程单体信息</div>
+        <Table
+          loading={loading}
+          locale={locale}
+          pagination={false}
+          dataSource={unitDataSource}
+          columns={unitColumns}
+          footer={() => {
+            return <footer className={'flex justify-start font-bold'}>{`工程总造价(万元)：${unitCostTotal}，工程总面积(平米)：${unitAreaTotal}`}</footer>;
+          }}
+        />
         <Divider />
         <Descriptions title="招投标信息">
           {detail?.winning_bidder?.map((item) => {
@@ -186,27 +212,27 @@ export default function ManagerView() {
                 <Descriptions.Item label="招标类型">{item?.tender_type || ''}</Descriptions.Item>
                 <Descriptions.Item label="中标金额(万)">{item?.wb_amount || ''}</Descriptions.Item>
                 <Descriptions.Item label="中标单位">
-                  <a href={`./company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                  <a href={`/company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <a href={`./manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                  <a href={`/manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
               </Fragment>
             );
           })}
         </Descriptions>
-        <div className={'text-base font-medium my-4'}>结论：{wbResultText}</div>
+        <div className={'text-base font-medium'}>结论：{wbResultText}</div>
         <Divider />
         <Descriptions title="合同登记信息">
           <Descriptions.Item label="合同编号">{detail?.contract?.cont_no || ''}</Descriptions.Item>
           <Descriptions.Item label="数据等级">{detail?.contract?.data_level || ''}</Descriptions.Item>
           <Descriptions.Item label="合同签订日期">{detail?.contract?.sign_date ? dayjs(detail?.contract?.sign_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
           <Descriptions.Item label="承包单位">
-            <a href={`./company/view/${detail?.contract?.company?.id}`}>{detail?.contract?.company?.name || ''}</a>
+            <a href={`/company/view/${detail?.contract?.company?.id}`}>{detail?.contract?.company?.name || ''}</a>
           </Descriptions.Item>
         </Descriptions>
-        <div className={'text-base font-medium my-4'}>结论：{wbContractText}</div>
+        <div className={'text-base font-medium'}>结论：{wbContractText}</div>
         <Divider />
         <Descriptions title="施工许可">
           {detail?.construction_permits?.map((item) => {
@@ -216,17 +242,17 @@ export default function ManagerView() {
                 <Descriptions.Item label="数据等级">{item?.data_level || ''}</Descriptions.Item>
                 <Descriptions.Item label="发证日期">{item?.cp_date ? dayjs(item?.cp_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
                 <Descriptions.Item label="所属单位">
-                  <a href={`./company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                  <a href={`/company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <a href={`./manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                  <a href={`/manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
                 </Descriptions.Item>
                 <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
               </Fragment>
             );
           })}
         </Descriptions>
-        <div className={'text-base font-medium my-4'}>结论：{wbPermitText}</div>
+        <div className={'text-base font-medium'}>结论：{wbPermitText}</div>
         <Divider />
         <Descriptions title="竣工验收备案">
           <Descriptions.Item label="竣工验收备案编号">{detail?.acceptance_filings?.[0]?.af_no || ''}</Descriptions.Item>
@@ -235,11 +261,11 @@ export default function ManagerView() {
             {detail?.acceptance_filings?.[0]?.proj_start_date ? dayjs(detail?.acceptance_filings?.[0]?.proj_start_date).format('YYYY-MM-DD') : ''}
           </Descriptions.Item>
           <Descriptions.Item label="竣工验收备案日期">{detail?.acceptance_filings?.[0]?.af_date ? dayjs(detail?.acceptance_filings?.[0]?.af_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
-          <Descriptions.Item label="实际面积(平方米)">{detail?.acceptance_filings?.[0]?.actual_area || ''}</Descriptions.Item>
-          <Descriptions.Item label="实际造价(万)">{detail?.acceptance_filings?.[0]?.actual_cost || ''}</Descriptions.Item>
+          <Descriptions.Item label="实际面积(平方米)">{actual_area}</Descriptions.Item>
+          <Descriptions.Item label="实际造价(万)">{actual_cost}</Descriptions.Item>
           <Descriptions.Item label="施工许可证编号">{detail?.acceptance_filings?.[0]?.cp_no || ''}</Descriptions.Item>
         </Descriptions>
-        <div className={'text-base font-medium my-4'}>结论：{afText}</div>
+        <div className={'text-base font-medium'}>结论：{afText}</div>
         <Divider />
       </Space>
     </>

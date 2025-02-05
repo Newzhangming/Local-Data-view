@@ -18,6 +18,7 @@ export interface ManagerDto {
   projects: Project[];
   experiences: Experience[];
   created_at: Date;
+  updated_at: Date;
 }
 
 export interface Experience {

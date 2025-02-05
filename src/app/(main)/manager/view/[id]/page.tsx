@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { locale } from '@/components/table-props';
 import { Experience, ManagerDto } from '@/constants/manager';
 import { queryManager } from '@/services/manager';
+import { year2Sec } from '@/utils/date';
 
 export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -78,13 +79,18 @@ export default function ManagerView() {
       <Space direction={'vertical'} size={'large'}>
         <Breadcrumb items={breadcrumbItems} />
         <Descriptions title="项目经理信息">
-          <Descriptions.Item label="经理姓名">{detail?.name || ''}</Descriptions.Item>
+          <Descriptions.Item label="经理姓名">
+            <a href={`https://jzsc.mohurd.gov.cn/data/person?complexname=${detail?.name}`} target={'_blank'} title={'跳转至四库一平台'}>
+              {detail?.name || ''}
+            </a>
+          </Descriptions.Item>
           <Descriptions.Item label="身份证">{detail?.id_card || ''}</Descriptions.Item>
           <Descriptions.Item label="性别">{detail?.gender || ''}</Descriptions.Item>
           <Descriptions.Item label="证书名称">{detail?.cert_name || ''}</Descriptions.Item>
           <Descriptions.Item label="证书状态">{detail?.cert_status || ''}</Descriptions.Item>
           <Descriptions.Item label="注册公司">{detail?.lending_to || ''}</Descriptions.Item>
           <Descriptions.Item label="注册编号">{detail?.lending_no || ''}</Descriptions.Item>
+          <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>
         </Descriptions>
         <Divider />
         <Table rowKey={'desc'} locale={locale} loading={loading} dataSource={detail?.experiences} columns={columns} pagination={false} />

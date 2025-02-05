@@ -82,12 +82,12 @@ export default function Page() {
       align: 'center',
       render: (_, record) => (
         <>
-          <a href={`./company/edit/${record.id}`}>
+          <a href={`/company/edit/${record.id}`}>
             编辑
             <EditTwoTone />
           </a>
           <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
-          <a href={`./company/view/${record.id}`}>
+          <a href={`/company/view/${record.id}`}>
             查看
             <EyeTwoTone />
           </a>

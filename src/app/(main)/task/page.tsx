@@ -149,7 +149,7 @@ export default function Page() {
       minWidth: 120,
       align: 'center',
       render: (_, record) => {
-        const href = record.proj_no ? `./project/view/${record.proj_no}` : undefined;
+        const href = record.proj_no ? `/project/view/${record.proj_no}` : undefined;
         const viewIcon = record.proj_no ? <EyeTwoTone /> : <EyeInvisibleOutlined />;
         const linkClassName = record.proj_no ? 'text-blue-500' : 'text-gray-500 hover:text-gray-500';
         return (
