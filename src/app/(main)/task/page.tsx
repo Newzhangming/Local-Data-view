@@ -13,7 +13,7 @@ import {
   SyncOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { ActionType, ModalForm, ProColumns, ProFormText, ProTable } from '@ant-design/pro-components';
+import { ActionType, ModalForm, ProColumns, ProFormTextArea, ProTable } from '@ant-design/pro-components';
 import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
@@ -21,7 +21,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import Ellipsis from '@/components/ellipsis';
 import { locale, pagination, search } from '@/components/table-props';
 import { TaskDto, TaskReq } from '@/constants/task';
-import { addTask, queryTasks, updateTask } from '@/services/task';
+import { addTasks, queryTasks, updateTask } from '@/services/task';
 import { MDHHmmss } from '@/utils/date';
 import { getStorage, setStorage } from '@/utils/storage';
 
@@ -188,7 +188,11 @@ export default function Page() {
   }, []);
 
   const onAddTask = useCallback(async (params: { proj_name: string }) => {
-    const result = await addTask(params);
+    const rawNames = params.proj_name.split('\n');
+    const names = rawNames.map((name) => name.trim()).filter((name) => (name.length > 5 ? name : ''));
+    const uniqueNames = [...new Set(names)];
+
+    const result = await addTasks({ proj_name: uniqueNames });
     if (result?.msg === 'success') {
       messageApi.success('添加成功');
       actionRef.current?.reload();
@@ -229,7 +233,13 @@ export default function Page() {
         </Button>
       }
     >
-      <ProFormText rules={[{ required: true, message: '项目名长度3~70字符', min: 3, max: 70 }]} name="proj_name" label="项目名称" placeholder="请输入项目名称" />
+      <ProFormTextArea
+        rules={[{ required: true, message: '项目名称最少6个汉字', min: 6 }]}
+        name="proj_name"
+        label="项目名称"
+        placeholder={`项目名称1\n项目名称2\n项目名称3`}
+        fieldProps={{ autoSize: { minRows: 3 } }}
+      />
     </ModalForm>,
     <ModalForm
       layout={'horizontal'}

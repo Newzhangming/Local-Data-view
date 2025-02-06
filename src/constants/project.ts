@@ -9,7 +9,9 @@ export interface ProjectDetailDto {
   address: string;
   scale_desc: string;
   total_area: number;
-  created_at: Date;
+  updated_at: Date;
+  source_id: string;
+  manager: { id: string; name: string };
   contract: {
     sign_date: Date;
     data_level: string;

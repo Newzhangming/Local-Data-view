@@ -10,6 +10,7 @@ import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
 import { ProjectDetailDto } from '@/constants/project';
 import { getProject } from '@/services/project';
+import { year2Sec } from '@/utils/date';
 
 export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -170,6 +171,14 @@ export default function ManagerView() {
     afText = '竣工验收备案达标';
   }
 
+  const source_id = detail?.source_id ? (
+    <a href={`https://jzsc.mohurd.gov.cn/data/project/detail?id=${detail?.source_id}`} target={'_blank'} title={'跳转至四库一平台'}>
+      {detail?.source_id || ''}
+    </a>
+  ) : (
+    '暂无'
+  );
+
   return (
     <>
       {contextHolder}
@@ -183,9 +192,14 @@ export default function ManagerView() {
           </Descriptions.Item>
           <Descriptions.Item label="数据等级">{detail?.data_level || ''}</Descriptions.Item>
           <Descriptions.Item label="项目分类">{detail?.proj_type || ''}</Descriptions.Item>
-          <Descriptions.Item label="总面积(平方米)">{detail?.total_area || ''}</Descriptions.Item>
+          <Descriptions.Item label="四库地址">{source_id}</Descriptions.Item>
           <Descriptions.Item label="项目地址">{detail?.address || ''}</Descriptions.Item>
           <Descriptions.Item label="项目区划">{detail?.region || ''}</Descriptions.Item>
+          <Descriptions.Item label="项目经理">
+            <a href={`/manager/view/${detail?.manager?.id}`}>{detail?.manager?.name || ''}</a>
+          </Descriptions.Item>
+          <Descriptions.Item label="总面积(平方米)">{detail?.total_area || ''}</Descriptions.Item>
+          <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>
           <Descriptions.Item label="建设规模">{detail?.scale_desc || ''}</Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{baseResultText}</div>

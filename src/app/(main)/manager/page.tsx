@@ -34,6 +34,7 @@ export default function Page() {
       hideInSearch: true,
       copyable: false,
       ellipsis: false,
+      align: 'center',
     },
     {
       title: '身份证号',

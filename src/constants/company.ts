@@ -51,6 +51,7 @@ export interface ManagerDto {
 }
 
 interface ManagerItem {
+  id: string;
   name: string;
   id_card: string;
   cert_name: string;
