@@ -1,16 +1,16 @@
 'use client';
 
-import { BuildOutlined, EyeTwoTone, HomeOutlined } from '@ant-design/icons';
+import { BuildOutlined, HomeOutlined } from '@ant-design/icons';
 import { Breadcrumb, Descriptions, Divider, message, Space, Table } from 'antd';
-import dayjs from 'dayjs';
 import { useParams } from 'next/navigation';
 import React, { Fragment, useEffect, useState } from 'react';
 
+import Copyable from '@/components/copyable';
 import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
 import { ProjectDetailDto } from '@/constants/project';
 import { getProject } from '@/services/project';
-import { year2Sec } from '@/utils/date';
+import { year2Day, year2Sec } from '@/utils/date';
 
 export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -57,20 +57,14 @@ export default function ManagerView() {
         </>
       ),
     },
-    {
-      title: (
-        <>
-          <EyeTwoTone />
-          <span>{detail?.proj_name || '查看'}</span>
-        </>
-      ),
-    },
+    { title: <Copyable content={detail?.proj_name} /> },
   ];
 
   const unitColumns = [
     { title: '单体建（构）筑物名称', dataIndex: 'unit_name', key: 'unit_name' },
     { title: '工程单体造价(万元)', dataIndex: 'unit_cost', key: 'unit_cost' },
     { title: '建筑面积(平方米)', dataIndex: 'unit_area', key: 'unit_area' },
+    { title: '高度(米)', dataIndex: 'height', key: 'height' },
   ];
 
   const unitDataSource = detail?.proj_units?.map((item, index) => ({ key: `unit_${index}`, ...item }));
@@ -171,36 +165,40 @@ export default function ManagerView() {
     afText = '竣工验收备案达标';
   }
 
-  const source_id = detail?.source_id ? (
-    <a href={`https://jzsc.mohurd.gov.cn/data/project/detail?id=${detail?.source_id}`} target={'_blank'} title={'跳转至四库一平台'}>
-      {detail?.source_id || ''}
-    </a>
-  ) : (
-    '暂无'
-  );
-
   return (
     <>
       {contextHolder}
-      <Space direction={'vertical'} size={'large'}>
+      <Space direction={'vertical'} size={'small'}>
         <Breadcrumb items={breadcrumbItems} />
         <Descriptions title="工程基本信息">
           <Descriptions.Item label="项目编号">
-            <a href={`https://jzsc.mohurd.gov.cn/data/project?complexname=${detail?.proj_no}`} target={'_blank'} title={'跳转至四库一平台'}>
-              {detail?.proj_no || ''}
-            </a>
+            <Copyable content={detail?.proj_no} link={`https://jzsc.mohurd.gov.cn/data/project?complexname=${detail?.proj_no}`} target={'_blank'} />
           </Descriptions.Item>
-          <Descriptions.Item label="数据等级">{detail?.data_level || ''}</Descriptions.Item>
-          <Descriptions.Item label="项目分类">{detail?.proj_type || ''}</Descriptions.Item>
-          <Descriptions.Item label="四库地址">{source_id}</Descriptions.Item>
-          <Descriptions.Item label="项目地址">{detail?.address || ''}</Descriptions.Item>
-          <Descriptions.Item label="项目区划">{detail?.region || ''}</Descriptions.Item>
+          <Descriptions.Item label="数据等级">
+            <Copyable content={detail?.data_level} />
+          </Descriptions.Item>
+          <Descriptions.Item label="项目分类">
+            <Copyable content={detail?.proj_type} />
+          </Descriptions.Item>
+          <Descriptions.Item label="四库地址">
+            <Copyable content={detail?.source_id} link={`https://jzsc.mohurd.gov.cn/data/project/detail?id=${detail?.source_id}`} target={'_blank'} />
+          </Descriptions.Item>
+          <Descriptions.Item label="项目地址">
+            <Copyable content={detail?.address} />
+          </Descriptions.Item>
+          <Descriptions.Item label="项目区划">
+            <Copyable content={detail?.region} />
+          </Descriptions.Item>
           <Descriptions.Item label="项目经理">
-            <a href={`/manager/view/${detail?.manager?.id}`}>{detail?.manager?.name || ''}</a>
+            <Copyable content={detail?.manager?.name} link={`/manager/view/${detail?.manager?.id}`} />
           </Descriptions.Item>
-          <Descriptions.Item label="总面积(平方米)">{detail?.total_area || ''}</Descriptions.Item>
+          <Descriptions.Item label="总面积(平方米)">
+            <Copyable content={detail?.total_area} />
+          </Descriptions.Item>
           <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>
-          <Descriptions.Item label="建设规模">{detail?.scale_desc || ''}</Descriptions.Item>
+          <Descriptions.Item label="建设规模">
+            <Copyable content={detail?.scale_desc} />
+          </Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{baseResultText}</div>
         <Divider />
@@ -220,18 +218,28 @@ export default function ManagerView() {
           {detail?.winning_bidder?.map((item) => {
             return (
               <Fragment key={item?.wb_no}>
-                <Descriptions.Item label="中标通知书编号">{item?.wb_no || ''}</Descriptions.Item>
-                <Descriptions.Item label="数据等级">{item?.data_level || ''}</Descriptions.Item>
-                <Descriptions.Item label="中标日期">{item?.wb_date ? dayjs(item?.wb_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
+                <Descriptions.Item label="中标通知书编号">
+                  <Copyable content={item?.wb_no} />
+                </Descriptions.Item>
+                <Descriptions.Item label="数据等级">
+                  <Copyable content={item?.data_level} />
+                </Descriptions.Item>
+                <Descriptions.Item label="中标日期">
+                  <Copyable content={year2Day(item?.wb_date)} />
+                </Descriptions.Item>
                 <Descriptions.Item label="招标类型">{item?.tender_type || ''}</Descriptions.Item>
-                <Descriptions.Item label="中标金额(万)">{item?.wb_amount || ''}</Descriptions.Item>
+                <Descriptions.Item label="中标金额(万)">
+                  <Copyable content={item?.wb_amount} />
+                </Descriptions.Item>
                 <Descriptions.Item label="中标单位">
-                  <a href={`/company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                  <Copyable content={item?.company?.name} link={`/company/view/${item?.company?.id}`} />
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <a href={`/manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                  <Copyable content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} />
                 </Descriptions.Item>
-                <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
+                <Descriptions.Item label="身份证号码">
+                  <Copyable content={item?.manager?.id_card} />
+                </Descriptions.Item>
               </Fragment>
             );
           })}
@@ -239,11 +247,17 @@ export default function ManagerView() {
         <div className={'text-base font-medium'}>结论：{wbResultText}</div>
         <Divider />
         <Descriptions title="合同登记信息">
-          <Descriptions.Item label="合同编号">{detail?.contract?.cont_no || ''}</Descriptions.Item>
-          <Descriptions.Item label="数据等级">{detail?.contract?.data_level || ''}</Descriptions.Item>
-          <Descriptions.Item label="合同签订日期">{detail?.contract?.sign_date ? dayjs(detail?.contract?.sign_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
+          <Descriptions.Item label="合同编号">
+            <Copyable content={detail?.contract?.cont_no} />
+          </Descriptions.Item>
+          <Descriptions.Item label="数据等级">
+            <Copyable content={detail?.contract?.data_level} />
+          </Descriptions.Item>
+          <Descriptions.Item label="合同签订日期">
+            <Copyable content={year2Day(detail?.contract?.sign_date)} />
+          </Descriptions.Item>
           <Descriptions.Item label="承包单位">
-            <a href={`/company/view/${detail?.contract?.company?.id}`}>{detail?.contract?.company?.name || ''}</a>
+            <Copyable content={detail?.contract?.company?.name} link={`/company/view/${detail?.contract?.company?.id}`} />
           </Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{wbContractText}</div>
@@ -252,16 +266,30 @@ export default function ManagerView() {
           {detail?.construction_permits?.map((item) => {
             return (
               <Fragment key={item?.cp_no}>
-                <Descriptions.Item label="施工许可编号">{item?.cp_no || ''}</Descriptions.Item>
-                <Descriptions.Item label="数据等级">{item?.data_level || ''}</Descriptions.Item>
-                <Descriptions.Item label="发证日期">{item?.cp_date ? dayjs(item?.cp_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
+                <Descriptions.Item label="施工许可编号">
+                  <Copyable content={item?.cp_no} />
+                </Descriptions.Item>
+                <Descriptions.Item label="数据等级">
+                  <Copyable content={item?.data_level} />
+                </Descriptions.Item>
+                <Descriptions.Item label="发证日期">
+                  <Copyable content={year2Day(item?.cp_date)} />
+                </Descriptions.Item>
+                <Descriptions.Item label="面积（平方米）">
+                  <Copyable content={item?.cp_area} />
+                </Descriptions.Item>
+                <Descriptions.Item label="合同金额（万元）">
+                  <Copyable content={item?.cp_amount} />
+                </Descriptions.Item>
                 <Descriptions.Item label="所属单位">
-                  <a href={`/company/view/${item?.company?.id}`}>{item?.company?.name || ''}</a>
+                  <Copyable content={item?.company?.name} link={`/company/view/${item?.company?.id}`} />
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <a href={`/manager/view/${item?.manager?.id}`}>{item?.manager?.name || ''}</a>
+                  <Copyable content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} />
                 </Descriptions.Item>
-                <Descriptions.Item label="身份证号码">{item?.manager?.id_card || ''}</Descriptions.Item>
+                <Descriptions.Item label="身份证号码">
+                  <Copyable content={item?.manager?.id_card} />
+                </Descriptions.Item>
               </Fragment>
             );
           })}
@@ -269,15 +297,27 @@ export default function ManagerView() {
         <div className={'text-base font-medium'}>结论：{wbPermitText}</div>
         <Divider />
         <Descriptions title="竣工验收备案">
-          <Descriptions.Item label="竣工验收备案编号">{detail?.acceptance_filings?.[0]?.af_no || ''}</Descriptions.Item>
-          <Descriptions.Item label="数据等级">{detail?.acceptance_filings?.[0]?.data_level || ''}</Descriptions.Item>
-          <Descriptions.Item label="实际开工日期">
-            {detail?.acceptance_filings?.[0]?.proj_start_date ? dayjs(detail?.acceptance_filings?.[0]?.proj_start_date).format('YYYY-MM-DD') : ''}
+          <Descriptions.Item label="竣工验收备案编号">
+            <Copyable content={detail?.acceptance_filings?.[0]?.af_no} />
           </Descriptions.Item>
-          <Descriptions.Item label="竣工验收备案日期">{detail?.acceptance_filings?.[0]?.af_date ? dayjs(detail?.acceptance_filings?.[0]?.af_date).format('YYYY-MM-DD') : ''}</Descriptions.Item>
-          <Descriptions.Item label="实际面积(平方米)">{actual_area}</Descriptions.Item>
-          <Descriptions.Item label="实际造价(万)">{actual_cost}</Descriptions.Item>
-          <Descriptions.Item label="施工许可证编号">{detail?.acceptance_filings?.[0]?.cp_no || ''}</Descriptions.Item>
+          <Descriptions.Item label="数据等级">
+            <Copyable content={detail?.acceptance_filings?.[0]?.data_level} />
+          </Descriptions.Item>
+          <Descriptions.Item label="实际开工日期">
+            <Copyable content={year2Day(detail?.acceptance_filings?.[0]?.proj_start_date)} />
+          </Descriptions.Item>
+          <Descriptions.Item label="竣工验收备案日期">
+            <Copyable content={year2Day(detail?.acceptance_filings?.[0]?.af_date)} />
+          </Descriptions.Item>
+          <Descriptions.Item label="实际面积(平方米)">
+            <Copyable content={actual_area} />
+          </Descriptions.Item>
+          <Descriptions.Item label="实际造价(万)">
+            <Copyable content={actual_cost} />
+          </Descriptions.Item>
+          <Descriptions.Item label="施工许可证编号">
+            <Copyable content={detail?.acceptance_filings?.[0]?.cp_no} />
+          </Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{afText}</div>
         <Divider />

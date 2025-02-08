@@ -30,10 +30,17 @@ export interface Experience {
 }
 
 interface Company {
+  id: string;
   name: string;
 }
 
-interface Project {
+export interface Project {
   id: string;
+  proj_no: string;
   proj_name: string;
+  region: string;
+  acceptance_filings: {
+    proj_start_date: Date;
+    af_date: Date;
+  }[];
 }

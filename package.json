@@ -1,6 +1,6 @@
 {
   "name": "cpm-admin",
-  "version": "0.1.47",
+  "version": "0.1.55",
   "description": "全国建筑人才AI分析管理系统",
   "private": true,
   "scripts": {
@@ -11,10 +11,10 @@
     "test": "test"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.6.0",
+    "@ant-design/icons": "^5.6.1",
     "@ant-design/nextjs-registry": "^1.0.2",
     "@ant-design/pro-components": "^2.8.4",
-    "antd": "^5.23.3",
+    "antd": "^5.23.4",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

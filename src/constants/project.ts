@@ -24,6 +24,9 @@ export interface ProjectDetailDto {
   construction_permits: ConstructionPermit[];
   acceptance_filings: AcceptanceFiling[];
   completion_acceptances: CompletionAcceptance[];
+
+  // UI 只能命名为 labels
+  labels?: ProjUnit[];
 }
 
 export interface ProjectReqDto {
@@ -107,11 +110,11 @@ export interface ConstructionPermit {
 }
 
 export interface ProjUnit {
-  label: string;
   unit_no: string;
   unit_name: string;
   unit_area: number;
   unit_cost: number;
+  height: number;
 }
 
 export interface WinningBidder {

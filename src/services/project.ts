@@ -33,3 +33,9 @@ export const upsertProject = (input: IdReq & ProjectReqDto): Promise<BaseResp<Pr
   const url = `/v1/project/upsert`;
   return httpService.post<BaseResp<ProjectDto>>(url, input, { headers: { ...headers, Authorization: getStorage('token') } });
 };
+// 因为用于RPA，所以没有加Authorization认证
+export const upsertUnit = (input: ProjectDetailDto): Promise<BaseResp<ProjectDto>> => {
+  const url = `/v1/project/unit/upsert`;
+  const data = { ...input, proj_units: input.labels };
+  return httpService.post<BaseResp<ProjectDto>>(url, data, { headers: { ...headers, Authorization: getStorage('token') } });
+};

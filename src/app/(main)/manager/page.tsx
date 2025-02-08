@@ -3,7 +3,7 @@
 import { EditTwoTone, EyeTwoTone } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
-import { Divider, message, theme } from 'antd';
+import { Divider, message, Tag, theme } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
@@ -20,7 +20,7 @@ export default function Page() {
   const { token } = theme.useToken();
   const columns: ProColumns<ManagerDto>[] = [
     {
-      title: '经理姓名',
+      title: '姓名',
       order: 10,
       dataIndex: 'name',
       hideInSearch: false,
@@ -44,6 +44,32 @@ export default function Page() {
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
+    },
+    {
+      title: '注册轨迹',
+      hideInSearch: true,
+      align: 'center',
+      renderText: (_, record: ManagerDto) => {
+        let color = 'default';
+        const len = record?.experiences?.length || 0;
+        if (len > 5) color = 'green';
+        else if (len > 3) color = 'orange';
+        else if (len > 0) color = 'magenta';
+        return <Tag color={color}>{len}</Tag>;
+      },
+    },
+    {
+      title: '个人业绩',
+      hideInSearch: true,
+      align: 'center',
+      renderText: (_, record: ManagerDto) => {
+        let color = 'default';
+        const len = record?.projects?.length || 0;
+        if (len > 5) color = 'green';
+        else if (len > 3) color = 'orange';
+        else if (len > 0) color = 'magenta';
+        return <Tag color={color}>{len}</Tag>;
+      },
     },
     {
       title: '证书名称',

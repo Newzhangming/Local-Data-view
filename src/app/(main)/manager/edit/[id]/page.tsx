@@ -62,7 +62,7 @@ export default function ManagerEdit() {
         <Breadcrumb items={breadcrumbItems} />
         <ProForm submitter={{ searchConfig: { submitText: '保存' } }} onFinish={onFinish} params={params} request={getRequestData(params as IdReq)}>
           <ProForm.Group>
-            <ProFormText width="sm" name="name" label="经理姓名" rules={[{ required: true, message: '请输入正确的姓名', min: 2, max: 24 }]} placeholder="请输入姓名" />
+            <ProFormText width="sm" name="name" label="姓名" rules={[{ required: true, message: '请输入正确的姓名', min: 2, max: 24 }]} placeholder="请输入姓名" />
             <ProFormText width="sm" name="id_card" label="身份证" rules={[{ required: true, message: '请输入正确的身份证', len: 18 }]} placeholder="请输入身份证" />
             <ProFormText name="cert_name" width="sm" label="证书名称" placeholder="请输入证书名称" />
             <ProFormRadio.Group label="证书状态" name="cert_status" radioType="radio" options={['有效', '注销']} />

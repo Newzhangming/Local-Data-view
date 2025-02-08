@@ -1,14 +1,14 @@
 'use client';
 
-import { BgColorsOutlined, EditTwoTone, HomeOutlined } from '@ant-design/icons';
-import { ProForm, ProFormDigit, ProFormInstance, ProFormRadio, ProFormText } from '@ant-design/pro-components';
+import { BgColorsOutlined, CopyOutlined, DeleteOutlined, EditTwoTone, HomeOutlined } from '@ant-design/icons';
+import { ProForm, ProFormDigit, ProFormGroup, ProFormInstance, ProFormList, ProFormRadio, ProFormText } from '@ant-design/pro-components';
 import { Breadcrumb, message, Space } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { IdReq } from '@/constants/dto';
-import { ProjectDetailDto } from '@/constants/project';
-import { queryProject, upsertProject } from '@/services/project';
+import { ProjectDetailDto, ProjUnit } from '@/constants/project';
+import { queryProject, upsertProject, upsertUnit } from '@/services/project';
 
 export default function ProjectEdit() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -16,19 +16,21 @@ export default function ProjectEdit() {
   const formRef = useRef<ProFormInstance>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [projUnits, setProjUnits] = useState<ProjUnit[]>([]);
 
   const getRequestData = (params: IdReq) =>
     useCallback(async () => {
       const result = await queryProject(params);
       setLoading(false);
+      setProjUnits(result.data?.proj_units || []);
       return result.data;
     }, []);
 
   const onFinish = useCallback(async (fromData: ProjectDetailDto) => {
     try {
+      console.log('fromData====', fromData);
       setLoading(true);
-      console.log('fromData------', fromData);
-      const result = await upsertProject(fromData);
+      const [result] = await Promise.all([upsertProject(fromData), upsertUnit(fromData)]);
       if (result.msg === 'success') {
         messageApi.success('保存成功', 3);
         setLoading(false);
@@ -74,6 +76,7 @@ export default function ProjectEdit() {
     [],
   );
 
+  // 'xs' | 'sm' | 'md' | 'xl' | 'lg';
   return (
     <>
       {contextHolder}
@@ -98,6 +101,48 @@ export default function ProjectEdit() {
             <ProFormText name="address" width="lg" label="项目地址" placeholder="请输入地址" />
             <ProFormText name="region" disabled label="项目区划" placeholder="请输入项目区划" />
           </ProForm.Group>
+          <ProForm.Group>
+            <ProFormText name={['manager', 'name']} width="xs" label="项目经理" placeholder="请输入项目经理" disabled />
+            <ProFormText
+              name={['source_id']}
+              rules={[
+                () => ({
+                  validator(_, value: string) {
+                    if (!value || (value.length >= 6 && value.length <= 10)) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('输入长度必须在7到10个字符之间'));
+                  },
+                }),
+              ]}
+              width="sm"
+              label="四库ID"
+              placeholder="请输入四库ID"
+              tooltip={'请确认后再填写'}
+            />
+            <ProFormText name={['scale_desc']} width="xl" label="建设规模" />
+          </ProForm.Group>
+          <ProFormList
+            name="labels"
+            label="单体信息"
+            initialValue={projUnits}
+            copyIconProps={{ Icon: CopyOutlined, tooltipText: '复制此项到末尾' }}
+            deleteIconProps={{ Icon: DeleteOutlined, tooltipText: '不需要这行了' }}
+          >
+            <ProFormGroup key="proj_units">
+              <ProFormText
+                name="unit_no"
+                label="单体编号"
+                width="sm"
+                rules={[{ required: true, message: '请输入单体编号', pattern: new RegExp('^\\d{16}-\\d{2,}$') }]}
+                placeholder={'4510022311020001-001'}
+              />
+              <ProFormText name="unit_name" label="单体建（构）筑物名称" placeholder={'单体建（构）筑物名称'} rules={[{ required: true, message: '单体名称长度2~50汉字', min: 2, max: 50 }]} />
+              <ProFormDigit name="unit_cost" label="造价(万元)" width="xs" placeholder={'造价'} fieldProps={{ precision: 2 }} />
+              <ProFormDigit name="unit_area" label="面积(平方米)" width="xs" placeholder={'面积'} fieldProps={{ precision: 2 }} />
+              <ProFormDigit name="height" label="高度(米)" width="xs" placeholder={'高度'} fieldProps={{ precision: 2 }} />
+            </ProFormGroup>
+          </ProFormList>
         </ProForm>
       </Space>
     </>

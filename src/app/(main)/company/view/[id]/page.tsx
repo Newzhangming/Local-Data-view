@@ -1,16 +1,15 @@
 'use client';
 
-import { BgColorsOutlined, EyeTwoTone, HomeOutlined } from '@ant-design/icons';
-import { Breadcrumb, Descriptions, Divider, message, Space, Table, type TableColumnsType, Typography } from 'antd';
-import dayjs from 'dayjs';
+import { BgColorsOutlined, HomeOutlined } from '@ant-design/icons';
+import { Breadcrumb, Descriptions, Divider, message, Space, Table, type TableColumnsType } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
+import Copyable from '@/components/copyable';
 import { locale } from '@/components/table-props';
 import { Certificate, CompanyDto, ManagerDto } from '@/constants/company';
 import { queryCompany } from '@/services/company';
-
-const { Paragraph } = Typography;
+import { year2Day } from '@/utils/date';
 
 export default function CompanyEdit() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -39,30 +38,22 @@ export default function CompanyEdit() {
   };
 
   const certColumns: TableColumnsType<Certificate> = [
-    { title: '资质类别', dataIndex: 'cert_type', render: (value: string) => <Paragraph copyable>{value || ''}</Paragraph> },
-    { title: '资质证书号', dataIndex: 'cert_no', render: (value: string) => <Paragraph copyable>{value || ''}</Paragraph> },
-    { title: '资质名称', dataIndex: 'cert_name', render: (value: string) => <Paragraph copyable>{value || ''}</Paragraph> },
-    { title: '发证日期', dataIndex: 'cert_date', render: (value: string) => (!value ? '' : dayjs(value).format('YYYY-MM-DD')) },
-    { title: '发证有效期', dataIndex: 'cert_expire', render: (value: string) => (!value ? '' : dayjs(value).format('YYYY-MM-DD')) },
-    { title: '发证机关', dataIndex: 'cert_office', render: (value: string) => <Paragraph copyable>{value || ''}</Paragraph> },
+    { title: '资质类别', dataIndex: 'cert_type', render: (value: string) => <Copyable content={value} /> },
+    { title: '资质证书号', dataIndex: 'cert_no', render: (value: string) => <Copyable content={value} /> },
+    { title: '资质名称', dataIndex: 'cert_name', render: (value: string) => <Copyable content={value} /> },
+    { title: '发证日期', dataIndex: 'cert_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
+    { title: '发证有效期', dataIndex: 'cert_expire', render: (value: string) => <Copyable content={year2Day(value)} /> },
+    { title: '发证机关', dataIndex: 'cert_office', render: (value: string) => <Copyable content={value} /> },
   ];
 
   const managerColumns: TableColumnsType<ManagerDto> = [
     {
-      title: '经理姓名',
+      title: '姓名',
       dataIndex: ['manager', 'name'],
-      render: (value: string, record: ManagerDto) => {
-        return (
-          <Paragraph copyable={{ text: value }}>
-            <a href={`/manager/view/${record.manager.id}`} target={'_blank'}>
-              {value}
-            </a>
-          </Paragraph>
-        );
-      },
+      render: (value: string, record: ManagerDto) => <Copyable content={value} link={`/manager/view/${record.manager.id}`} />,
     },
-    { title: '身份证', dataIndex: ['manager', 'id_card'], render: (value: string) => <Paragraph copyable>{value || ''}</Paragraph> },
-    { title: '执业证书', dataIndex: ['manager', 'cert_name'], render: (value: string) => <Paragraph copyable>{value || ''}</Paragraph> },
+    { title: '身份证', dataIndex: ['manager', 'id_card'], render: (value: string) => <Copyable content={value} /> },
+    { title: '执业证书', dataIndex: ['manager', 'cert_name'], render: (value: string) => <Copyable content={value} /> },
   ];
 
   const breadcrumbItems = [
@@ -84,14 +75,7 @@ export default function CompanyEdit() {
         </>
       ),
     },
-    {
-      title: (
-        <>
-          <EyeTwoTone />
-          <span>{detail?.name || '查看'}</span>
-        </>
-      ),
-    },
+    { title: <Copyable content={detail?.name} /> },
   ];
 
   return (
@@ -101,12 +85,14 @@ export default function CompanyEdit() {
         <Breadcrumb items={breadcrumbItems} />
         <Descriptions title="施工企业信息">
           <Descriptions.Item label="企业名">
-            <Paragraph copyable>{detail?.name || ''}</Paragraph>
+            <Copyable content={detail?.name} link={`https://jzsc.mohurd.gov.cn/data/company?complexname=${detail?.name}`} />
           </Descriptions.Item>
           <Descriptions.Item label="企业社会信用代码">
-            <Paragraph copyable>{detail?.social_credit_code || ''}</Paragraph>
+            <Copyable content={detail?.social_credit_code} />
           </Descriptions.Item>
-          <Descriptions.Item label="企业角色">{detail?.role_type || ''}</Descriptions.Item>
+          <Descriptions.Item label="企业角色">
+            <Copyable content={detail?.role_type} />
+          </Descriptions.Item>
         </Descriptions>
         <Divider />
         <Table rowKey={'cert_no'} locale={locale} loading={loading} dataSource={detail?.certificates} columns={certColumns} pagination={false} />
