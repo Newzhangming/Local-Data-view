@@ -97,13 +97,16 @@ export default function ManagerView() {
         <Breadcrumb items={breadcrumbItems} />
         <Descriptions title="项目经理信息">
           <Descriptions.Item label="姓名">
-            <Copyable content={detail?.name} link={`https://jzsc.mohurd.gov.cn/data/person?complexname=${detail?.name}`} target={'_blank'} />
+            <Copyable content={detail?.name} link={!detail?.source_id ? `https://jzsc.mohurd.gov.cn/data/person?complexname=${detail?.name}` : ''} target={'_blank'} />
           </Descriptions.Item>
           <Descriptions.Item label="身份证">
             <Copyable content={detail?.id_card} />
           </Descriptions.Item>
           <Descriptions.Item label="性别">
             <Copyable content={detail?.gender} />
+          </Descriptions.Item>
+          <Descriptions.Item label="四库地址">
+            <Copyable content={detail?.source_id} link={`https://jzsc.mohurd.gov.cn/data/person/detail?id=${detail?.source_id}`} target={'_blank'} />
           </Descriptions.Item>
           <Descriptions.Item label="证书名称">
             <Copyable content={detail?.cert_name} />

@@ -4,7 +4,7 @@ import { EditTwoTone, HomeOutlined, UsergroupAddOutlined } from '@ant-design/ico
 import { ProForm, ProFormRadio, ProFormText } from '@ant-design/pro-components';
 import { Breadcrumb, message, Space } from 'antd';
 import { useParams } from 'next/navigation';
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 
 import { IdReq } from '@/constants/dto';
 import { ManagerDto } from '@/constants/manager';
@@ -68,9 +68,35 @@ export default function ManagerEdit() {
             <ProFormRadio.Group label="证书状态" name="cert_status" radioType="radio" options={['有效', '注销']} />
           </ProForm.Group>
           <ProForm.Group>
-            <ProFormText width="md" name="lending_to" label="注册单位" rules={[{ required: true, message: '请输入正确的注册单位', min: 6, max: 54 }]} placeholder="请输入正确的注册单位" />
-            <ProFormText width="md" name="lending_no" label="注册编号" rules={[{ required: true, message: '请输入正确的注册编号', min: 10 }]} placeholder="请输入正确的注册编号" />
+            <ProFormText width="md" name="lending_to" label="注册单位" rules={[{ required: true, message: '请输入正确的注册单位', min: 6, max: 54 }]} placeholder="注册单位必须是6~40个汉字" />
+            <ProFormText
+              width="md"
+              name="lending_no"
+              label="注册编号"
+              tooltip={'如：鄂1422017201828198'}
+              rules={[{ required: true, message: '请输入正确的注册编号', min: 10, max: 80 }]}
+              placeholder="注册编号必须是10~20个汉字"
+            />
             <ProFormRadio.Group label="性别" name="gender" radioType="radio" options={['男', '女']} />
+          </ProForm.Group>
+          <ProForm.Group>
+            <ProFormText
+              name={['source_id']}
+              rules={[
+                () => ({
+                  validator(_, value: string) {
+                    if (!value || (value.length >= 15 && value.length <= 20)) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('输入长度必须在15到20个字符之间'));
+                  },
+                }),
+              ]}
+              width="sm"
+              label="四库ID"
+              placeholder="请输入四库ID"
+              tooltip={'请确认后再填写'}
+            />
           </ProForm.Group>
         </ProForm>
       </Space>

@@ -108,10 +108,10 @@ export default function ProjectEdit() {
               rules={[
                 () => ({
                   validator(_, value: string) {
-                    if (!value || (value.length >= 6 && value.length <= 10)) {
+                    if (!value || (value.length >= 5 && value.length <= 10)) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error('输入长度必须在7到10个字符之间'));
+                    return Promise.reject(new Error('输入长度必须在5到10个字符之间'));
                   },
                 }),
               ]}

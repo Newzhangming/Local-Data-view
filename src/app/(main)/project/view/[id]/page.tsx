@@ -18,9 +18,7 @@ export default function ManagerView() {
   const [loading, setLoading] = useState<boolean>(true);
   const [detail, setDetail] = useState<ProjectDetailDto>();
 
-  useEffect(() => {
-    getDetailData();
-  }, []);
+  useEffect(() => getDetailData(), []);
 
   const getDetailData = () => {
     setLoading(true);
@@ -106,10 +104,10 @@ export default function ManagerView() {
   }
 
   // 合同登记
-  if (detail?.contract?.data_level !== 'A' && detail?.contract?.data_level !== 'B') {
+  if (detail?.contracts?.[0]?.data_level !== 'A' && detail?.contracts?.[0]?.data_level !== 'B') {
     conclusion.push({ position: 'contract', msg: '合同登记数据等级不达标', value: false });
   }
-  if (!detail?.contract?.sign_date) {
+  if (!detail?.contracts?.[0]?.sign_date) {
     conclusion.push({ position: 'contract', msg: '合同登记日期不达标', value: false });
   }
   let wbContractText = conclusion
@@ -172,7 +170,7 @@ export default function ManagerView() {
         <Breadcrumb items={breadcrumbItems} />
         <Descriptions title="工程基本信息">
           <Descriptions.Item label="项目编号">
-            <Copyable content={detail?.proj_no} link={`https://jzsc.mohurd.gov.cn/data/project?complexname=${detail?.proj_no}`} target={'_blank'} />
+            <Copyable content={detail?.proj_no} link={!detail?.source_id ? `https://jzsc.mohurd.gov.cn/data/project?complexname=${detail?.proj_no}` : ''} target={'_blank'} />
           </Descriptions.Item>
           <Descriptions.Item label="数据等级">
             <Copyable content={detail?.data_level} />
@@ -248,16 +246,16 @@ export default function ManagerView() {
         <Divider />
         <Descriptions title="合同登记信息">
           <Descriptions.Item label="合同编号">
-            <Copyable content={detail?.contract?.cont_no} />
+            <Copyable content={detail?.contracts?.[0]?.cont_no} />
           </Descriptions.Item>
           <Descriptions.Item label="数据等级">
-            <Copyable content={detail?.contract?.data_level} />
+            <Copyable content={detail?.contracts?.[0]?.data_level} />
           </Descriptions.Item>
           <Descriptions.Item label="合同签订日期">
-            <Copyable content={year2Day(detail?.contract?.sign_date)} />
+            <Copyable content={year2Day(detail?.contracts?.[0]?.sign_date)} />
           </Descriptions.Item>
           <Descriptions.Item label="承包单位">
-            <Copyable content={detail?.contract?.company?.name} link={`/company/view/${detail?.contract?.company?.id}`} />
+            <Copyable content={detail?.contracts?.[0]?.company?.name} link={`/company/view/${detail?.contracts?.[0]?.company?.id}`} />
           </Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{wbContractText}</div>

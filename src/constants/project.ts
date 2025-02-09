@@ -12,12 +12,8 @@ export interface ProjectDetailDto {
   updated_at: Date;
   source_id: string;
   manager: { id: string; name: string };
-  contract: {
-    sign_date: Date;
-    data_level: string;
-    cont_no: string;
-    company: { id: true; name: string };
-  };
+  contract: ProjContract;
+  contracts: ProjContract[];
   proj_units: ProjUnit[];
   companies: AcceptanceFilingCompany[];
   winning_bidder: WinningBidder[];
@@ -107,6 +103,13 @@ export interface ConstructionPermit {
   cp_area: number;
   company: CompanyCompany;
   manager: ManagerManager;
+}
+
+export interface ProjContract {
+  sign_date: Date;
+  data_level: string;
+  cont_no: string;
+  company: { id: true; name: string };
 }
 
 export interface ProjUnit {
