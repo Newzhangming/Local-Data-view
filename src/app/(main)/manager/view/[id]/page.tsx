@@ -55,7 +55,7 @@ export default function ManagerView() {
     },
     { title: '项目属地', dataIndex: 'region', render: (value: string) => <Copyable content={value} /> },
     {
-      title: '项目编码',
+      title: '项目编号',
       render: (_, record: Project) => <Copyable content={record.proj_no} link={`/project/view/${record.proj_no}`} target={'_blank'} />,
     },
     {

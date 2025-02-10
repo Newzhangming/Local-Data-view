@@ -245,18 +245,26 @@ export default function ManagerView() {
         <div className={'text-base font-medium'}>结论：{wbResultText}</div>
         <Divider />
         <Descriptions title="合同登记信息">
-          <Descriptions.Item label="合同编号">
-            <Copyable content={detail?.contracts?.[0]?.cont_no} />
-          </Descriptions.Item>
-          <Descriptions.Item label="数据等级">
-            <Copyable content={detail?.contracts?.[0]?.data_level} />
-          </Descriptions.Item>
-          <Descriptions.Item label="合同签订日期">
-            <Copyable content={year2Day(detail?.contracts?.[0]?.sign_date)} />
-          </Descriptions.Item>
-          <Descriptions.Item label="承包单位">
-            <Copyable content={detail?.contracts?.[0]?.company?.name} link={`/company/view/${detail?.contracts?.[0]?.company?.id}`} />
-          </Descriptions.Item>
+          {detail?.contracts?.map((item) => {
+            return (
+              <Fragment key={item.cont_no}>
+                <Descriptions.Item label="合同编号">
+                  <Copyable content={item.cont_no} />
+                </Descriptions.Item>
+                <Descriptions.Item label="数据等级">
+                  <Copyable content={item.data_level} />
+                </Descriptions.Item>
+                <Descriptions.Item label="合同签订日期">
+                  <Copyable content={year2Day(item.sign_date)} />
+                </Descriptions.Item>
+                <Descriptions.Item label="承包单位">
+                  <Copyable content={item.company?.name} link={`/company/view/${item.company?.id}`} />
+                </Descriptions.Item>
+                <Descriptions.Item>{''}</Descriptions.Item>
+                <Descriptions.Item>{''}</Descriptions.Item>
+              </Fragment>
+            );
+          })}
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{wbContractText}</div>
         <Divider />
@@ -288,6 +296,7 @@ export default function ManagerView() {
                 <Descriptions.Item label="身份证号码">
                   <Copyable content={item?.manager?.id_card} />
                 </Descriptions.Item>
+                <Descriptions.Item>{''}</Descriptions.Item>
               </Fragment>
             );
           })}
