@@ -11,7 +11,7 @@ export interface ProjectDetailDto {
   total_area: number;
   updated_at: Date;
   source_id: string;
-  manager: { id: string; name: string };
+  manager: { id: string; name: string; id_card: string };
   contract: ProjContract;
   contracts: ProjContract[];
   proj_units: ProjUnit[];
@@ -20,6 +20,9 @@ export interface ProjectDetailDto {
   construction_permits: ConstructionPermit[];
   acceptance_filings: AcceptanceFiling[];
   completion_acceptances: CompletionAcceptance[];
+  proj_tech_kpis: ProjectTechKpi[];
+  data_from: string;
+  conclusion: string;
 
   // UI 只能命名为 labels
   labels?: ProjUnit[];
@@ -31,6 +34,7 @@ export interface ProjectReqDto {
   data_level: string;
   proj_type: string;
   total_area: number;
+  conclusion?: string;
 }
 
 export interface AcceptanceFiling {
@@ -45,6 +49,7 @@ export interface AcceptanceFiling {
   cp_no: string;
   companies: AcceptanceFilingCompany[];
   ca_date?: Date;
+  data_from: string;
 }
 
 export interface CompletionAcceptance {
@@ -103,6 +108,7 @@ export interface ConstructionPermit {
   cp_area: number;
   company: CompanyCompany;
   manager: ManagerManager;
+  data_from: string;
 }
 
 export interface ProjContract {
@@ -110,6 +116,7 @@ export interface ProjContract {
   data_level: string;
   cont_no: string;
   company: { id: true; name: string };
+  data_from: string;
 }
 
 export interface ProjUnit {
@@ -130,4 +137,16 @@ export interface WinningBidder {
   wb_amount: number;
   wb_date: Date;
   manager: ManagerManager;
+  data_from: string;
+}
+
+export interface ProjectTechKpi {
+  id: string;
+  data_level: string;
+  kpi_no: string;
+  kpi_type: string;
+  company: CompanyCompany;
+  start_date: Date;
+  end_date: Date;
+  kpi_desc: string;
 }

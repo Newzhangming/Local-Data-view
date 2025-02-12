@@ -91,7 +91,7 @@ export default function ProjectEdit() {
           request={getRequestData(params as IdReq)}
         >
           <ProForm.Group>
-            <ProFormText name="proj_name" width="lg" label="项目名" rules={[{ required: true, message: '请输入正确的项目名', min: 4, max: 50 }]} placeholder="请输入项目名" />
+            <ProFormText name="proj_name" width="lg" label="项目名" rules={[{ required: true, message: '请输入正确的项目名', min: 2, max: 300 }]} placeholder="请输入项目名" />
             <ProFormText name="proj_no" width="sm" rules={[{ required: true, message: '请输入正确的项目编号', min: 10 }]} label="项目编号" placeholder="请输入项目编号" />
             <ProFormRadio.Group name="data_level" label="数据等级" options={['A', 'B', 'C', 'D']} />
           </ProForm.Group>

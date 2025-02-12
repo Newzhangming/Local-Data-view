@@ -1,7 +1,8 @@
 'use client';
 
 import { BuildOutlined, HomeOutlined } from '@ant-design/icons';
-import { Breadcrumb, Descriptions, Divider, message, Space, Table } from 'antd';
+import { ProFormRadio } from '@ant-design/pro-components';
+import { Breadcrumb, Descriptions, Divider, message, RadioChangeEvent, Space, Table, Tag } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { Fragment, useEffect, useState } from 'react';
 
@@ -9,8 +10,8 @@ import Copyable from '@/components/copyable';
 import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
 import { ProjectDetailDto } from '@/constants/project';
-import { getProject } from '@/services/project';
-import { year2Day, year2Sec } from '@/utils/date';
+import { getProject, upsertProject } from '@/services/project';
+import { year2Day } from '@/utils/date';
 
 export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -58,6 +59,11 @@ export default function ManagerView() {
     { title: <Copyable content={detail?.proj_name} /> },
   ];
 
+  const conclusionOptions = [
+    { value: 'pass', label: <Tag color="green">通过</Tag> },
+    { value: 'pending', label: <Tag color="orange">待补充材料</Tag> },
+    { value: 'scrap', label: <Tag color="red">废弃</Tag> },
+  ];
   const unitColumns = [
     { title: '单体建（构）筑物名称', dataIndex: 'unit_name', key: 'unit_name' },
     { title: '工程单体造价(万元)', dataIndex: 'unit_cost', key: 'unit_cost' },
@@ -163,6 +169,20 @@ export default function ManagerView() {
     afText = '竣工验收备案达标';
   }
 
+  const onConclusionChange = async (e: RadioChangeEvent) => {
+    if (detail) {
+      await upsertProject({
+        id: detail.id,
+        proj_no: detail.proj_no,
+        proj_name: detail.proj_name,
+        proj_type: detail.proj_type,
+        total_area: detail.total_area,
+        data_level: detail.data_level,
+        conclusion: e.target.value,
+      });
+    }
+  };
+
   return (
     <>
       {contextHolder}
@@ -193,7 +213,9 @@ export default function ManagerView() {
           <Descriptions.Item label="总面积(平方米)">
             <Copyable content={detail?.total_area} />
           </Descriptions.Item>
-          <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>
+          <Descriptions.Item label="数据来源">
+            <Copyable content={detail?.data_from} />
+          </Descriptions.Item>
           <Descriptions.Item label="建设规模">
             <Copyable content={detail?.scale_desc} />
           </Descriptions.Item>
@@ -208,6 +230,9 @@ export default function ManagerView() {
           dataSource={unitDataSource}
           columns={unitColumns}
           footer={() => {
+            if (!unitCostTotal && !unitAreaTotal) {
+              return null;
+            }
             return <footer className={'flex justify-start font-bold'}>{`工程总造价(万元)：${unitCostTotal}，工程总面积(平米)：${unitAreaTotal}`}</footer>;
           }}
         />
@@ -238,6 +263,9 @@ export default function ManagerView() {
                 <Descriptions.Item label="身份证号码">
                   <Copyable content={item?.manager?.id_card} />
                 </Descriptions.Item>
+                <Descriptions.Item label="数据来源">
+                  <Copyable content={item?.data_from} />
+                </Descriptions.Item>
               </Fragment>
             );
           })}
@@ -260,7 +288,9 @@ export default function ManagerView() {
                 <Descriptions.Item label="承包单位">
                   <Copyable content={item.company?.name} link={`/company/view/${item.company?.id}`} />
                 </Descriptions.Item>
-                <Descriptions.Item>{''}</Descriptions.Item>
+                <Descriptions.Item label="数据来源">
+                  <Copyable content={item?.data_from} />
+                </Descriptions.Item>
                 <Descriptions.Item>{''}</Descriptions.Item>
               </Fragment>
             );
@@ -296,7 +326,9 @@ export default function ManagerView() {
                 <Descriptions.Item label="身份证号码">
                   <Copyable content={item?.manager?.id_card} />
                 </Descriptions.Item>
-                <Descriptions.Item>{''}</Descriptions.Item>
+                <Descriptions.Item label="数据来源">
+                  <Copyable content={item?.data_from} />
+                </Descriptions.Item>
               </Fragment>
             );
           })}
@@ -325,9 +357,57 @@ export default function ManagerView() {
           <Descriptions.Item label="施工许可证编号">
             <Copyable content={detail?.acceptance_filings?.[0]?.cp_no} />
           </Descriptions.Item>
+          <Descriptions.Item label="数据来源">
+            <Copyable content={detail?.acceptance_filings?.[0]?.data_from} />
+          </Descriptions.Item>
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{afText}</div>
         <Divider />
+        <Descriptions title="技术业绩指标">
+          {detail?.proj_tech_kpis?.map((item) => {
+            return (
+              <Fragment key={item?.kpi_no}>
+                <Descriptions.Item label="业绩记录编号">
+                  <Copyable content={item?.kpi_no} />
+                </Descriptions.Item>
+                <Descriptions.Item label="企业名称">
+                  <Copyable content={item?.company?.name} link={`/company/view/${item?.company?.id}`} />
+                </Descriptions.Item>
+                <Descriptions.Item label="统一社会信用代码">
+                  <Copyable content={item?.company.social_credit_code} />
+                </Descriptions.Item>
+                <Descriptions.Item label="业绩类型">
+                  <Copyable content={item?.kpi_type} />
+                </Descriptions.Item>
+                <Descriptions.Item label="开始工作时间">
+                  <Copyable content={year2Day(item?.start_date)} />
+                </Descriptions.Item>
+                <Descriptions.Item label="工作结束时间">
+                  <Copyable content={year2Day(item?.end_date)} />
+                </Descriptions.Item>
+                <Descriptions.Item label="数据等级">
+                  <Copyable content={item.data_level} />
+                </Descriptions.Item>
+                <Descriptions.Item label="项目经理">
+                  <Copyable content={detail?.manager?.name} link={`/manager/view/${detail?.manager?.id}`} />
+                </Descriptions.Item>
+                <Descriptions.Item label="身份证号">
+                  <Copyable content={detail?.manager?.id_card} />
+                </Descriptions.Item>
+                <Descriptions.Item label="工程项目规模">
+                  <Copyable content={item.kpi_desc} />
+                </Descriptions.Item>
+              </Fragment>
+            );
+          })}
+        </Descriptions>
+        <Divider />
+        <ProFormRadio.Group
+          label={'判定项目可用'}
+          colProps={{ defaultValue: detail?.conclusion }}
+          fieldProps={{ defaultValue: detail?.conclusion, onChange: onConclusionChange }}
+          options={conclusionOptions}
+        />
       </Space>
     </>
   );

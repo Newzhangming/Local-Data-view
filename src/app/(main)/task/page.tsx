@@ -161,7 +161,7 @@ export default function Page() {
               </a>
             </Popconfirm>
             <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
-            <a className={linkClassName} href={href}>
+            <a className={linkClassName} href={href} target={'_blank'}>
               查看{viewIcon}
             </a>
           </>

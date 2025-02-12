@@ -21,6 +21,7 @@ export default function Page() {
   const actionRef = useRef<ActionType>(null);
 
   const DataLevel = { A: 'green', B: 'orange', C: 'magenta', D: 'red' };
+  const conclusions = { pass: { text: '通过', color: 'green' }, pending: { text: '待补充材料', color: 'magenta' }, scrap: { text: '废弃', color: 'red' } };
 
   const columns: ProColumns<ProjectDto>[] = [
     {
@@ -50,12 +51,26 @@ export default function Page() {
       ellipsis: false,
     },
     {
-      title: '总面积(万平方米)',
+      title: '总面积(平方米)',
       dataIndex: 'total_area',
       hideInSearch: true,
       copyable: false,
       ellipsis: false,
-      renderText: (text: number) => (text ? `${(text / 10000).toFixed(2)}` : 0),
+      // renderText: (text: number) => (text ? `${(text / 10000).toFixed(2)}` : 0),
+    },
+    {
+      title: '项目结论',
+      dataIndex: 'conclusion',
+      hideInSearch: false,
+      copyable: false,
+      ellipsis: false,
+      request: async () => Object.keys(conclusions).map((value) => ({ label: conclusions[value as keyof typeof conclusions].text, value })),
+      render: (_, record) => {
+        const text = conclusions[record.conclusion as keyof typeof conclusions]?.text;
+        if (!text) return null;
+        const color = conclusions[record.conclusion as keyof typeof conclusions]?.color;
+        return <Tag color={color}>{text}</Tag>;
+      },
     },
     {
       title: '单体个数',
@@ -78,12 +93,13 @@ export default function Page() {
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
-      request: async () => Object.keys(DataLevel).map((value) => ({ label: value, value })),
+      request: async () => Object.keys(DataLevel).map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
       render: (_, record) => {
         const color = DataLevel[record.data_level as keyof typeof DataLevel];
         return <Tag color={color}>{record.data_level}</Tag>;
       },
     },
+
     {
       title: '更新日期',
       dataIndex: 'updated_at',
@@ -107,7 +123,7 @@ export default function Page() {
               <EditTwoTone />
             </a>
             <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
-            <a className={linkClassName} href={href}>
+            <a className={linkClassName} href={href} target={'_blank'}>
               查看{viewIcon}
             </a>
           </>

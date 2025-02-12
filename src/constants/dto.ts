@@ -63,6 +63,7 @@ export interface ProjectDto {
   proj_no: string;
   proj_name: string;
   data_level: string;
+  conclusion: string;
   proj_type: string;
   total_area: number;
   proj_units: { id: string }[];

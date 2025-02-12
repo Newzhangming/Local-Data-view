@@ -87,7 +87,7 @@ export default function Page() {
             <EditTwoTone />
           </a>
           <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
-          <a href={`/company/view/${record.id}`}>
+          <a href={`/company/view/${record.id}`} target={'_blank'}>
             查看
             <EyeTwoTone />
           </a>
