@@ -16,6 +16,7 @@ export interface ManagerDto {
   lending_to: string;
   source_id: string;
   cert_status: string;
+  proj_count: number;
   projects: Project[];
   experiences: Experience[];
   created_at: Date;

@@ -23,6 +23,7 @@ export interface ProjectDetailDto {
   proj_tech_kpis: ProjectTechKpi[];
   data_from: string;
   conclusion: string;
+  remark: string;
 
   // UI 只能命名为 labels
   labels?: ProjUnit[];
@@ -48,6 +49,7 @@ export interface AcceptanceFiling {
   af_no?: string;
   cp_no: string;
   companies: AcceptanceFilingCompany[];
+  project: { manager_id: string };
   ca_date?: Date;
   data_from: string;
 }

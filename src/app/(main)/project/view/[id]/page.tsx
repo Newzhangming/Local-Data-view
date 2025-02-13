@@ -2,14 +2,14 @@
 
 import { BuildOutlined, HomeOutlined } from '@ant-design/icons';
 import { ProFormRadio } from '@ant-design/pro-components';
-import { Breadcrumb, Descriptions, Divider, message, RadioChangeEvent, Space, Table, Tag } from 'antd';
+import { Breadcrumb, Descriptions, Divider, message, RadioChangeEvent, RadioGroupProps, Space, Table, TableProps, Tag } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { Fragment, useEffect, useState } from 'react';
 
 import Copyable from '@/components/copyable';
 import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
-import { ProjectDetailDto } from '@/constants/project';
+import { AcceptanceFiling, ProjectDetailDto, ProjUnit } from '@/constants/project';
 import { getProject, upsertProject } from '@/services/project';
 import { year2Day } from '@/utils/date';
 
@@ -59,21 +59,62 @@ export default function ManagerView() {
     { title: <Copyable content={detail?.proj_name} /> },
   ];
 
-  const conclusionOptions = [
+  const conclusionOptions: RadioGroupProps['options'] = [
     { value: 'pass', label: <Tag color="green">通过</Tag> },
     { value: 'pending', label: <Tag color="orange">待补充材料</Tag> },
     { value: 'scrap', label: <Tag color="red">废弃</Tag> },
   ];
-  const unitColumns = [
-    { title: '单体建（构）筑物名称', dataIndex: 'unit_name', key: 'unit_name' },
-    { title: '工程单体造价(万元)', dataIndex: 'unit_cost', key: 'unit_cost' },
-    { title: '建筑面积(平方米)', dataIndex: 'unit_area', key: 'unit_area' },
-    { title: '高度(米)', dataIndex: 'height', key: 'height' },
+  const unitColumns: TableProps<ProjUnit>['columns'] = [
+    { title: '单体建（构）筑物名称', dataIndex: 'unit_name', key: 'unit_name', render: (value: string) => <Copyable content={value} /> },
+    { title: '工程单体造价(万元)', dataIndex: 'unit_cost', key: 'unit_cost', render: (value: string) => <Copyable content={value} /> },
+    { title: '建筑面积(平方米)', dataIndex: 'unit_area', key: 'unit_area', render: (value: string) => <Copyable content={value} /> },
+    { title: '高度(米)', dataIndex: 'height', key: 'height', render: (value: string) => <Copyable content={value} /> },
+  ];
+  const afColumns: TableProps<AcceptanceFiling>['columns'] = [
+    { title: '备案编号', dataIndex: 'af_no', key: 'af_no', render: (value: string) => <Copyable content={value} /> },
+    { title: '实际造价(万元)', dataIndex: 'actual_cost', key: 'actual_cost', render: (value: string) => <Copyable content={value} /> },
+    { title: '实际面积(平方米)', dataIndex: 'actual_area', key: 'actual_area', render: (value: string) => <Copyable content={value} /> },
+    { title: '实际开工日期', dataIndex: 'proj_start_date', key: 'proj_start_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
+    { title: '验收备案日期', dataIndex: 'af_date', key: 'af_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
+    { title: '信息来源', dataIndex: 'data_from', key: 'data_from', render: (value: string) => <Copyable content={value} /> },
+    { title: '数据等级', dataIndex: 'data_level', key: 'data_level', render: (value: string) => <Copyable content={value} /> },
+    { title: '施工单位', key: 'company', render: (value: AcceptanceFiling) => <Copyable content={value?.companies?.[0]?.company?.name} /> },
+    {
+      title: '项目经理',
+      key: 'manager',
+      render: (value: AcceptanceFiling) => {
+        const mgrId = value?.project?.manager_id;
+        const managers = value?.companies?.[0]?.company?.managers || [];
+        for (const manager of managers) {
+          if (manager?.manager?.id === mgrId) {
+            return <Copyable content={manager?.manager?.name} link={`/manager/view/${mgrId}`} />;
+          }
+        }
+        return null;
+      },
+    },
+    {
+      title: '身份证号',
+      key: 'id_card',
+      render: (value: AcceptanceFiling) => {
+        const mgrId = value?.project?.manager_id;
+        const managers = value?.companies?.[0]?.company?.managers || [];
+        for (const manager of managers) {
+          if (manager?.manager?.id === mgrId) {
+            return <Copyable content={manager?.manager?.id_card} />;
+          }
+        }
+        return null;
+      },
+    },
   ];
 
   const unitDataSource = detail?.proj_units?.map((item, index) => ({ key: `unit_${index}`, ...item }));
+  const afDataSource = detail?.acceptance_filings?.map((item, index) => ({ key: `af_${index}`, ...item }));
   const unitCostTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_cost || 0), 0).toFixed(2) || '0');
   const unitAreaTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_area || 0), 0).toFixed(2) || '0');
+  const afCostTotal = Number.parseFloat(detail?.acceptance_filings?.reduce((acc, cur) => acc + (cur.actual_cost || 0), 0).toFixed(2) || '0');
+  const afAreaTotal = Number.parseFloat(detail?.acceptance_filings?.reduce((acc, cur) => acc + (cur.actual_area || 0), 0).toFixed(2) || '0');
 
   const conclusion = [{ position: 'base', msg: '', value: true }];
   if (detail?.data_level !== 'A' && detail?.data_level !== 'B') {
@@ -335,33 +376,20 @@ export default function ManagerView() {
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{wbPermitText}</div>
         <Divider />
-        <Descriptions title="竣工验收备案">
-          <Descriptions.Item label="竣工验收备案编号">
-            <Copyable content={detail?.acceptance_filings?.[0]?.af_no} />
-          </Descriptions.Item>
-          <Descriptions.Item label="数据等级">
-            <Copyable content={detail?.acceptance_filings?.[0]?.data_level} />
-          </Descriptions.Item>
-          <Descriptions.Item label="实际开工日期">
-            <Copyable content={year2Day(detail?.acceptance_filings?.[0]?.proj_start_date)} />
-          </Descriptions.Item>
-          <Descriptions.Item label="竣工验收备案日期">
-            <Copyable content={year2Day(detail?.acceptance_filings?.[0]?.af_date)} />
-          </Descriptions.Item>
-          <Descriptions.Item label="实际面积(平方米)">
-            <Copyable content={actual_area} />
-          </Descriptions.Item>
-          <Descriptions.Item label="实际造价(万)">
-            <Copyable content={actual_cost} />
-          </Descriptions.Item>
-          <Descriptions.Item label="施工许可证编号">
-            <Copyable content={detail?.acceptance_filings?.[0]?.cp_no} />
-          </Descriptions.Item>
-          <Descriptions.Item label="数据来源">
-            <Copyable content={detail?.acceptance_filings?.[0]?.data_from} />
-          </Descriptions.Item>
-        </Descriptions>
-        <div className={'text-base font-medium'}>结论：{afText}</div>
+        <div className={'text-base font-semibold'}>竣工验收备案</div>
+        <Table
+          loading={loading}
+          locale={locale}
+          pagination={false}
+          dataSource={afDataSource}
+          columns={afColumns}
+          footer={() => {
+            if (!afCostTotal && !afAreaTotal) {
+              return null;
+            }
+            return <footer className={'flex justify-start font-bold'}>{`备案总造价(万元)：${afCostTotal}，备案总面积(平米)：${afAreaTotal}`}</footer>;
+          }}
+        />
         <Divider />
         <Descriptions title="技术业绩指标">
           {detail?.proj_tech_kpis?.map((item) => {

@@ -26,7 +26,7 @@ export default function Page() {
   const columns: ProColumns<ProjectDto>[] = [
     {
       title: '项目编号',
-      order: 10,
+      order: 9,
       colSize: 1.1,
       dataIndex: 'proj_no',
       hideInSearch: false,
@@ -35,7 +35,7 @@ export default function Page() {
     },
     {
       title: '项目名称',
-      order: 9,
+      order: 10,
       colSize: 2,
       dataIndex: 'proj_name',
       hideInSearch: false,
@@ -54,13 +54,15 @@ export default function Page() {
       title: '总面积(平方米)',
       dataIndex: 'total_area',
       hideInSearch: true,
-      copyable: false,
+      copyable: true,
       ellipsis: false,
+      sorter: (a, b) => a.total_area - b.total_area,
       // renderText: (text: number) => (text ? `${(text / 10000).toFixed(2)}` : 0),
     },
     {
       title: '项目结论',
       dataIndex: 'conclusion',
+      colSize: 0.9,
       hideInSearch: false,
       copyable: false,
       ellipsis: false,
@@ -88,8 +90,7 @@ export default function Page() {
     {
       title: '数据等级',
       dataIndex: 'data_level',
-      colSize: 1,
-      valueType: 'select',
+      colSize: 0.9,
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
@@ -118,7 +119,7 @@ export default function Page() {
         const linkClassName = record.proj_no ? 'text-blue-500' : 'text-gray-500 hover:text-gray-500';
         return (
           <>
-            <a href={`/project/edit/${record.id}`}>
+            <a href={`/project/edit/${record.proj_no}`}>
               编辑
               <EditTwoTone />
             </a>

@@ -1,8 +1,8 @@
 'use client';
 
 import { BgColorsOutlined, CopyOutlined, DeleteOutlined, EditTwoTone, HomeOutlined } from '@ant-design/icons';
-import { ProForm, ProFormDigit, ProFormGroup, ProFormInstance, ProFormList, ProFormRadio, ProFormText } from '@ant-design/pro-components';
-import { Breadcrumb, message, Space } from 'antd';
+import { ProForm, ProFormDigit, ProFormGroup, ProFormInstance, ProFormList, ProFormRadio, ProFormText, ProFormTextArea } from '@ant-design/pro-components';
+import { Breadcrumb, message, Space, Tag } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
@@ -18,9 +18,9 @@ export default function ProjectEdit() {
   const [loading, setLoading] = useState<boolean>(true);
   const [projUnits, setProjUnits] = useState<ProjUnit[]>([]);
 
-  const getRequestData = (params: IdReq) =>
+  const getRequestData = () =>
     useCallback(async () => {
-      const result = await queryProject(params);
+      const result = await queryProject(params.id as string);
       setLoading(false);
       setProjUnits(result.data?.proj_units || []);
       return result.data;
@@ -28,7 +28,6 @@ export default function ProjectEdit() {
 
   const onFinish = useCallback(async (fromData: ProjectDetailDto) => {
     try {
-      console.log('fromData====', fromData);
       setLoading(true);
       const [result] = await Promise.all([upsertProject(fromData), upsertUnit(fromData)]);
       if (result.msg === 'success') {
@@ -76,24 +75,30 @@ export default function ProjectEdit() {
     [],
   );
 
+  const conclusionOptions = [
+    { value: 'pass', label: <Tag color="green">通过</Tag> },
+    { value: 'pending', label: <Tag color="orange">待补充材料</Tag> },
+    { value: 'scrap', label: <Tag color="red">废弃</Tag> },
+  ];
+
+  const dataLevelOptions = [
+    { value: 'A', label: <Tag color="green">A</Tag> },
+    { value: 'B', label: <Tag color="orange">B</Tag> },
+    { value: 'C', label: <Tag color="magenta">C</Tag> },
+    { value: 'D', label: <Tag color="red">D</Tag> },
+  ];
+
   // 'xs' | 'sm' | 'md' | 'xl' | 'lg';
   return (
     <>
       {contextHolder}
       <Space direction={'vertical'} size={'large'}>
         <Breadcrumb items={breadcrumbItems} />
-        <ProForm<ProjectDetailDto>
-          formRef={formRef}
-          loading={loading}
-          submitter={{ searchConfig: { submitText: '保存' } }}
-          onFinish={onFinish}
-          params={params}
-          request={getRequestData(params as IdReq)}
-        >
+        <ProForm<ProjectDetailDto> formRef={formRef} loading={loading} submitter={{ searchConfig: { submitText: '保存' } }} onFinish={onFinish} params={params} request={getRequestData()}>
           <ProForm.Group>
             <ProFormText name="proj_name" width="lg" label="项目名" rules={[{ required: true, message: '请输入正确的项目名', min: 2, max: 300 }]} placeholder="请输入项目名" />
             <ProFormText name="proj_no" width="sm" rules={[{ required: true, message: '请输入正确的项目编号', min: 10 }]} label="项目编号" placeholder="请输入项目编号" />
-            <ProFormRadio.Group name="data_level" label="数据等级" options={['A', 'B', 'C', 'D']} />
+            <ProFormRadio.Group name="data_level" label="数据等级" options={dataLevelOptions} />
           </ProForm.Group>
           <ProForm.Group>
             <ProFormText name="proj_type" width="xs" label="项目分类" placeholder="请输入项目分类" />
@@ -143,6 +148,14 @@ export default function ProjectEdit() {
               <ProFormDigit name="height" label="高度(米)" width="xs" placeholder={'高度'} fieldProps={{ precision: 2 }} />
             </ProFormGroup>
           </ProFormList>
+          <ProFormRadio.Group name="conclusion" label={'判定项目可用'} options={conclusionOptions} />
+          <ProFormTextArea
+            name="remark"
+            label="项目备注"
+            rules={[{ required: false, message: '项目备注内容不能超过300个汉字', max: 300 }]}
+            placeholder="请输入项目备注"
+            fieldProps={{ showCount: true, maxLength: 300 }}
+          />
         </ProForm>
       </Space>
     </>

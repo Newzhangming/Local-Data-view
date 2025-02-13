@@ -23,6 +23,7 @@ export default function Page() {
       title: '姓名',
       order: 10,
       dataIndex: 'name',
+      colSize: 0.9,
       hideInSearch: false,
       copyable: false,
       renderText: (text: string) => <Ellipsis text={text} />,
@@ -60,7 +61,9 @@ export default function Page() {
     },
     {
       title: '个人业绩',
-      hideInSearch: true,
+      dataIndex: 'proj_count',
+      colSize: 0.9,
+      hideInSearch: false,
       align: 'center',
       renderText: (_, record: ManagerDto) => {
         let color = 'default';
@@ -81,14 +84,14 @@ export default function Page() {
     {
       title: '注册单位',
       dataIndex: 'lending_to',
-      hideInSearch: false,
+      hideInSearch: true,
       copyable: true,
       ellipsis: false,
     },
     {
       title: '注册编号',
       dataIndex: 'lending_no',
-      hideInSearch: false,
+      hideInSearch: true,
       copyable: true,
       ellipsis: false,
     },
