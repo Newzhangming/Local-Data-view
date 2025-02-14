@@ -1,7 +1,7 @@
 'use client';
 
 import { HomeOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import { Breadcrumb, Descriptions, message, Space, Table, type TableColumnsType } from 'antd';
+import { Breadcrumb, Descriptions, message, Space, Table, TableColumnsType, TableProps } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
@@ -37,7 +37,8 @@ export default function ManagerView() {
       });
   };
 
-  const experienceColumns: TableColumnsType<Experience> = [
+  const experienceColumns: TableProps<Experience>['columns'] = [
+    { title: '序号', render: (text, record, index) => `${index + 1}` },
     {
       title: '公司名称',
       render: (_, record: Experience) => <Copyable content={record.company.name} link={`/manager/view/${record.company.id}`} />,
@@ -48,16 +49,17 @@ export default function ManagerView() {
   ];
 
   const projectColumns: TableColumnsType<Project> = [
+    { title: '序号', render: (text, record, index) => `${index + 1}` },
     {
       title: '项目名称',
       dataIndex: ['proj_name'],
       render: (_, record: Project) => <Copyable content={record.proj_name} link={`/project/view/${record.proj_no}`} />,
     },
-    { title: '项目属地', dataIndex: 'region', render: (value: string) => <Copyable content={value} /> },
     {
       title: '项目编号',
       render: (_, record: Project) => <Copyable content={record.proj_no} link={`/project/view/${record.proj_no}`} target={'_blank'} />,
     },
+    { title: '项目属地', dataIndex: 'region', render: (value: string) => <Copyable content={value} /> },
     {
       title: '开工日期',
       render: (_, record: Project) => year2Day(record?.acceptance_filings?.[0]?.proj_start_date),
@@ -65,6 +67,14 @@ export default function ManagerView() {
     {
       title: '竣工日期',
       render: (_, record: Project) => year2Day(record?.acceptance_filings?.[0]?.af_date),
+    },
+    {
+      title: '操作',
+      render: (_, record: Project) => (
+        <a href={`/project/edit/${record.proj_no}`} target={'_blank'}>
+          添加项目备注
+        </a>
+      ),
     },
   ];
 

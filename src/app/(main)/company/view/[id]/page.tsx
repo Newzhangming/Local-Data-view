@@ -38,6 +38,7 @@ export default function CompanyEdit() {
   };
 
   const certColumns: TableColumnsType<Certificate> = [
+    { title: '序号', render: (text, record, index) => `${index + 1}` },
     { title: '资质类别', dataIndex: 'cert_type', render: (value: string) => <Copyable content={value} /> },
     { title: '资质证书号', dataIndex: 'cert_no', render: (value: string) => <Copyable content={value} /> },
     { title: '资质名称', dataIndex: 'cert_name', render: (value: string) => <Copyable content={value} /> },
@@ -47,6 +48,7 @@ export default function CompanyEdit() {
   ];
 
   const managerColumns: TableColumnsType<ManagerDto> = [
+    { title: '序号', render: (text, record, index) => `${index + 1}` },
     {
       title: '姓名',
       dataIndex: ['manager', 'name'],
