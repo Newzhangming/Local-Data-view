@@ -41,6 +41,9 @@ export interface Project {
   proj_no: string;
   proj_name: string;
   region: string;
+  scale_desc: string;
+  data_level: string;
+  proj_tech_kpis: { id: string }[];
   acceptance_filings: {
     proj_start_date: Date;
     af_date: Date;

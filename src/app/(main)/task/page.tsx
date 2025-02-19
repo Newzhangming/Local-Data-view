@@ -44,6 +44,7 @@ export default function Page() {
     {
       title: '项目名称',
       dataIndex: 'proj_name',
+      fieldProps: { placeholder: '支持模糊搜索' },
       colSize: 2,
       hideInSearch: false,
       copyable: false,

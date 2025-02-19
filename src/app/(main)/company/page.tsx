@@ -23,6 +23,7 @@ export default function Page() {
       title: '公司名',
       colSize: 1.6,
       dataIndex: 'name',
+      fieldProps: { placeholder: '支持模糊搜索' },
       hideInSearch: false,
       copyable: false,
       renderText: (text: string) => <Ellipsis text={text} />,
@@ -31,6 +32,7 @@ export default function Page() {
     {
       title: '企业社会信用代码',
       dataIndex: 'social_credit_code',
+      fieldProps: { placeholder: '输入完整代码' },
       colSize: 1.6,
       hideInSearch: false,
       copyable: true,

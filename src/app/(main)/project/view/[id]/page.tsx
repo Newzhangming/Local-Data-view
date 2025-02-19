@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import React, { Fragment, useEffect, useState } from 'react';
 
 import Copyable from '@/components/copyable';
+import Ellipsis from '@/components/ellipsis';
 import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
 import { AcceptanceFiling, ProjectDetailDto, ProjUnit } from '@/constants/project';
@@ -76,6 +77,9 @@ export default function ManagerView() {
     { title: '实际面积(平方米)', dataIndex: 'actual_area', key: 'actual_area', render: (value: string) => <Copyable content={value} /> },
     { title: '实际开工日期', dataIndex: 'proj_start_date', key: 'proj_start_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
     { title: '验收备案日期', dataIndex: 'af_date', key: 'af_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
+    { title: '体系结构', dataIndex: 'structure', key: 'structure', render: (value: string) => <Copyable content={value} /> },
+    { title: '跨度(米)', dataIndex: 'span', key: 'span', render: (value: string) => <Copyable content={value} /> },
+    { title: '建设规模', dataIndex: 'scale_desc', key: 'scale_desc', width: 150, render: (value: string) => <Ellipsis text={value} lines={2} /> },
     { title: '信息来源', dataIndex: 'data_from', key: 'data_from', render: (value: string) => <Copyable content={value} /> },
     { title: '数据等级', dataIndex: 'data_level', key: 'data_level', render: (value: string) => <Copyable content={value} /> },
     { title: '施工单位', key: 'company', render: (value: AcceptanceFiling) => <Copyable content={value?.companies?.[0]?.company?.name} /> },
@@ -307,6 +311,9 @@ export default function ManagerView() {
                 <Descriptions.Item label="数据来源">
                   <Copyable content={item?.data_from} />
                 </Descriptions.Item>
+                <Descriptions.Item label="建设规模">
+                  <Copyable content={item?.scale_desc} />
+                </Descriptions.Item>
               </Fragment>
             );
           })}
@@ -370,6 +377,12 @@ export default function ManagerView() {
                 <Descriptions.Item label="数据来源">
                   <Copyable content={item?.data_from} />
                 </Descriptions.Item>
+                <Descriptions.Item label="跨度(米)">
+                  <Copyable content={item?.span} />
+                </Descriptions.Item>
+                <Descriptions.Item label="建设规模">
+                  <Copyable content={item?.scale_desc} />
+                </Descriptions.Item>
               </Fragment>
             );
           })}
@@ -422,7 +435,7 @@ export default function ManagerView() {
                 <Descriptions.Item label="身份证号">
                   <Copyable content={detail?.manager?.id_card} />
                 </Descriptions.Item>
-                <Descriptions.Item label="工程项目规模">
+                <Descriptions.Item label="建设规模">
                   <Copyable content={item.kpi_desc} />
                 </Descriptions.Item>
               </Fragment>

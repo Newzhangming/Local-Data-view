@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import Copyable from '@/components/copyable';
+import Ellipsis from '@/components/ellipsis';
 import { locale } from '@/components/table-props';
 import { Experience, ManagerDto, Project } from '@/constants/manager';
 import { queryManager } from '@/services/manager';
@@ -68,6 +69,9 @@ export default function ManagerView() {
       title: '竣工日期',
       render: (_, record: Project) => year2Day(record?.acceptance_filings?.[0]?.af_date),
     },
+    { title: '建设规模', dataIndex: 'scale_desc', width: 400, render: (value: string) => <Ellipsis text={value} /> },
+    { title: '数据等级', dataIndex: 'data_level', render: (value: string) => <Copyable content={value} /> },
+    { title: '技术指标', render: (_, record: Project) => (record?.proj_tech_kpis?.length ? '有' : '无') },
     {
       title: '操作',
       render: (_, record: Project) => (

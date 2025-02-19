@@ -52,6 +52,9 @@ export interface AcceptanceFiling {
   project: { manager_id: string };
   ca_date?: Date;
   data_from: string;
+  scale_desc: string;
+  structure: string;
+  span: number;
 }
 
 export interface CompletionAcceptance {
@@ -111,6 +114,8 @@ export interface ConstructionPermit {
   company: CompanyCompany;
   manager: ManagerManager;
   data_from: string;
+  scale_desc: string;
+  span: number;
 }
 
 export interface ProjContract {
@@ -140,6 +145,7 @@ export interface WinningBidder {
   wb_date: Date;
   manager: ManagerManager;
   data_from: string;
+  scale_desc: string;
 }
 
 export interface ProjectTechKpi {

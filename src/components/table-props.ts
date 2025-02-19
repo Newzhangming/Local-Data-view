@@ -8,6 +8,6 @@ const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter'
   return [query, reset];
 };
 
-export const search: BaseQueryFilterProps = { labelWidth: 'auto', span: 4, optionRender: searchOptionRender };
+export const search: BaseQueryFilterProps = { labelWidth: 'auto', span: 3, optionRender: searchOptionRender };
 
 export const pagination = { pageSizeOptions: [10, 15, 20, 25, 30], showQuickJumper: true };

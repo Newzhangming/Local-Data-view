@@ -23,6 +23,7 @@ export default function Page() {
       title: '姓名',
       order: 10,
       dataIndex: 'name',
+      fieldProps: { placeholder: '支持模糊搜索' },
       colSize: 0.9,
       hideInSearch: false,
       copyable: false,
@@ -62,9 +63,11 @@ export default function Page() {
     {
       title: '个人业绩',
       dataIndex: 'proj_count',
+      fieldProps: { placeholder: '输入数字' },
       colSize: 0.9,
       hideInSearch: false,
       align: 'center',
+      sorter: (a, b) => a.proj_count - b.proj_count,
       renderText: (_, record: ManagerDto) => {
         let color = 'default';
         const len = record?.projects?.length || 0;

@@ -29,6 +29,7 @@ export default function Page() {
       order: 9,
       colSize: 1.1,
       dataIndex: 'proj_no',
+      fieldProps: { placeholder: '完整项目编号' },
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
@@ -36,17 +37,29 @@ export default function Page() {
     {
       title: '项目名称',
       order: 10,
-      colSize: 2,
+      colSize: 1.9,
       dataIndex: 'proj_name',
+      fieldProps: { placeholder: '支持模糊搜索' },
+      width: 500,
       hideInSearch: false,
       copyable: false,
-      renderText: (text: string) => <Ellipsis text={text} />,
+      renderText: (text: string) => <Ellipsis text={text} lines={2} />,
       align: 'left',
     },
     {
       title: '项目分类',
       dataIndex: 'proj_type',
       hideInSearch: true,
+      copyable: false,
+      ellipsis: false,
+    },
+    {
+      title: '工程用途',
+      dataIndex: 'proj_use',
+      valueType: 'text',
+      fieldProps: { placeholder: '支持模糊搜索' },
+      order: 8,
+      hideInSearch: false,
       copyable: false,
       ellipsis: false,
     },
@@ -62,10 +75,12 @@ export default function Page() {
     {
       title: '项目结论',
       dataIndex: 'conclusion',
-      colSize: 0.9,
       hideInSearch: false,
       copyable: false,
       ellipsis: false,
+      colSize: 0.9,
+      valueType: 'select',
+      fieldProps: { dropdownMatchSelectWidth: false },
       request: async () => Object.keys(conclusions).map((value) => ({ label: conclusions[value as keyof typeof conclusions].text, value })),
       render: (_, record) => {
         const text = conclusions[record.conclusion as keyof typeof conclusions]?.text;
@@ -94,6 +109,7 @@ export default function Page() {
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
+      fieldProps: { dropdownMatchSelectWidth: false },
       request: async () => Object.keys(DataLevel).map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
       render: (_, record) => {
         const color = DataLevel[record.data_level as keyof typeof DataLevel];
