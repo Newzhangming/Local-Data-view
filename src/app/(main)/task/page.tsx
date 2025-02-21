@@ -13,7 +13,7 @@ import {
   SyncOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { ActionType, ModalForm, ProColumns, ProFormTextArea, ProTable } from '@ant-design/pro-components';
+import { ActionType, ModalForm, ProColumns, ProFormDigit, ProFormSelect, ProFormText, ProFormTextArea, ProTable } from '@ant-design/pro-components';
 import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
@@ -39,6 +39,18 @@ export default function Page() {
     await updateTask({ id, action });
     actionRef.current?.reload();
   };
+
+  const onFixTask = async (values: TaskDto) => {
+    await updateTask(values);
+    actionRef.current?.reload();
+    return true;
+  };
+
+  const taskStatus = async () => [
+    { label: '未开始', value: '未开始' },
+    { label: '采集中', value: '采集中' },
+    { label: '已采完', value: '已采完' },
+  ];
 
   const columns: ProColumns<TaskDto>[] = [
     {
@@ -76,11 +88,7 @@ export default function Page() {
       hideInSearch: false,
       copyable: false,
       ellipsis: false,
-      request: async () => [
-        { label: '未开始', value: '未开始' },
-        { label: '采集中', value: '采集中' },
-        { label: '已采完', value: '已采完' },
-      ],
+      request: taskStatus,
       render: (_, obj: TaskDto) => {
         if (obj.status === '未开始') {
           return (
@@ -147,7 +155,7 @@ export default function Page() {
       title: '操作',
       dataIndex: 'options',
       hideInSearch: true,
-      minWidth: 120,
+      fixed: true,
       align: 'center',
       render: (_, record) => {
         const href = record.proj_no ? `/project/view/${record.proj_no}` : undefined;
@@ -165,6 +173,14 @@ export default function Page() {
             <a className={linkClassName} href={href} target={'_blank'}>
               查看{viewIcon}
             </a>
+            <Divider type="vertical" style={{ borderColor: token.colorPrimaryBorder }} />
+            <ModalForm title="编辑采集任务" trigger={<a className={'text-blue-500'}>编辑</a>} onFinish={onFixTask}>
+              <ProFormText width="xl" name="id" label="项目ID" initialValue={record.id} disabled={true} />
+              <ProFormText rules={[{ required: true, message: '请输入项目名称' }]} width="xl" name="proj_name" label="项目名称" initialValue={record.proj_name} />
+              <ProFormText width="md" name="proj_no" label="项目编号" initialValue={record.proj_no} />
+              <ProFormDigit rules={[{ required: true, message: '请输入采集排序数字' }]} width="xs" name="sort" label="采集排序数字" initialValue={record.sort} fieldProps={{ min: -10, max: 100 }} />
+              <ProFormSelect rules={[{ required: true, message: '请选择采集状态' }]} width="sm" name="status" label="采集状态" initialValue={record.status} request={taskStatus} />
+            </ModalForm>
           </>
         );
       },
@@ -190,7 +206,7 @@ export default function Page() {
 
   const onAddTask = useCallback(async (params: { proj_name: string }) => {
     const rawNames = params.proj_name.split('\n');
-    const names = rawNames.map((name) => name.trim()).filter((name) => (name.length > 5 ? name : ''));
+    const names = rawNames.map((name) => name.trim()).filter((name) => (name.length > 3 ? name : ''));
     const uniqueNames = [...new Set(names)];
 
     const result = await addTasks({ proj_name: uniqueNames });
