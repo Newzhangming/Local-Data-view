@@ -18,6 +18,30 @@ export default function Page() {
   const router = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
+
+  const certNameOptions = async () =>
+    [
+      '一级注册建造师',
+      '一级注册建筑师',
+      '一级注册结构工程师',
+      '一级注册造价工程师',
+      '二级注册建造师',
+      '二级注册结构工程师',
+      '二级注册造价工程师',
+      '注册监理工程师',
+      '注册公用设备工程师',
+      '注册土木工程师',
+    ].map((value) => ({ label: value, value }));
+  const projCountOptions = async () => [2, 3, 5, 8].map((value) => ({ label: `${value}及以上`, value }));
+
+  const renderTags = (len: number) => {
+    let color = 'default';
+    if (len > 5) color = 'green';
+    else if (len > 3) color = 'orange';
+    else if (len > 0) color = 'magenta';
+    return <Tag color={color}>{len}</Tag>;
+  };
+
   const columns: ProColumns<ManagerDto>[] = [
     {
       title: '姓名',
@@ -51,45 +75,29 @@ export default function Page() {
       title: '注册轨迹',
       hideInSearch: true,
       align: 'center',
-      renderText: (_, record: ManagerDto) => {
-        let color = 'default';
-        const len = record?.experiences?.length || 0;
-        if (len > 5) color = 'green';
-        else if (len > 3) color = 'orange';
-        else if (len > 0) color = 'magenta';
-        return <Tag color={color}>{len}</Tag>;
-      },
+      renderText: (_, record: ManagerDto) => renderTags(record?.experiences?.length),
     },
     {
       title: '个人业绩',
       dataIndex: 'proj_count',
-      fieldProps: { placeholder: '输入数字' },
-      colSize: 0.9,
+      fieldProps: { placeholder: '请选择个人业绩', dropdownMatchSelectWidth: false },
+      colSize: 1.1,
       hideInSearch: false,
       align: 'center',
+      request: projCountOptions,
       sorter: (a, b) => a.proj_count - b.proj_count,
-      renderText: (_, record: ManagerDto) => {
-        let color = 'default';
-        const len = record?.projects?.length || 0;
-        if (len > 5) color = 'green';
-        else if (len > 3) color = 'orange';
-        else if (len > 0) color = 'magenta';
-        return <Tag color={color}>{len}</Tag>;
-      },
+      renderText: (_, record: ManagerDto) => renderTags(record?.projects?.length),
     },
     {
       title: '证书名称',
       dataIndex: 'cert_name',
-      hideInSearch: true,
+      fieldProps: { placeholder: '请选择资格证书名称' },
+      // fieldProps: { dropdownMatchSelectWidth: false },
+      colSize: 1.1,
+      hideInSearch: false,
       copyable: true,
       ellipsis: false,
-    },
-    {
-      title: '注册单位',
-      dataIndex: 'lending_to',
-      hideInSearch: true,
-      copyable: true,
-      ellipsis: false,
+      request: certNameOptions,
     },
     {
       title: '注册编号',
@@ -104,6 +112,13 @@ export default function Page() {
       valueType: 'date',
       hideInSearch: true,
       copyable: false,
+      ellipsis: false,
+    },
+    {
+      title: '注册单位',
+      dataIndex: 'lending_to',
+      hideInSearch: true,
+      copyable: true,
       ellipsis: false,
     },
     {
