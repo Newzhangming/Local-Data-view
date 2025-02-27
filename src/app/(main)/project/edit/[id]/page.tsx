@@ -9,6 +9,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { IdReq } from '@/constants/dto';
 import { ProjectDetailDto, ProjUnit } from '@/constants/project';
 import { queryProject, upsertProject, upsertUnit } from '@/services/project';
+import { closeWindow } from '@/utils/close-window';
 
 export default function ProjectEdit() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -94,7 +95,14 @@ export default function ProjectEdit() {
       {contextHolder}
       <Space direction={'vertical'} size={'large'}>
         <Breadcrumb items={breadcrumbItems} />
-        <ProForm<ProjectDetailDto> formRef={formRef} loading={loading} submitter={{ searchConfig: { submitText: '保存' } }} onFinish={onFinish} params={params} request={getRequestData()}>
+        <ProForm<ProjectDetailDto>
+          formRef={formRef}
+          loading={loading}
+          submitter={{ searchConfig: { submitText: '保存', resetText: '关闭' }, onReset: closeWindow }}
+          onFinish={onFinish}
+          params={params}
+          request={getRequestData()}
+        >
           <ProForm.Group>
             <ProFormText name="proj_name" width="lg" label="项目名" rules={[{ required: true, message: '请输入正确的项目名', min: 2, max: 300 }]} placeholder="请输入项目名" />
             <ProFormText name="proj_no" width="sm" rules={[{ required: true, message: '请输入正确的项目编号', min: 10 }]} label="项目编号" placeholder="请输入项目编号" />
@@ -107,7 +115,7 @@ export default function ProjectEdit() {
             <ProFormText name="region" disabled label="项目区划" placeholder="请输入项目区划" />
           </ProForm.Group>
           <ProForm.Group>
-            <ProFormText name={['manager', 'name']} width="xs" label="项目经理" placeholder="请输入项目经理" disabled />
+            <ProFormText name={['managers', 'name']} width="xs" label="项目经理" placeholder="请输入项目经理" disabled />
             <ProFormText
               name={['source_id']}
               rules={[

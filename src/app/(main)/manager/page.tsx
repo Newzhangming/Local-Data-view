@@ -135,7 +135,7 @@ export default function Page() {
       align: 'center',
       render: (_, record) => (
         <>
-          <a href={`/manager/edit/${record.id}`}>
+          <a href={`/manager/edit/${record.id}`} target={'_blank'}>
             编辑
             <EditTwoTone />
           </a>

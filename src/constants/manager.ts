@@ -17,7 +17,7 @@ export interface ManagerDto {
   source_id: string;
   cert_status: string;
   proj_count: number;
-  projects: Project[];
+  projects: ProjectDto[];
   experiences: Experience[];
   created_at: Date;
   updated_at: Date;
@@ -34,6 +34,10 @@ export interface Experience {
 interface Company {
   id: string;
   name: string;
+}
+
+export interface ProjectDto {
+  project: Project;
 }
 
 export interface Project {

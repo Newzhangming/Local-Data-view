@@ -11,7 +11,8 @@ export interface ProjectDetailDto {
   total_area: number;
   updated_at: Date;
   source_id: string;
-  manager: { id: string; name: string; id_card: string };
+  manager: ManagerBase;
+  managers: [{ manager: ManagerBase }];
   contract: ProjContract;
   contracts: ProjContract[];
   proj_units: ProjUnit[];
@@ -21,6 +22,7 @@ export interface ProjectDetailDto {
   acceptance_filings: AcceptanceFiling[];
   completion_acceptances: CompletionAcceptance[];
   proj_tech_kpis: ProjectTechKpi[];
+  mgr_tech_kpis: ManagerTechKpi[];
   data_from: string;
   conclusion: string;
   remark: string;
@@ -49,7 +51,8 @@ export interface AcceptanceFiling {
   af_no?: string;
   cp_no: string;
   companies: AcceptanceFilingCompany[];
-  project: { manager_id: string };
+  project: { managers: [{ manager_id: string }] };
+  managers: { manager: ManagerBase }[];
   ca_date?: Date;
   data_from: string;
   scale_desc: string;
@@ -89,10 +92,13 @@ export interface ManagerElement {
   assigned_at?: Date;
 }
 
-export interface ManagerManager {
+export interface ManagerBase {
   id: string;
   id_card: string;
   name: string;
+}
+
+export interface ManagerManager extends ManagerBase {
   companies?: ManagerCompany[];
 }
 
@@ -113,6 +119,7 @@ export interface ConstructionPermit {
   cp_area: number;
   company: CompanyCompany;
   manager: ManagerManager;
+  managers: { manager: ManagerBase }[];
   data_from: string;
   scale_desc: string;
   span: number;
@@ -157,4 +164,9 @@ export interface ProjectTechKpi {
   start_date: Date;
   end_date: Date;
   kpi_desc: string;
+}
+
+export interface ManagerTechKpi {
+  proj_role: string;
+  manager: ManagerBase;
 }

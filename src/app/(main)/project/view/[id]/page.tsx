@@ -1,7 +1,7 @@
 'use client';
 
 import { BuildOutlined, HomeOutlined } from '@ant-design/icons';
-import { ProFormRadio } from '@ant-design/pro-components';
+import { ProFormRadio, ProFormText } from '@ant-design/pro-components';
 import { Breadcrumb, Descriptions, Divider, message, RadioChangeEvent, RadioGroupProps, Space, Table, TableProps, Tag } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { Fragment, useEffect, useState } from 'react';
@@ -10,11 +10,11 @@ import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
 import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
-import { AcceptanceFiling, ProjectDetailDto, ProjUnit } from '@/constants/project';
+import { AcceptanceFiling, ConstructionPermit, ProjectDetailDto, ProjUnit } from '@/constants/project';
 import { getProject, upsertProject } from '@/services/project';
 import { year2Day } from '@/utils/date';
 
-export default function ManagerView() {
+export default function ProjectView() {
   const [messageApi, contextHolder] = message.useMessage();
   const params: Partial<IdReq> = useParams();
   const [loading, setLoading] = useState<boolean>(true);
@@ -85,13 +85,18 @@ export default function ManagerView() {
     { title: '施工单位', key: 'company', render: (value: AcceptanceFiling) => <Copyable content={value?.companies?.[0]?.company?.name} /> },
     {
       title: '项目经理',
-      key: 'manager',
+      key: 'managers',
       render: (value: AcceptanceFiling) => {
-        const mgrId = value?.project?.manager_id;
+        if (value.managers?.length) {
+          return value?.managers?.map((item, index) => <Copyable key={index} content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} target={'_blank'} />);
+        }
+        const mgrIds = value?.project?.managers?.map((item) => item.manager_id);
         const managers = value?.companies?.[0]?.company?.managers || [];
-        for (const manager of managers) {
-          if (manager?.manager?.id === mgrId) {
-            return <Copyable content={manager?.manager?.name} link={`/manager/view/${mgrId}`} />;
+        for (const mgrId of mgrIds) {
+          for (const manager of managers) {
+            if (manager?.manager?.id === mgrId) {
+              return <Copyable content={manager?.manager?.name} link={`/manager/view/${mgrId}`} />;
+            }
           }
         }
         return null;
@@ -101,20 +106,53 @@ export default function ManagerView() {
       title: '身份证号',
       key: 'id_card',
       render: (value: AcceptanceFiling) => {
-        const mgrId = value?.project?.manager_id;
+        if (value.managers?.length) {
+          return value?.managers?.map((item, index) => <Copyable key={index} content={item?.manager?.id_card} target={'_blank'} />);
+        }
+        const mgrIds = value?.project?.managers?.map((item) => item.manager_id);
         const managers = value?.companies?.[0]?.company?.managers || [];
-        for (const manager of managers) {
-          if (manager?.manager?.id === mgrId) {
-            return <Copyable content={manager?.manager?.id_card} />;
+        for (const mgrId of mgrIds) {
+          for (const manager of managers) {
+            if (manager?.manager?.id === mgrId) {
+              return <Copyable content={manager?.manager?.id_card} />;
+            }
           }
         }
         return null;
       },
     },
   ];
+  const cpColumns: TableProps<ConstructionPermit>['columns'] = [
+    { title: '施工许可编号', dataIndex: 'cp_no', key: 'cp_no', render: (value: string) => <Copyable content={value} /> },
+    { title: '合同金额(万元)', dataIndex: 'cp_amount', key: 'cp_amount', render: (value: string) => <Copyable content={value} /> },
+    { title: '面积（平方米）', dataIndex: 'cp_area', key: 'cp_area', render: (value: string) => <Copyable content={value} /> },
+    { title: '发证日期', dataIndex: 'cp_date', key: 'cp_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
+    { title: '跨度(米)', dataIndex: 'span', key: 'span', render: (value: string) => <Copyable content={value} /> },
+    { title: '建设规模', dataIndex: 'scale_desc', key: 'scale_desc', width: 150, render: (value: string) => <Ellipsis text={value} lines={2} /> },
+    { title: '信息来源', dataIndex: 'data_from', key: 'data_from', render: (value: string) => <Copyable content={value} /> },
+    { title: '数据等级', dataIndex: 'data_level', key: 'data_level', render: (value: string) => <Copyable content={value} /> },
+    { title: '所属单位', render: (value) => <Copyable content={value?.company?.name} link={`/company/view/${value?.company?.id}`} target={'_blank'} /> },
+    {
+      title: '项目经理',
+      render: (value: ConstructionPermit) => {
+        return value.managers?.map((item) => {
+          return <Copyable key={item?.manager?.id} content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} target={'_blank'} />;
+        });
+      },
+    },
+    {
+      title: '身份证号',
+      render: (value: ConstructionPermit) => {
+        return value.managers?.map((item) => {
+          return <Copyable key={item?.manager?.id} content={item?.manager?.id_card} />;
+        });
+      },
+    },
+  ];
 
   const unitDataSource = detail?.proj_units?.map((item, index) => ({ key: `unit_${index}`, ...item }));
   const afDataSource = detail?.acceptance_filings?.map((item, index) => ({ key: `af_${index}`, ...item }));
+  const cpDataSource = detail?.construction_permits?.map((item, index) => ({ key: `cp_${index}`, ...item }));
   const unitCostTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_cost || 0), 0).toFixed(2) || '0');
   const unitAreaTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_area || 0), 0).toFixed(2) || '0');
   const afCostTotal = Number.parseFloat(detail?.acceptance_filings?.reduce((acc, cur) => acc + (cur.actual_cost || 0), 0).toFixed(2) || '0');
@@ -176,13 +214,6 @@ export default function ManagerView() {
   if (!detail?.construction_permits?.[0]?.cp_date) {
     conclusion.push({ position: 'permit', msg: '施工许可日期不达标', value: false });
   }
-  let wbPermitText = conclusion
-    .filter((item) => !item.value && item.position === 'permit')
-    .map((item) => item.msg)
-    .join('，');
-  if (!wbPermitText) {
-    wbPermitText = '施工许可信息达标';
-  }
 
   // 竣工验收备案
   if (detail?.acceptance_filings?.[0]?.data_level !== 'A' && detail?.acceptance_filings?.[0]?.data_level !== 'B') {
@@ -204,14 +235,6 @@ export default function ManagerView() {
   const absolute_cost = Math.abs(actual_cost - unitCostTotal).toFixed(2);
   if (actual_cost && unitCostTotal && +absolute_cost > 50) {
     conclusion.push({ position: 'af', msg: `竣工验收备案实际造价与单体信息造价总计相差${absolute_cost}万`, value: false });
-  }
-
-  let afText = conclusion
-    .filter((item) => !item.value && item.position === 'af')
-    .map((item) => item.msg)
-    .join('，');
-  if (!afText) {
-    afText = '竣工验收备案达标';
   }
 
   const onConclusionChange = async (e: RadioChangeEvent) => {
@@ -252,9 +275,7 @@ export default function ManagerView() {
           <Descriptions.Item label="项目区划">
             <Copyable content={detail?.region} />
           </Descriptions.Item>
-          <Descriptions.Item label="项目经理">
-            <Copyable content={detail?.manager?.name} link={`/manager/view/${detail?.manager?.id}`} />
-          </Descriptions.Item>
+          <Descriptions.Item label="项目经理">{detail?.managers.map((m) => <Copyable key={m?.manager?.id} content={m?.manager?.name} link={`/manager/view/${m?.manager?.id}`} />)}</Descriptions.Item>
           <Descriptions.Item label="总面积(平方米)">
             <Copyable content={detail?.total_area} />
           </Descriptions.Item>
@@ -346,50 +367,9 @@ export default function ManagerView() {
         </Descriptions>
         <div className={'text-base font-medium'}>结论：{wbContractText}</div>
         <Divider />
-        <Descriptions title="施工许可">
-          {detail?.construction_permits?.map((item) => {
-            return (
-              <Fragment key={item?.cp_no}>
-                <Descriptions.Item label="施工许可编号">
-                  <Copyable content={item?.cp_no} />
-                </Descriptions.Item>
-                <Descriptions.Item label="数据等级">
-                  <Copyable content={item?.data_level} />
-                </Descriptions.Item>
-                <Descriptions.Item label="发证日期">
-                  <Copyable content={year2Day(item?.cp_date)} />
-                </Descriptions.Item>
-                <Descriptions.Item label="面积（平方米）">
-                  <Copyable content={item?.cp_area} />
-                </Descriptions.Item>
-                <Descriptions.Item label="合同金额（万元）">
-                  <Copyable content={item?.cp_amount} />
-                </Descriptions.Item>
-                <Descriptions.Item label="所属单位">
-                  <Copyable content={item?.company?.name} link={`/company/view/${item?.company?.id}`} />
-                </Descriptions.Item>
-                <Descriptions.Item label="项目经理">
-                  <Copyable content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} />
-                </Descriptions.Item>
-                <Descriptions.Item label="身份证号码">
-                  <Copyable content={item?.manager?.id_card} />
-                </Descriptions.Item>
-                <Descriptions.Item label="数据来源">
-                  <Copyable content={item?.data_from} />
-                </Descriptions.Item>
-                <Descriptions.Item label="跨度(米)">
-                  <Copyable content={item?.span} />
-                </Descriptions.Item>
-                <Descriptions.Item label="建设规模">
-                  <Copyable content={item?.scale_desc} />
-                </Descriptions.Item>
-              </Fragment>
-            );
-          })}
-        </Descriptions>
-        <div className={'text-base font-medium'}>结论：{wbPermitText}</div>
-        <Divider />
-        <div className={'text-base font-semibold'}>竣工验收备案</div>
+        <div className={'text-[15px] font-medium'}>施工许可</div>
+        <Table loading={loading} locale={locale} pagination={false} dataSource={cpDataSource} columns={cpColumns} />
+        <div className={'text-[15px] font-medium'}>竣工验收备案</div>
         <Table
           loading={loading}
           locale={locale}
@@ -406,6 +386,11 @@ export default function ManagerView() {
         <Divider />
         <Descriptions title="技术业绩指标">
           {detail?.proj_tech_kpis?.map((item) => {
+            let manager = detail?.mgr_tech_kpis.find((m) => m.proj_role === '项目经理')?.manager;
+            if (!manager && detail?.managers?.length > 1) {
+              manager = detail?.managers?.pop()?.manager;
+            }
+
             return (
               <Fragment key={item?.kpi_no}>
                 <Descriptions.Item label="业绩记录编号">
@@ -430,10 +415,10 @@ export default function ManagerView() {
                   <Copyable content={item.data_level} />
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <Copyable content={detail?.manager?.name} link={`/manager/view/${detail?.manager?.id}`} />
+                  <Copyable content={manager?.name} link={`/manager/view/${manager?.id}`} />
                 </Descriptions.Item>
                 <Descriptions.Item label="身份证号">
-                  <Copyable content={detail?.manager?.id_card} />
+                  <Copyable content={manager?.id_card} />
                 </Descriptions.Item>
                 <Descriptions.Item label="建设规模">
                   <Copyable content={item.kpi_desc} />
@@ -441,6 +426,15 @@ export default function ManagerView() {
               </Fragment>
             );
           })}
+        </Descriptions>
+        <Divider />
+        <Descriptions title="项目备注">
+          <Space>
+            <ProFormText>{detail?.remark || '未填写'}</ProFormText>
+            <a className={'mx-5'} href={`/project/edit/${detail?.proj_no}`} target={'_blank'}>
+              补充备注
+            </a>
+          </Space>
         </Descriptions>
         <Divider />
         <ProFormRadio.Group

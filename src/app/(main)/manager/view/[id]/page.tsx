@@ -82,6 +82,8 @@ export default function ManagerView() {
     },
   ];
 
+  const dataSource: Project[] = detail?.projects?.filter((item) => item.project)?.map((item) => item.project) ?? [];
+
   const breadcrumbItems = [
     {
       href: '/',
@@ -152,7 +154,7 @@ export default function ManagerView() {
           rowKey={'id'}
           locale={locale}
           loading={loading}
-          dataSource={detail?.projects}
+          dataSource={dataSource}
           columns={projectColumns}
           pagination={false}
         />

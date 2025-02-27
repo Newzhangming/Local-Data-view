@@ -1,7 +1,7 @@
 'use client';
 
 import { BgColorsOutlined, HomeOutlined } from '@ant-design/icons';
-import { Breadcrumb, Descriptions, Divider, message, Space, Table, type TableColumnsType } from 'antd';
+import { Breadcrumb, Descriptions, message, Space, Table, type TableColumnsType } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
@@ -80,6 +80,9 @@ export default function CompanyEdit() {
     { title: <Copyable content={detail?.name} /> },
   ];
 
+  const certTitle = () => <span className={'text-lg'}>企业资质资格</span>;
+  const managerTitle = () => <span className={'text-lg'}>注册人员</span>;
+
   return (
     <>
       {contextHolder}
@@ -96,10 +99,8 @@ export default function CompanyEdit() {
             <Copyable content={detail?.role_type} />
           </Descriptions.Item>
         </Descriptions>
-        <Divider />
-        <Table rowKey={'cert_no'} locale={locale} loading={loading} dataSource={detail?.certificates} columns={certColumns} pagination={false} />
-        <Divider />
-        <Table rowKey={'name'} locale={locale} loading={loading} dataSource={detail?.managers} columns={managerColumns} pagination={false} />
+        <Table title={certTitle} rowKey={'cert_no'} locale={locale} loading={loading} dataSource={detail?.certificates} columns={certColumns} pagination={false} />
+        <Table title={managerTitle} rowKey={'name'} locale={locale} loading={loading} dataSource={detail?.managers} columns={managerColumns} pagination={false} />
       </Space>
     </>
   );

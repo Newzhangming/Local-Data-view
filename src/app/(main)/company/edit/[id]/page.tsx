@@ -9,6 +9,7 @@ import React, { useCallback } from 'react';
 import { CompanyDto } from '@/constants/company';
 import { IdReq } from '@/constants/dto';
 import { queryCompany, updateCompany } from '@/services/company';
+import { closeWindow } from '@/utils/close-window';
 
 export default function CompanyEdit() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -59,7 +60,7 @@ export default function CompanyEdit() {
       {contextHolder}
       <Space direction={'vertical'} size={'large'}>
         <Breadcrumb items={breadcrumbItems} />
-        <ProForm submitter={{ searchConfig: { submitText: '保存' } }} onFinish={onFinish} params={params} request={getRequestData(params as IdReq)}>
+        <ProForm submitter={{ searchConfig: { submitText: '保存', resetText: '关闭' }, onReset: closeWindow }} onFinish={onFinish} params={params} request={getRequestData(params as IdReq)}>
           <ProForm.Group>
             <ProFormText name="name" width="md" label="公司名" rules={[{ required: true, message: '请输入正确的公司名', min: 4, max: 50 }]} placeholder="请输入公司名" />
             <ProFormText name="social_credit_code" rules={[{ required: true, message: '请输入18位社会信用代码', len: 18 }]} width="md" label="企业社会信用代码" placeholder="请输入企业社会信用代码" />

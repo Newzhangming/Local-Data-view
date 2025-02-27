@@ -13,7 +13,7 @@ import { ProjectDto, ProjectReq } from '@/constants/dto';
 import { getProjects } from '@/services/project';
 import { getStorage, setStorage } from '@/utils/storage';
 
-export default function Page() {
+export default function ProjectList() {
   const { token } = theme.useToken();
   const [messageApi, contextHolder] = message.useMessage();
   const router = useRouter();
@@ -135,7 +135,7 @@ export default function Page() {
         const linkClassName = record.proj_no ? 'text-blue-500' : 'text-gray-500 hover:text-gray-500';
         return (
           <>
-            <a href={`/project/edit/${record.proj_no}`}>
+            <a href={`/project/edit/${record.proj_no}`} target={'_blank'}>
               编辑
               <EditTwoTone />
             </a>

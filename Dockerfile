@@ -1,12 +1,12 @@
-FROM oven/bun:1.2.0-slim AS base
+FROM oven/bun:1.2.4-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json bun.lock ./
-RUN bun i
+COPY package.json ./
+RUN bun i --verbose
 
 # Rebuild the source code only when needed
 FROM base AS builder
