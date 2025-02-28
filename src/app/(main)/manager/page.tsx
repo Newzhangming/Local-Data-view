@@ -42,6 +42,14 @@ export default function Page() {
     return <Tag color={color}>{len}</Tag>;
   };
 
+  const renderStatus = (text: string) => {
+    let color = 'default';
+    if (text === '有效') color = 'green';
+    else if (text === '注销') color = 'magenta';
+    else text = '待查';
+    return <Tag color={color}>{text}</Tag>;
+  };
+
   const columns: ProColumns<ManagerDto>[] = [
     {
       title: '姓名',
@@ -72,6 +80,11 @@ export default function Page() {
       ellipsis: false,
     },
     {
+      title: '四库状态',
+      dataIndex: 'cert_status',
+      renderText: (_, record: ManagerDto) => renderStatus(record?.cert_status),
+    },
+    {
       title: '注册轨迹',
       hideInSearch: true,
       align: 'center',
@@ -80,7 +93,7 @@ export default function Page() {
     {
       title: '个人业绩',
       dataIndex: 'proj_count',
-      fieldProps: { placeholder: '请选择个人业绩', dropdownMatchSelectWidth: false },
+      fieldProps: { placeholder: '请选择个人业绩', popupMatchSelectWidth: false },
       colSize: 1.1,
       hideInSearch: false,
       align: 'center',
@@ -92,7 +105,7 @@ export default function Page() {
       title: '证书名称',
       dataIndex: 'cert_name',
       fieldProps: { placeholder: '请选择资格证书名称' },
-      // fieldProps: { dropdownMatchSelectWidth: false },
+      // fieldProps: { popupMatchSelectWidth: false },
       colSize: 1.1,
       hideInSearch: false,
       copyable: true,

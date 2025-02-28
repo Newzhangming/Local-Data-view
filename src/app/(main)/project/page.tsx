@@ -80,7 +80,7 @@ export default function ProjectList() {
       ellipsis: false,
       colSize: 0.9,
       valueType: 'select',
-      fieldProps: { dropdownMatchSelectWidth: false },
+      fieldProps: { popupMatchSelectWidth: false },
       request: async () => Object.keys(conclusions).map((value) => ({ label: conclusions[value as keyof typeof conclusions].text, value })),
       render: (_, record) => {
         const text = conclusions[record.conclusion as keyof typeof conclusions]?.text;
@@ -109,7 +109,7 @@ export default function ProjectList() {
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
-      fieldProps: { dropdownMatchSelectWidth: false },
+      fieldProps: { popupMatchSelectWidth: false },
       request: async () => Object.keys(DataLevel).map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
       render: (_, record) => {
         const color = DataLevel[record.data_level as keyof typeof DataLevel];
