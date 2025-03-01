@@ -10,7 +10,7 @@ import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
 import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
-import { AcceptanceFiling, ConstructionPermit, ProjectDetailDto, ProjUnit } from '@/constants/project';
+import { AcceptanceFiling, ConstructionPermit, ProjectDetailDto, ProjUnit, WinningBidder } from '@/constants/project';
 import { getProject, upsertProject } from '@/services/project';
 import { year2Day } from '@/utils/date';
 
@@ -82,7 +82,11 @@ export default function ProjectView() {
     { title: '建设规模', dataIndex: 'scale_desc', key: 'scale_desc', width: 150, render: (value: string) => <Ellipsis text={value} lines={2} /> },
     { title: '信息来源', dataIndex: 'data_from', key: 'data_from', render: (value: string) => <Copyable content={value} /> },
     { title: '数据等级', dataIndex: 'data_level', key: 'data_level', render: (value: string) => <Copyable content={value} /> },
-    { title: '施工单位', key: 'company', render: (value: AcceptanceFiling) => <Copyable content={value?.companies?.[0]?.company?.name} /> },
+    {
+      title: '施工单位',
+      key: 'company',
+      render: (value: AcceptanceFiling) => <Copyable content={value?.companies?.[0]?.company?.name} link={`/company/view/${value?.companies?.[0]?.company?.id}`} target={'_blank'} />,
+    },
     {
       title: '项目经理',
       key: 'managers',
@@ -95,7 +99,7 @@ export default function ProjectView() {
         for (const mgrId of mgrIds) {
           for (const manager of managers) {
             if (manager?.manager?.id === mgrId) {
-              return <Copyable content={manager?.manager?.name} link={`/manager/view/${mgrId}`} />;
+              return <Copyable content={manager?.manager?.name} link={`/manager/view/${mgrId}`} target={'_blank'} />;
             }
           }
         }
@@ -131,28 +135,40 @@ export default function ProjectView() {
     { title: '建设规模', dataIndex: 'scale_desc', key: 'scale_desc', width: 150, render: (value: string) => <Ellipsis text={value} lines={2} /> },
     { title: '信息来源', dataIndex: 'data_from', key: 'data_from', render: (value: string) => <Copyable content={value} /> },
     { title: '数据等级', dataIndex: 'data_level', key: 'data_level', render: (value: string) => <Copyable content={value} /> },
-    { title: '所属单位', render: (value) => <Copyable content={value?.company?.name} link={`/company/view/${value?.company?.id}`} target={'_blank'} /> },
+    { title: '所属单位', render: (value: ConstructionPermit) => <Copyable content={value?.company?.name} link={`/company/view/${value?.company?.id}`} target={'_blank'} /> },
     {
       title: '项目经理',
-      render: (value: ConstructionPermit) => {
-        return value.managers?.map((item) => {
+      render: (value: ConstructionPermit) =>
+        value.managers?.map((item) => {
           return <Copyable key={item?.manager?.id} content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} target={'_blank'} />;
-        });
-      },
+        }),
     },
     {
       title: '身份证号',
-      render: (value: ConstructionPermit) => {
-        return value.managers?.map((item) => {
+      render: (value: ConstructionPermit) =>
+        value.managers?.map((item) => {
           return <Copyable key={item?.manager?.id} content={item?.manager?.id_card} />;
-        });
-      },
+        }),
     },
+  ];
+  const wbColumns: TableProps<WinningBidder>['columns'] = [
+    { title: '中标编号', dataIndex: 'wb_no', key: 'wb_no', render: (value: string) => <Copyable content={value} /> },
+    { title: '中标日期', dataIndex: 'wb_date', key: 'wb_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
+    { title: '招标类型', dataIndex: 'tender_type', key: 'tender_type', render: (value: string) => <Copyable content={value} /> },
+    { title: '中标金额(万元)', dataIndex: 'wb_amount', key: 'wb_amount', render: (value: string) => <Copyable content={value} /> },
+    { title: '建设规模', dataIndex: 'scale_desc', key: 'scale_desc', width: 150, render: (value: string) => <Ellipsis text={value} lines={2} /> },
+    { title: '信息来源', dataIndex: 'data_from', key: 'data_from', render: (value: string) => <Copyable content={value} /> },
+    { title: '数据等级', dataIndex: 'data_level', key: 'data_level', render: (value: string) => <Copyable content={value} /> },
+    { title: '中标单位', render: (value: WinningBidder) => <Copyable content={value?.company?.name} link={`/company/view/${value?.company?.id}`} target={'_blank'} /> },
+    { title: '项目经理', render: (value: WinningBidder) => <Copyable content={value?.manager?.name} link={`/manager/view/${value?.manager?.id}`} target={'_blank'} /> },
+    { title: '身份证号', render: (value: WinningBidder) => <Copyable content={value?.manager?.id_card} /> },
   ];
 
   const unitDataSource = detail?.proj_units?.map((item, index) => ({ key: `unit_${index}`, ...item }));
   const afDataSource = detail?.acceptance_filings?.map((item, index) => ({ key: `af_${index}`, ...item }));
   const cpDataSource = detail?.construction_permits?.map((item, index) => ({ key: `cp_${index}`, ...item }));
+  const wbDataSource = detail?.winning_bidder?.map((item, index) => ({ key: `wb_${index}`, ...item }));
+
   const unitCostTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_cost || 0), 0).toFixed(2) || '0');
   const unitAreaTotal = Number.parseFloat(detail?.proj_units?.reduce((acc, cur) => acc + (cur.unit_area || 0), 0).toFixed(2) || '0');
   const afCostTotal = Number.parseFloat(detail?.acceptance_filings?.reduce((acc, cur) => acc + (cur.actual_cost || 0), 0).toFixed(2) || '0');
@@ -275,7 +291,9 @@ export default function ProjectView() {
           <Descriptions.Item label="项目区划">
             <Copyable content={detail?.region} />
           </Descriptions.Item>
-          <Descriptions.Item label="项目经理">{detail?.managers.map((m) => <Copyable key={m?.manager?.id} content={m?.manager?.name} link={`/manager/view/${m?.manager?.id}`} />)}</Descriptions.Item>
+          <Descriptions.Item label="项目经理">
+            {detail?.managers.map((m) => <Copyable key={m?.manager?.id} content={m?.manager?.name} link={`/manager/view/${m?.manager?.id}`} target={'_blank'} />)}
+          </Descriptions.Item>
           <Descriptions.Item label="总面积(平方米)">
             <Copyable content={detail?.total_area} />
           </Descriptions.Item>
@@ -303,43 +321,8 @@ export default function ProjectView() {
           }}
         />
         <Divider />
-        <Descriptions title="招投标信息">
-          {detail?.winning_bidder?.map((item) => {
-            return (
-              <Fragment key={item?.wb_no}>
-                <Descriptions.Item label="中标通知书编号">
-                  <Copyable content={item?.wb_no} />
-                </Descriptions.Item>
-                <Descriptions.Item label="数据等级">
-                  <Copyable content={item?.data_level} />
-                </Descriptions.Item>
-                <Descriptions.Item label="中标日期">
-                  <Copyable content={year2Day(item?.wb_date)} />
-                </Descriptions.Item>
-                <Descriptions.Item label="招标类型">{item?.tender_type || ''}</Descriptions.Item>
-                <Descriptions.Item label="中标金额(万)">
-                  <Copyable content={item?.wb_amount} />
-                </Descriptions.Item>
-                <Descriptions.Item label="中标单位">
-                  <Copyable content={item?.company?.name} link={`/company/view/${item?.company?.id}`} />
-                </Descriptions.Item>
-                <Descriptions.Item label="项目经理">
-                  <Copyable content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} />
-                </Descriptions.Item>
-                <Descriptions.Item label="身份证号码">
-                  <Copyable content={item?.manager?.id_card} />
-                </Descriptions.Item>
-                <Descriptions.Item label="数据来源">
-                  <Copyable content={item?.data_from} />
-                </Descriptions.Item>
-                <Descriptions.Item label="建设规模">
-                  <Copyable content={item?.scale_desc} />
-                </Descriptions.Item>
-              </Fragment>
-            );
-          })}
-        </Descriptions>
-        <div className={'text-base font-medium'}>结论：{wbResultText}</div>
+        <div className={'text-[15px] font-medium'}>招投标信息</div>
+        <Table loading={loading} locale={locale} pagination={false} dataSource={wbDataSource} columns={wbColumns} />
         <Divider />
         <Descriptions title="合同登记信息">
           {detail?.contracts?.map((item) => {
@@ -355,7 +338,7 @@ export default function ProjectView() {
                   <Copyable content={year2Day(item.sign_date)} />
                 </Descriptions.Item>
                 <Descriptions.Item label="承包单位">
-                  <Copyable content={item.company?.name} link={`/company/view/${item.company?.id}`} />
+                  <Copyable content={item.company?.name} link={`/company/view/${item.company?.id}`} target={'_blank'} />
                 </Descriptions.Item>
                 <Descriptions.Item label="数据来源">
                   <Copyable content={item?.data_from} />
@@ -397,7 +380,7 @@ export default function ProjectView() {
                   <Copyable content={item?.kpi_no} />
                 </Descriptions.Item>
                 <Descriptions.Item label="企业名称">
-                  <Copyable content={item?.company?.name} link={`/company/view/${item?.company?.id}`} />
+                  <Copyable content={item?.company?.name} link={`/company/view/${item?.company?.id}`} target={'_blank'} />
                 </Descriptions.Item>
                 <Descriptions.Item label="统一社会信用代码">
                   <Copyable content={item?.company.social_credit_code} />
@@ -415,7 +398,7 @@ export default function ProjectView() {
                   <Copyable content={item.data_level} />
                 </Descriptions.Item>
                 <Descriptions.Item label="项目经理">
-                  <Copyable content={manager?.name} link={`/manager/view/${manager?.id}`} />
+                  <Copyable content={manager?.name} link={`/manager/view/${manager?.id}`} target={'_blank'} />
                 </Descriptions.Item>
                 <Descriptions.Item label="身份证号">
                   <Copyable content={manager?.id_card} />
