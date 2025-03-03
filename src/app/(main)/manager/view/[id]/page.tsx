@@ -18,9 +18,7 @@ export default function ManagerView() {
   const [loading, setLoading] = useState<boolean>(true);
   const [detail, setDetail] = useState<ManagerDto>();
 
-  useEffect(() => {
-    getDetailData();
-  }, []);
+  useEffect(() => getDetailData(), []);
 
   const getDetailData = () => {
     setLoading(true);

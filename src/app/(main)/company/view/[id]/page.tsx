@@ -17,9 +17,7 @@ export default function CompanyEdit() {
   const [loading, setLoading] = useState<boolean>(true);
   const [detail, setDetail] = useState<CompanyDto>();
 
-  useEffect(() => {
-    getDetailData();
-  }, []);
+  useEffect(() => getDetailData(), []);
 
   const getDetailData = () => {
     setLoading(true);
