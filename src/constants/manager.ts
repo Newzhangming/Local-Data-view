@@ -6,6 +6,20 @@ export interface ManagerUpdateReq {
   cert_status?: string;
 }
 
+export interface CertDto {
+  id: string;
+  cert_name: string;
+  lending_no: string;
+  major: string;
+  valid_date: string;
+  company: Company;
+  experiences: Experience[];
+  major_2: string;
+  valid_date_2: string;
+  major_3: string;
+  valid_date_3: string;
+}
+
 export interface ManagerDto {
   id: string;
   name: string;
@@ -17,6 +31,7 @@ export interface ManagerDto {
   source_id: string;
   cert_status: string;
   proj_count: number;
+  certs: CertDto[];
   projects: ProjectDto[];
   experiences: Experience[];
   created_at: Date;

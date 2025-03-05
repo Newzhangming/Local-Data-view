@@ -116,7 +116,6 @@ export default function ProjectList() {
         return <Tag color={color}>{record.data_level}</Tag>;
       },
     },
-
     {
       title: '更新日期',
       dataIndex: 'updated_at',

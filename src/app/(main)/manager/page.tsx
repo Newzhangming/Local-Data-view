@@ -52,6 +52,30 @@ export default function Page() {
 
   const columns: ProColumns<ManagerDto>[] = [
     {
+      title: '用人省份',
+      dataIndex: 'province',
+      hideInTable: true,
+      order: 5,
+      fieldProps: { popupMatchSelectWidth: false },
+      request: async () => ['山东', '浙江', '北京', '湖南', '江西'].map((value) => ({ label: value, value })),
+    },
+    {
+      title: '数据等级',
+      dataIndex: 'data_level',
+      hideInTable: true,
+      order: 4,
+      fieldProps: { popupMatchSelectWidth: false },
+      request: async () => ['A', 'B', 'C', 'D'].map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
+    },
+    {
+      title: '注册专业',
+      dataIndex: 'major',
+      hideInTable: true,
+      order: 4,
+      fieldProps: { popupMatchSelectWidth: false },
+      request: async () => ['建筑工程', '市政公用工程'].map((value) => ({ label: value, value })),
+    },
+    {
       title: '姓名',
       order: 10,
       dataIndex: 'name',
@@ -81,6 +105,7 @@ export default function Page() {
     },
     {
       title: '四库状态',
+      order: 8,
       dataIndex: 'cert_status',
       renderText: (_, record: ManagerDto) => renderStatus(record?.cert_status),
     },
@@ -95,6 +120,7 @@ export default function Page() {
       dataIndex: 'proj_count',
       fieldProps: { placeholder: '请选择个人业绩', popupMatchSelectWidth: false },
       colSize: 1.1,
+      order: 7,
       hideInSearch: false,
       align: 'center',
       request: projCountOptions,
@@ -107,6 +133,7 @@ export default function Page() {
       fieldProps: { placeholder: '请选择资格证书名称' },
       // fieldProps: { popupMatchSelectWidth: false },
       colSize: 1.1,
+      order: 6,
       hideInSearch: false,
       copyable: true,
       ellipsis: false,

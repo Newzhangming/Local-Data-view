@@ -1,5 +1,5 @@
 import { AreaDto, AreaReq, ConditionDto, ConditionReq, ProjectRoleDto, ProjectRoleReq } from '@/constants/condition';
-import { BaseResp } from '@/constants/dto';
+import { BaseResp, IdReq } from '@/constants/dto';
 import HttpService from '@/utils/http-service';
 import { getStorage } from '@/utils/storage';
 import { objectToQueryString } from '@/utils/strings';
@@ -26,4 +26,9 @@ export const queryConditions = (input: ConditionReq): Promise<BaseResp<Condition
   delete input.current;
   const url = `/v1/conditions?${objectToQueryString({ pageIndex, ...input })}`;
   return httpService.get<BaseResp<ConditionDto[]>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
+};
+
+export const removeCondition = (input: IdReq): Promise<BaseResp<ConditionDto>> => {
+  const url = `/v1/condition?id=${input.id}`;
+  return httpService.delete<BaseResp<ConditionDto>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
 };

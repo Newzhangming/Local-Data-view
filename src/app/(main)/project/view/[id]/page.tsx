@@ -369,10 +369,11 @@ export default function ProjectView() {
         <Divider />
         <Descriptions title="技术业绩指标">
           {detail?.proj_tech_kpis?.map((item) => {
-            let manager = detail?.mgr_tech_kpis.find((m) => m.proj_role === '项目经理')?.manager;
-            if (!manager && detail?.managers?.length > 1) {
-              manager = detail?.managers?.pop()?.manager;
-            }
+            const manager = detail?.mgr_tech_kpis.find((m) => m.proj_role === '项目经理')?.manager;
+            // 不注释的话会显示错误，如果技术业绩指标没有，就要补采
+            // if (!manager && detail?.managers?.length > 1) {
+            //   manager = detail?.managers?.pop()?.manager;
+            // }
 
             return (
               <Fragment key={item?.kpi_no}>

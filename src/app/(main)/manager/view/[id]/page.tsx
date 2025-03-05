@@ -40,7 +40,7 @@ export default function ManagerView() {
     { title: '序号', render: (text, record, index) => `${index + 1}` },
     {
       title: '公司名称',
-      render: (_, record: Experience) => <Copyable content={record.company.name} link={`/manager/view/${record.company.id}`} />,
+      render: (_, record: Experience) => <Copyable content={record.company.name} link={`/company/view/${record.company.id}`} />,
     },
     { title: '注册时间', dataIndex: 'start_date', render: (value: string) => year2Day(value) },
     { title: '注销时间', dataIndex: 'end_date', render: (value: string) => year2Day(value) },
@@ -123,29 +123,74 @@ export default function ManagerView() {
             <Copyable content={detail?.source_id} link={`https://jzsc.mohurd.gov.cn/data/person/detail?id=${detail?.source_id}`} target={'_blank'} />
           </Descriptions.Item>
           <Descriptions.Item label="证书名称">
-            <Copyable content={detail?.cert_name} />
+            <Copyable content={detail?.certs?.[0]?.cert_name ? detail?.certs?.[0]?.cert_name : detail?.cert_name} />
           </Descriptions.Item>
           <Descriptions.Item label="证书状态">
             <Copyable content={detail?.cert_status} />
           </Descriptions.Item>
           <Descriptions.Item label="注册公司">
-            <Copyable content={detail?.lending_to} />
+            <Copyable content={detail?.certs?.[0]?.company?.name ? detail?.certs?.[0]?.company?.name : detail?.lending_to} />
           </Descriptions.Item>
           <Descriptions.Item label="注册编号">
-            <Copyable content={detail?.lending_no} />
+            <Copyable content={detail?.certs?.[0]?.lending_no ? detail?.certs?.[0]?.lending_no : detail?.lending_no} />
           </Descriptions.Item>
           <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>
         </Descriptions>
-        <Table
-          title={() => <span className={'text-lg'}>执业注册信息</span>}
-          bordered
-          rowKey={'desc'}
-          locale={locale}
-          loading={loading}
-          dataSource={detail?.experiences}
-          columns={experienceColumns}
-          pagination={false}
-        />
+        {detail?.certs?.map((item) => {
+          return (
+            <>
+              <div className={'bg-gray-100 p-5'}>
+                <div className={'text-lg'}>{item.cert_name}</div>
+                <div className={'flex mt-3 text-sm'}>
+                  <div>
+                    注册单位：<a href={`/company/view/${item.company.id}`}>{item.company.name}</a>
+                  </div>
+                  <div className={'mx-20'}>注册编号/执业印章号：{item.lending_no}</div>
+                </div>
+                <div className={'flex mt-3 text-sm'}>
+                  <div>注册专业：{item.major}</div>
+                  <div className={'mx-20'}>有效期：{year2Day(item.valid_date)}</div>
+                </div>
+                {item.major_2 && (
+                  <div className={'flex mt-3 text-sm'}>
+                    <div>注册专业： {item.major_2}</div>
+                    <div className={'mx-20'}>有效期： {year2Day(item.valid_date_2)}</div>
+                  </div>
+                )}
+                {item.major_3 && (
+                  <div className={'flex mt-3 text-sm'}>
+                    <div>注册专业： {item.major_3}</div>
+                    <div className={'mx-20'}>有效期： {year2Day(item.valid_date_3)}</div>
+                  </div>
+                )}
+                <div className={'mt-5'} />
+                <Table
+                  title={() => <span className={'text-lg'}>执业注册信息</span>}
+                  bordered
+                  rowKey={'desc'}
+                  locale={locale}
+                  loading={loading}
+                  dataSource={item?.experiences}
+                  columns={experienceColumns}
+                  pagination={false}
+                />
+              </div>
+            </>
+          );
+        })}
+        {!detail?.certs?.length ? (
+          <Table
+            title={() => <span className={'text-lg'}>执业注册信息</span>}
+            bordered
+            rowKey={'desc'}
+            locale={locale}
+            loading={loading}
+            dataSource={detail?.experiences}
+            columns={experienceColumns}
+            pagination={false}
+          />
+        ) : null}
+
         <Table
           title={() => <span className={'text-lg'}>个人工程业绩</span>}
           bordered

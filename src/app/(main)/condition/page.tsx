@@ -1,12 +1,12 @@
 'use client';
 
-import { type ProColumns, ProTable } from '@ant-design/pro-components';
-import { Button, Divider, List, message, Skeleton, Tabs, theme } from 'antd';
+import { ModalForm, ProFormText } from '@ant-design/pro-components';
+import { Button, Divider, List, message, Popconfirm, Skeleton, Table, TableColumnsType, Tabs, theme } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { ConditionDto, ProjectRoleDto } from '@/constants/condition';
-import { queryAreas, queryConditions, queryProjectRoles } from '@/services/condition';
+import { queryAreas, queryConditions, queryProjectRoles, removeCondition } from '@/services/condition';
 
 export default function ConditionPage() {
   const router = useRouter();
@@ -75,13 +75,21 @@ export default function ConditionPage() {
     messageApi.warning('暂未开放').then(() => {});
   };
 
+  const onDelete = (type: string, id: string) => async () => {
+    if (type === 'condition') {
+      await removeCondition({ id });
+      getConditionsData();
+    }
+  };
+
   const handleTabChange = (activeKey: string) => setAreaId(activeKey);
   const onSetProjRoleId = (item: ProjectRoleDto) => () => setProjRoleId(item.id);
 
   const projRolePrefix = projRoles.length ? `${projRoles?.[0]?.area?.name} - ` : '';
   const conditionPrefix = projConditions.length ? `${projConditions?.[0]?.area?.name} - ${projConditions?.[0]?.role?.name} - ` : '';
 
-  const columns: ProColumns<ProjectRoleDto>[] = [
+  const columns: TableColumnsType<ProjectRoleDto> = [
+    { title: '序号', key: 'id', render: (text, record, index) => `${index + 1}` },
     { title: '业绩类别', dataIndex: 'name', key: 'name' },
     { title: '时间', dataIndex: 'duration', key: 'duration', render: (_, record) => `${record.duration}个月` },
     { title: '价格', dataIndex: 'amount', key: 'amount', render: (_, record) => `${record.amount}万+` },
@@ -98,6 +106,26 @@ export default function ConditionPage() {
     },
   ];
 
+  const tableTitle = () => (
+    <div className={'flex justify-between'}>
+      <span />
+      <h3>{projRolePrefix}业绩类别</h3>
+      <Button type={'primary'} onClick={onNotReady}>
+        添加
+      </Button>
+    </div>
+  );
+
+  const listHeader = (
+    <div className={'flex justify-between'}>
+      <span />
+      <h5>{conditionPrefix}用人要求</h5>
+      <Button type={'primary'} onClick={onNotReady}>
+        添加
+      </Button>
+    </div>
+  );
+
   return (
     <>
       {contextHolder}
@@ -105,41 +133,22 @@ export default function ConditionPage() {
         <Tabs defaultActiveKey="1" type="card" size={'large'} style={{ marginBottom: 32 }} items={tabs} onChange={handleTabChange} />
         <div className="flex w-4/5 border">
           <div className="w-1/2 pr-4">
-            <ProTable<ProjectRoleDto>
-              title={() => (
-                <div className={'flex justify-between'}>
-                  <span />
-                  <h3>{projRolePrefix}业绩类别</h3>
-                  <Button type={'primary'} onClick={onNotReady}>
-                    添加
-                  </Button>
-                </div>
-              )}
-              dataSource={projRoles}
-              search={false}
-              columns={columns}
-              toolBarRender={false}
-              pagination={false}
-            />
+            <Table rowKey={'id'} title={tableTitle} columns={columns} dataSource={projRoles} pagination={false} />
           </div>
           <div className="w-1/2 pl-4">
             <List
               dataSource={projConditions}
-              header={
-                <div className={'flex justify-between'}>
-                  <span />
-                  <h5>{conditionPrefix}用人要求</h5>
-                  <Button type={'primary'} onClick={onNotReady}>
-                    添加
-                  </Button>
-                </div>
-              }
+              header={listHeader}
               renderItem={(item) => (
                 <List.Item
                   actions={[
-                    <a key="right-edit" onClick={onNotReady}>
-                      编辑
-                    </a>,
+                    <ModalForm key="right-del" title="编辑采集任务" clearOnDestroy={true} trigger={<a className={'text-blue-500'}>编辑</a>}>
+                      <ProFormText width="xl" name="id" label="项目ID" initialValue={item.id} disabled={true} />
+                      <ProFormText rules={[{ required: true, message: '请输入用人要求' }]} width="xl" name="content" label="用人要求" initialValue={item.content} />
+                    </ModalForm>,
+                    <Popconfirm title="您确认删除吗？" onConfirm={onDelete('condition', item.id)} okText="确认" cancelText="取消">
+                      <a>删除</a>
+                    </Popconfirm>,
                   ]}
                 >
                   {item.content}
