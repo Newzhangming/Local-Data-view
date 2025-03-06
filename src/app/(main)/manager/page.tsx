@@ -7,6 +7,7 @@ import { Divider, message, Tag, theme } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
+import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
 import { locale, pagination, search } from '@/components/table-props';
 import { ManagerReq } from '@/constants/dto';
@@ -130,13 +131,22 @@ export default function Page() {
     {
       title: '证书名称',
       dataIndex: 'cert_name',
-      fieldProps: { placeholder: '请选择资格证书名称' },
-      // fieldProps: { popupMatchSelectWidth: false },
+      fieldProps: { placeholder: '请选择资格证书名称', popupMatchSelectWidth: false },
       colSize: 1.1,
       order: 6,
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
+      // 要遍历把certs下的 cert_name 显示出来
+      render: (_, record: ManagerDto) => {
+        if (record?.certs?.length) {
+          return record?.certs?.map((cert, index) => {
+            return <Copyable key={index} content={cert?.cert_name} />;
+          });
+        } else {
+          return <Copyable content={record?.cert_name} />;
+        }
+      },
       request: certNameOptions,
     },
     {

@@ -1,6 +1,6 @@
 'use client';
 
-import { ModalForm, ProFormText } from '@ant-design/pro-components';
+import { ModalForm, ProCard, ProForm, ProFormCheckbox, ProFormRadio, ProFormText } from '@ant-design/pro-components';
 import { Button, Divider, List, message, Popconfirm, Skeleton, Table, TableColumnsType, Tabs, theme } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -157,6 +157,23 @@ export default function ConditionPage() {
             />
           </div>
         </div>
+        <ProForm layout={'horizontal'} onFinish={onNotReady}>
+          <ProCard split="vertical">
+            <ProCard title="工程项目要求" subTitle={'根据不同省份对工程项目要求，选择下列一项或多项'} headerBordered tooltip={'选错了可以重置'}>
+              <ProFormCheckbox.Group name="date_logic" layout="horizontal" label="时间逻辑" options={['要符合']} />
+              <ProFormCheckbox.Group name="data_level" layout="horizontal" label="数据等级" options={['A', 'B', 'C', 'D']} />
+              <ProFormCheckbox.Group name="build_order" layout="horizontal" label="批建要求" options={['不能未批先建']} />
+              <ProFormCheckbox.Group name="proj_5parties" layout="horizontal" label="五方要求" options={['建设单位', '监理企业', '勘察企业', '设计企业', '施工企业']} />
+              <ProFormRadio.Group name="record_item" layout="horizontal" label="项数要求" options={['项目6项齐全', '项目7项齐全']} />
+            </ProCard>
+            <ProCard title="项目经理要求" subTitle={'根据不同省份用人要求，选择下列选择一项或多项'} headerBordered tooltip={'选错了可以重置'}>
+              <ProFormCheckbox.Group name="reg_track" layout="horizontal" label="注册轨迹" options={['1年不超3条']} />
+              <ProFormRadio.Group name="major" layout="horizontal" label="注册专业" options={['建筑工程', '市政公用工程']} />
+              <ProFormRadio.Group name="kpi_count" layout="horizontal" label="业绩条数" options={['全B', '双B', '单B', '双C']} />
+              <ProFormRadio.Group name="kpi_period" layout="horizontal" label="业绩有效期" options={['1年内', '3年内', ' 5年内']} />
+            </ProCard>
+          </ProCard>
+        </ProForm>
       </Skeleton>
     </>
   );
