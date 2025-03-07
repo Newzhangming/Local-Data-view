@@ -33,7 +33,9 @@ export default function Page() {
       '注册公用设备工程师',
       '注册土木工程师',
     ].map((value) => ({ label: value, value }));
-  const projCountOptions = async () => [2, 3, 5, 8].map((value) => ({ label: `${value}及以上`, value }));
+  const projCountOptions = async () => [2, 3, 5, 8].map((value) => ({ label: `${value}条及以上`, value }));
+  const techKpiCountOptions = async () => [1, 2, 3, 5].map((value) => ({ label: `${value}条及以上`, value }));
+  const certStatusOptions = async () => ['有效', '注销', '待查'].map((value) => ({ label: value, value }));
 
   const renderTags = (len: number) => {
     let color = 'default';
@@ -52,30 +54,30 @@ export default function Page() {
   };
 
   const columns: ProColumns<ManagerDto>[] = [
-    {
-      title: '用人省份',
-      dataIndex: 'province',
-      hideInTable: true,
-      order: 5,
-      fieldProps: { popupMatchSelectWidth: false },
-      request: async () => ['山东', '浙江', '北京', '湖南', '江西'].map((value) => ({ label: value, value })),
-    },
-    {
-      title: '数据等级',
-      dataIndex: 'data_level',
-      hideInTable: true,
-      order: 4,
-      fieldProps: { popupMatchSelectWidth: false },
-      request: async () => ['A', 'B', 'C', 'D'].map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
-    },
-    {
-      title: '注册专业',
-      dataIndex: 'major',
-      hideInTable: true,
-      order: 4,
-      fieldProps: { popupMatchSelectWidth: false },
-      request: async () => ['建筑工程', '市政公用工程'].map((value) => ({ label: value, value })),
-    },
+    // {
+    //   title: '用人省份',
+    //   dataIndex: 'province',
+    //   hideInTable: true,
+    //   order: 5,
+    //   fieldProps: { popupMatchSelectWidth: false },
+    //   request: async () => ['山东', '浙江', '北京', '湖南', '江西'].map((value) => ({ label: value, value })),
+    // },
+    // {
+    //   title: '数据等级',
+    //   dataIndex: 'data_level',
+    //   hideInTable: true,
+    //   order: 4,
+    //   fieldProps: { popupMatchSelectWidth: false },
+    //   request: async () => ['A', 'B', 'C', 'D'].map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
+    // },
+    // {
+    //   title: '注册专业',
+    //   dataIndex: 'major',
+    //   hideInTable: true,
+    //   order: 4,
+    //   fieldProps: { popupMatchSelectWidth: false },
+    //   request: async () => ['建筑工程', '市政公用工程'].map((value) => ({ label: value, value })),
+    // },
     {
       title: '姓名',
       order: 10,
@@ -106,8 +108,10 @@ export default function Page() {
     },
     {
       title: '四库状态',
-      order: 8,
+      order: 3,
       dataIndex: 'cert_status',
+      fieldProps: { popupMatchSelectWidth: false },
+      request: certStatusOptions,
       renderText: (_, record: ManagerDto) => renderStatus(record?.cert_status),
     },
     {
@@ -127,6 +131,18 @@ export default function Page() {
       request: projCountOptions,
       sorter: (a, b) => a.proj_count - b.proj_count,
       renderText: (_, record: ManagerDto) => renderTags(record?.projects?.length),
+    },
+    {
+      title: '技术指标',
+      dataIndex: 'tech_kpi_count',
+      fieldProps: { placeholder: '请选择技术指标', popupMatchSelectWidth: false },
+      colSize: 1.1,
+      order: 6,
+      hideInSearch: false,
+      align: 'center',
+      request: techKpiCountOptions,
+      sorter: (a, b) => a.tech_kpi_count - b.tech_kpi_count,
+      renderText: (_, record: ManagerDto) => renderTags(record?.mgr_tech_kpis?.length),
     },
     {
       title: '证书名称',

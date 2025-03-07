@@ -31,8 +31,10 @@ export interface ManagerDto {
   source_id: string;
   cert_status: string;
   proj_count: number;
+  tech_kpi_count: number;
   certs: CertDto[];
   projects: ProjectDto[];
+  mgr_tech_kpis: { id: string }[];
   experiences: Experience[];
   created_at: Date;
   updated_at: Date;
