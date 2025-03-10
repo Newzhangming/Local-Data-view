@@ -117,6 +117,27 @@ export default function ProjectList() {
       },
     },
     {
+      title: '日期逻辑',
+      dataIndex: 'date_logic',
+      hideInSearch: true,
+      copyable: false,
+      ellipsis: false,
+      render: (_, record) => {
+        let color = 'default';
+        let text = '待查';
+        switch (record?.date_logic) {
+          case 1:
+            color = 'green';
+            text = '合规';
+            break;
+          case -1:
+            color = 'red';
+            text = '错误';
+        }
+        return <Tag color={color}>{text}</Tag>;
+      },
+    },
+    {
       title: '更新日期',
       dataIndex: 'updated_at',
       hideInSearch: true,

@@ -67,6 +67,7 @@ export interface ProjectDto {
   proj_type: string;
   proj_use: string;
   total_area: number;
+  date_logic: number;
   proj_units: { id: string }[];
   updated_at: Date;
 }

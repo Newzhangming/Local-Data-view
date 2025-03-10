@@ -150,7 +150,7 @@ export default function ProjectEdit() {
                 rules={[{ required: true, message: '请输入单体编号', pattern: new RegExp('^\\d{16}-\\d{2,}$') }]}
                 placeholder={'4510022311020001-001'}
               />
-              <ProFormText name="unit_name" label="单体建（构）筑物名称" placeholder={'单体建（构）筑物名称'} rules={[{ required: true, message: '单体名称长度2~50汉字', min: 2, max: 50 }]} />
+              <ProFormText name="unit_name" label="单体建（构）筑物名称" placeholder={'单体建（构）筑物名称'} rules={[{ required: true, message: '单体名称长度2~100汉字', min: 2, max: 100 }]} />
               <ProFormDigit name="unit_cost" label="造价(万元)" width="xs" placeholder={'造价'} fieldProps={{ precision: 2 }} />
               <ProFormDigit name="unit_area" label="面积(平方米)" width="xs" placeholder={'面积'} fieldProps={{ precision: 2 }} />
               <ProFormDigit name="height" label="高度(米)" width="xs" placeholder={'高度'} fieldProps={{ precision: 2 }} />
