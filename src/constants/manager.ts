@@ -18,6 +18,10 @@ export interface CertDto {
   valid_date_2: string;
   major_3: string;
   valid_date_3: string;
+  major_4: string;
+  valid_date_4: string;
+  major_5: string;
+  valid_date_5: string;
 }
 
 export interface ManagerDto {

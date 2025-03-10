@@ -163,6 +163,18 @@ export default function ManagerView() {
                     <div className={'mx-20'}>有效期： {year2Day(item.valid_date_3)}</div>
                   </div>
                 )}
+                {item.major_4 && (
+                  <div className={'flex mt-3 text-sm'}>
+                    <div>注册专业： {item.major_4}</div>
+                    <div className={'mx-20'}>有效期： {year2Day(item.valid_date_4)}</div>
+                  </div>
+                )}
+                {item.major_5 && (
+                  <div className={'flex mt-3 text-sm'}>
+                    <div>注册专业： {item.major_5}</div>
+                    <div className={'mx-20'}>有效期： {year2Day(item.valid_date_5)}</div>
+                  </div>
+                )}
                 <div className={'mt-5'} />
                 <Table
                   title={() => <span className={'text-lg'}>执业注册信息</span>}
