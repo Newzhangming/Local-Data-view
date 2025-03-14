@@ -11,3 +11,12 @@ const searchOptionRender = (searchConfig: Omit<BaseQueryFilterProps, 'submitter'
 export const search: BaseQueryFilterProps = { labelWidth: 'auto', span: { xs: 12, sm: 9, md: 8, lg: 7, xl: 5, xxl: 4 }, optionRender: searchOptionRender };
 
 export const pagination = { pageSizeOptions: [10, 15, 20, 25, 30], showQuickJumper: true };
+
+export const beforeSearchSubmit = (params: Record<string, string>) => {
+  Object.keys(params).forEach((key) => {
+    if (params[key] && typeof params[key] === 'string') {
+      params[key] = params[key].trim();
+    }
+  });
+  return params;
+};

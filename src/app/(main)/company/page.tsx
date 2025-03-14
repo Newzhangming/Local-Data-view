@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
-import { locale, pagination, search } from '@/components/table-props';
+import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { CompanyDto } from '@/constants/company';
 import { CompanyReq } from '@/constants/dto';
 import { queryCompanies } from '@/services/company';
@@ -129,6 +129,7 @@ export default function Page() {
         rowKey="id"
         locale={locale}
         search={search}
+        beforeSearchSubmit={beforeSearchSubmit}
         toolBarRender={undefined}
         options={false}
         pagination={{

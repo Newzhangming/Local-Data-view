@@ -19,7 +19,7 @@ import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
-import { locale, pagination, search } from '@/components/table-props';
+import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { TaskDto, TaskReq } from '@/constants/task';
 import { addTasks, queryTasks, updateTask } from '@/services/task';
 import { MDHHmmss } from '@/utils/date';
@@ -294,6 +294,7 @@ export default function Page() {
         rowKey="id"
         locale={locale}
         search={search}
+        beforeSearchSubmit={beforeSearchSubmit}
         toolbar={{ title: '任务列表', subTitle: '可以使用「排序」来调整采集任务的优先级' }}
         toolBarRender={toolBarRender}
         pagination={{

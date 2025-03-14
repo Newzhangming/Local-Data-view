@@ -9,7 +9,7 @@ import React, { useCallback, useRef, useState } from 'react';
 
 import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
-import { locale, pagination, search } from '@/components/table-props';
+import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { ManagerReq } from '@/constants/dto';
 import { ManagerDto } from '@/constants/manager';
 import { queryManagers } from '@/services/manager';
@@ -243,6 +243,7 @@ export default function Page() {
         request={getRequestData}
         rowKey="name"
         search={search}
+        beforeSearchSubmit={beforeSearchSubmit}
         toolBarRender={undefined}
         options={false}
         pagination={{

@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
-import { locale, pagination, search } from '@/components/table-props';
+import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { ProjectDto, ProjectReq } from '@/constants/dto';
 import { getProjects } from '@/services/project';
 import { getStorage, setStorage } from '@/utils/storage';
@@ -193,6 +193,7 @@ export default function ProjectList() {
         rowKey="id"
         locale={locale}
         search={search}
+        beforeSearchSubmit={beforeSearchSubmit}
         toolBarRender={undefined}
         options={false}
         pagination={{
