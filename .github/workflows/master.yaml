@@ -60,3 +60,13 @@ jobs:
           tags: |
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest"
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ steps.package-version.outputs.current-version }}"
+
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ vars.REMOTE_HOST }}
+          username: ${{ vars.REMOTE_USER }}
+          key: ${{ secrets.REMOTE_SSH_KEY }}
+          script: |
+            cd ~/code-repo/${{ github.event.repository.name }}
+            bash up.sh
