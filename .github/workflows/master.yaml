@@ -70,3 +70,12 @@ jobs:
           script: |
             cd ~/code-repo/${{ github.event.repository.name }}
             bash up.sh
+
+      - name: WeChat Work notification by text
+        uses: chf007/action-wechat-work@master
+        env:
+          WECHAT_WORK_BOT_WEBHOOK: ${{secrets.WECHAT_WORK_BOT_WEBHOOK}}
+        with:
+          msgtype: text
+          mentioned_list: '["@all"]'
+          content: "${{ github.event.repository.name }}部署成功，请各位留意！"
