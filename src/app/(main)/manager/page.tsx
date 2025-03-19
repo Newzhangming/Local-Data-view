@@ -36,6 +36,31 @@ export default function Page() {
   const projCountOptions = async () => [2, 3, 5, 8].map((value) => ({ label: `${value}条及以上`, value }));
   const techKpiCountOptions = async () => [1, 2, 3, 5].map((value) => ({ label: `${value}条及以上`, value }));
   const certStatusOptions = async () => ['有效', '注销', '待查'].map((value) => ({ label: value, value }));
+  const projTypes = ['市政工程', '房屋建筑工程', '其他', '化工石化医药工程', '电力工程', '机电工程', '冶金工程', '煤炭矿山工程', '商物粮工程'];
+  const projTypeOptions = async () => projTypes.map((value) => ({ label: value, value }));
+
+  const majors = [
+    '建筑工程',
+    '房屋建筑工程',
+    '市政公用工程',
+    '化工石油工程',
+    '机电工程',
+    '电力工程',
+    '铁路工程',
+    '港口与航道工程',
+    '冶炼工程',
+    '农林工程',
+    '公路工程',
+    '民航机场工程',
+    '土建',
+    '机电安装工程',
+    '通信工程',
+    '安装',
+    '矿业工程',
+    '通信与广电工程',
+    '矿山工程',
+  ];
+  const majorOptions = async () => majors.map((value) => ({ label: value, value }));
 
   const renderTags = (len: number) => {
     let color = 'default';
@@ -109,10 +134,33 @@ export default function Page() {
     {
       title: '四库状态',
       order: 3,
+      colSize: 0.9,
       dataIndex: 'cert_status',
       fieldProps: { popupMatchSelectWidth: false },
       request: certStatusOptions,
       renderText: (_, record: ManagerDto) => renderStatus(record?.cert_status),
+    },
+    {
+      title: '项目分类',
+      dataIndex: 'proj_type',
+      request: projTypeOptions,
+      valueType: 'select',
+      fieldProps: { popupMatchSelectWidth: false },
+      colSize: 0.9,
+      hideInSearch: false,
+      copyable: false,
+      ellipsis: false,
+    },
+    {
+      title: '注册专业',
+      dataIndex: 'major',
+      request: majorOptions,
+      valueType: 'select',
+      fieldProps: { popupMatchSelectWidth: false },
+      colSize: 0.9,
+      hideInSearch: false,
+      copyable: false,
+      ellipsis: false,
     },
     {
       title: '注册轨迹',
@@ -136,7 +184,7 @@ export default function Page() {
       title: '技术指标',
       dataIndex: 'tech_kpi_count',
       fieldProps: { placeholder: '请选择技术指标', popupMatchSelectWidth: false },
-      colSize: 1.1,
+      colSize: 0.9,
       order: 6,
       hideInSearch: false,
       align: 'center',

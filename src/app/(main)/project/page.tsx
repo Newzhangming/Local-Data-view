@@ -22,7 +22,10 @@ export default function ProjectList() {
 
   const DataLevel = { A: 'green', B: 'orange', C: 'magenta', D: 'red' };
   const conclusions = { pass: { text: '通过', color: 'green' }, pending: { text: '待补充材料', color: 'magenta' }, scrap: { text: '废弃', color: 'red' } };
+  const conclusionOptions = async () => Object.keys(conclusions).map((value) => ({ label: conclusions[value as keyof typeof conclusions].text, value }));
   const projTypes = ['市政工程', '房屋建筑工程', '其他', '化工石化医药工程', '电力工程', '机电工程', '冶金工程', '煤炭矿山工程', '商物粮工程'];
+  const projTypeOptions = async () => projTypes.map((value) => ({ label: value, value }));
+
   const dateLogics = [
     { label: '合规', value: 1 },
     { label: '错误', value: -1 },
@@ -66,7 +69,7 @@ export default function ProjectList() {
       valueType: 'select',
       fieldProps: { popupMatchSelectWidth: false },
       colSize: 0.9,
-      request: async () => projTypes.map((value) => ({ label: value, value })),
+      request: projTypeOptions,
       hideInSearch: false,
       copyable: false,
       ellipsis: false,
@@ -82,7 +85,7 @@ export default function ProjectList() {
       colSize: 0.9,
       valueType: 'select',
       fieldProps: { popupMatchSelectWidth: false },
-      request: async () => Object.keys(conclusions).map((value) => ({ label: conclusions[value as keyof typeof conclusions].text, value })),
+      request: conclusionOptions,
       render: (_, record) => {
         const text = conclusions[record.conclusion as keyof typeof conclusions]?.text;
         if (!text) return null;
