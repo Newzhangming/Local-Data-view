@@ -22,8 +22,12 @@ export default function ProjectList() {
 
   const DataLevel = { A: 'green', B: 'orange', C: 'magenta', D: 'red' };
   const conclusions = { pass: { text: '通过', color: 'green' }, pending: { text: '待补充材料', color: 'magenta' }, scrap: { text: '废弃', color: 'red' } };
-
   const projTypes = ['市政工程', '房屋建筑工程', '其他', '化工石化医药工程', '电力工程', '机电工程', '冶金工程', '煤炭矿山工程', '商物粮工程'];
+  const dateLogics = [
+    { label: '合规', value: 1 },
+    { label: '错误', value: -1 },
+    { label: '待查', value: 0 },
+  ];
 
   const columns: ProColumns<ProjectDto>[] = [
     {
@@ -125,9 +129,13 @@ export default function ProjectList() {
     {
       title: '日期逻辑',
       dataIndex: 'date_logic',
-      hideInSearch: true,
+      valueType: 'select',
+      colSize: 0.9,
+      fieldProps: { popupMatchSelectWidth: false },
+      hideInSearch: false,
       copyable: false,
       ellipsis: false,
+      request: async () => dateLogics,
       render: (_, record) => {
         let color = 'default';
         let text = '待查';

@@ -71,7 +71,7 @@ jobs:
           username: ${{ vars.REMOTE_USER }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
           script: |
-            cd ~/code-repo/${{ github.event.repository.name }}
+            cd ~/deploy/${{ github.event.repository.name }}
             bash up.sh
 
       - name: Get the output of duration
