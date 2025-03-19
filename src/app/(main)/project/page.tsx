@@ -29,6 +29,14 @@ export default function ProjectList() {
     { label: '待查', value: 0 },
   ];
 
+  const dataLevelCommon = {
+    colSize: 0.9,
+    hideInSearch: false,
+    hideInTable: true,
+    fieldProps: { popupMatchSelectWidth: false },
+    request: async () => Object.keys(DataLevel).map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
+  };
+
   const columns: ProColumns<ProjectDto>[] = [
     {
       title: '项目编号',
@@ -56,32 +64,15 @@ export default function ProjectList() {
       title: '项目分类',
       dataIndex: 'proj_type',
       valueType: 'select',
-      fieldProps: { dropdownMatchSelectWidth: false },
+      fieldProps: { popupMatchSelectWidth: false },
       colSize: 0.9,
       request: async () => projTypes.map((value) => ({ label: value, value })),
       hideInSearch: false,
       copyable: false,
       ellipsis: false,
     },
-    {
-      title: '工程用途',
-      dataIndex: 'proj_use',
-      valueType: 'text',
-      fieldProps: { placeholder: '支持模糊搜索' },
-      order: 8,
-      hideInSearch: false,
-      copyable: false,
-      ellipsis: false,
-    },
-    {
-      title: '总面积(平方米)',
-      dataIndex: 'total_area',
-      hideInSearch: true,
-      copyable: true,
-      ellipsis: false,
-      sorter: (a, b) => a.total_area - b.total_area,
-      // renderText: (text: number) => (text ? `${(text / 10000).toFixed(2)}` : 0),
-    },
+    { title: '工程用途', dataIndex: 'proj_use', valueType: 'text', fieldProps: { placeholder: '支持模糊搜索' }, order: 8, hideInSearch: false, copyable: false, ellipsis: false },
+    { title: '总面积(平方米)', dataIndex: 'total_area', hideInSearch: true, copyable: true, ellipsis: false, sorter: (a, b) => a.total_area - b.total_area },
     {
       title: '项目结论',
       dataIndex: 'conclusion',
@@ -113,20 +104,6 @@ export default function ProjectList() {
       },
     },
     {
-      title: '数据等级',
-      dataIndex: 'data_level',
-      colSize: 0.9,
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-      fieldProps: { popupMatchSelectWidth: false },
-      request: async () => Object.keys(DataLevel).map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
-      render: (_, record) => {
-        const color = DataLevel[record.data_level as keyof typeof DataLevel];
-        return <Tag color={color}>{record.data_level}</Tag>;
-      },
-    },
-    {
       title: '日期逻辑',
       dataIndex: 'date_logic',
       valueType: 'select',
@@ -152,12 +129,18 @@ export default function ProjectList() {
       },
     },
     {
-      title: '更新日期',
-      dataIndex: 'updated_at',
-      hideInSearch: true,
-      valueType: 'dateTime',
-      align: 'center',
+      title: '数据等级',
+      dataIndex: 'data_level',
+      ...dataLevelCommon,
+      hideInTable: false,
+      render: (_, record) => <Tag color={DataLevel[record.data_level as keyof typeof DataLevel]}>{record.data_level}</Tag>,
     },
+    { title: '招投标数据等级', dataIndex: 'wb_data_level', ...dataLevelCommon },
+    { title: '合同数据等级', dataIndex: 'contract_data_level', ...dataLevelCommon },
+    { title: '施工许可数据等级', dataIndex: 'cp_data_level', ...dataLevelCommon },
+    { title: '竣工数据等级', dataIndex: 'af_data_level', ...dataLevelCommon },
+    { title: '技术指标数据等级', dataIndex: 'tech_data_level', ...dataLevelCommon },
+    { title: '更新日期', dataIndex: 'updated_at', hideInSearch: true, valueType: 'dateTime', align: 'center' },
     {
       title: '操作',
       dataIndex: 'options',
