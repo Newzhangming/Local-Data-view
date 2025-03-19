@@ -22,6 +22,9 @@ jobs:
   Deployment:
     runs-on: ubuntu-latest
     steps:
+      - name: Record start time
+        run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
+
       #- name: Set up QEMU
       #  uses: docker/setup-qemu-action@v3
 
@@ -71,11 +74,16 @@ jobs:
             cd ~/code-repo/${{ github.event.repository.name }}
             bash up.sh
 
-      - name: WeChat Work notification by text
+      - name: Get the output of duration
+        run: |
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - $START_TIME))
+          echo "DURATION=$DURATION" >> $GITHUB_ENV
+
+      - name: WeChat Work notification by markdown
         uses: chf007/action-wechat-work@master
         env:
           WECHAT_WORK_BOT_WEBHOOK: ${{secrets.WECHAT_WORK_BOT_WEBHOOK}}
         with:
-          msgtype: text
-          mentioned_list: '["@all"]'
-          content: "${{ github.event.repository.name }}部署成功，请各位留意！"
+          msgtype: markdown
+          content: "${{github.actor}} 刚刚把 ${{github.event.repository.name}} 项目部署到 ${{vars.REMOTE_HOST}} 服务器，最新版本：v${{ steps.package-version.outputs.current-version }}，操作状态：${{job.status}}，耗时：${{env.DURATION}} 秒，请各位留意！\n > @田坤 请抽空 [code review](${{github.event.compare}})，项目地址：[${{github.server_url}}/${{github.repository}}](${{github.server_url}}/${{ github.repository}})"

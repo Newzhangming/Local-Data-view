@@ -23,6 +23,8 @@ export default function ProjectList() {
   const DataLevel = { A: 'green', B: 'orange', C: 'magenta', D: 'red' };
   const conclusions = { pass: { text: '通过', color: 'green' }, pending: { text: '待补充材料', color: 'magenta' }, scrap: { text: '废弃', color: 'red' } };
 
+  const projTypes = ['市政工程', '房屋建筑工程', '其他', '化工石化医药工程', '电力工程', '机电工程', '冶金工程', '煤炭矿山工程', '商物粮工程'];
+
   const columns: ProColumns<ProjectDto>[] = [
     {
       title: '项目编号',
@@ -49,7 +51,11 @@ export default function ProjectList() {
     {
       title: '项目分类',
       dataIndex: 'proj_type',
-      hideInSearch: true,
+      valueType: 'select',
+      fieldProps: { dropdownMatchSelectWidth: false },
+      colSize: 0.9,
+      request: async () => projTypes.map((value) => ({ label: value, value })),
+      hideInSearch: false,
       copyable: false,
       ellipsis: false,
     },
