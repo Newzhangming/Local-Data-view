@@ -134,6 +134,9 @@ export default function ManagerView() {
           <Descriptions.Item label="注册编号">
             <Copyable content={detail?.certs?.[0]?.lending_no ? detail?.certs?.[0]?.lending_no : detail?.lending_no} />
           </Descriptions.Item>
+          <Descriptions.Item label="注册省份">
+            <Copyable content={detail?.lending_province} />
+          </Descriptions.Item>
           <Descriptions.Item label="初采时间">{year2Sec(detail?.created_at)}</Descriptions.Item>
           <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>
         </Descriptions>

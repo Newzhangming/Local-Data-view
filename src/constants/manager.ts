@@ -22,6 +22,7 @@ export interface CertDto {
   valid_date_4: string;
   major_5: string;
   valid_date_5: string;
+  // [key: string]: string;
 }
 
 export interface ManagerDto {
@@ -32,6 +33,7 @@ export interface ManagerDto {
   cert_name: string;
   lending_no: string;
   lending_to: string;
+  lending_province: string;
   source_id: string;
   cert_status: string;
   proj_count: number;

@@ -62,6 +62,45 @@ export default function Page() {
   ];
   const majorOptions = async () => majors.map((value) => ({ label: value, value }));
 
+  const provinces = [
+    '北京',
+    '天津',
+    '河北',
+    '山西',
+    '内蒙古',
+    '辽宁',
+    '吉林',
+    '黑龙江',
+    '上海',
+    '江苏',
+    '浙江',
+    '安徽',
+    '福建',
+    '江西',
+    '山东',
+    '河南',
+    '湖北',
+    '湖南',
+    '广东',
+    '广西',
+    '海南',
+    '重庆',
+    '四川',
+    '贵州',
+    '云南',
+    '西藏',
+    '陕西',
+    '甘肃',
+    '青海',
+    '宁夏',
+    '新疆',
+    '台湾',
+    '香港',
+    '澳门',
+  ];
+
+  const provinceOptions = async () => provinces.map((value) => ({ label: value, value }));
+
   const renderTags = (len: number) => {
     let color = 'default';
     if (len > 5) color = 'green';
@@ -79,30 +118,6 @@ export default function Page() {
   };
 
   const columns: ProColumns<ManagerDto>[] = [
-    // {
-    //   title: '用人省份',
-    //   dataIndex: 'province',
-    //   hideInTable: true,
-    //   order: 5,
-    //   fieldProps: { popupMatchSelectWidth: false },
-    //   request: async () => ['山东', '浙江', '北京', '湖南', '江西'].map((value) => ({ label: value, value })),
-    // },
-    // {
-    //   title: '数据等级',
-    //   dataIndex: 'data_level',
-    //   hideInTable: true,
-    //   order: 4,
-    //   fieldProps: { popupMatchSelectWidth: false },
-    //   request: async () => ['A', 'B', 'C', 'D'].map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
-    // },
-    // {
-    //   title: '注册专业',
-    //   dataIndex: 'major',
-    //   hideInTable: true,
-    //   order: 4,
-    //   fieldProps: { popupMatchSelectWidth: false },
-    //   request: async () => ['建筑工程', '市政公用工程'].map((value) => ({ label: value, value })),
-    // },
     {
       title: '姓名',
       order: 10,
@@ -237,8 +252,19 @@ export default function Page() {
       },
     },
     {
-      title: '注册编号',
-      dataIndex: 'lending_no',
+      title: '注册省份',
+      dataIndex: 'lending_province',
+      valueType: 'select',
+      fieldProps: { placeholder: '选择注册省份', popupMatchSelectWidth: false },
+      request: provinceOptions,
+      colSize: 0.9,
+      hideInSearch: false,
+      copyable: false,
+      ellipsis: false,
+    },
+    {
+      title: '注册单位',
+      dataIndex: 'lending_to',
       hideInSearch: true,
       copyable: true,
       ellipsis: false,
@@ -249,13 +275,6 @@ export default function Page() {
       valueType: 'date',
       hideInSearch: true,
       copyable: false,
-      ellipsis: false,
-    },
-    {
-      title: '注册单位',
-      dataIndex: 'lending_to',
-      hideInSearch: true,
-      copyable: true,
       ellipsis: false,
     },
     {
