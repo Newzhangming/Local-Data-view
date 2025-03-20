@@ -162,7 +162,10 @@ export default function Page() {
       colSize: 0.9,
       request: projCountOptions,
       hideInSearch: false,
-      renderText: (_, record: ManagerDto) => renderTags(record?.exp_count),
+      renderText: (_, record: ManagerDto) => {
+        const expCount = record.certs.reduce((acc, cert) => acc + cert?.experiences?.length || 0, 0);
+        return renderTags(expCount);
+      },
     },
     {
       title: '个人业绩',

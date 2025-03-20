@@ -109,7 +109,7 @@ export default function ManagerView() {
       {contextHolder}
       <Space direction={'vertical'} size={'large'}>
         <Breadcrumb items={breadcrumbItems} />
-        <Descriptions title="项目经理信息">
+        <Descriptions title="项目经理信息" column={4}>
           <Descriptions.Item label="姓名">
             <Copyable content={detail?.name} link={!detail?.source_id ? `https://jzsc.mohurd.gov.cn/data/person?complexname=${detail?.name}` : ''} target={'_blank'} />
           </Descriptions.Item>
@@ -134,6 +134,7 @@ export default function ManagerView() {
           <Descriptions.Item label="注册编号">
             <Copyable content={detail?.certs?.[0]?.lending_no ? detail?.certs?.[0]?.lending_no : detail?.lending_no} />
           </Descriptions.Item>
+          <Descriptions.Item label="初采时间">{year2Sec(detail?.created_at)}</Descriptions.Item>
           <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>
         </Descriptions>
         {detail?.certs?.map((item) => {
