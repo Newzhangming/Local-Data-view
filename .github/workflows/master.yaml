@@ -34,10 +34,16 @@ jobs:
       - name: Checkout the latest code
         uses: actions/checkout@v4
 
+      - name: Generate .env file
+        shell: bash
+        run: |
+          echo ${{secrets.ENV_CONTENT}} | tee .env
+          cat .env
+
       - name: Download the environment file
         shell: bash
         run: |
-          curl ${{vars.ENV_URL}} >> .env
+          curl ${{vars.ENV_URL}} > .env
 
       - name: get-npm-version
         id: package-version

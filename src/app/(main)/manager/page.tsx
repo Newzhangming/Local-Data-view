@@ -125,7 +125,7 @@ export default function Page() {
     {
       title: '身份证号',
       colSize: 1.1,
-      order: 9,
+      order: 10,
       dataIndex: 'id_card',
       hideInSearch: false,
       copyable: true,
@@ -133,10 +133,10 @@ export default function Page() {
     },
     {
       title: '四库状态',
-      order: 3,
+      order: 9,
       colSize: 0.9,
       dataIndex: 'cert_status',
-      fieldProps: { popupMatchSelectWidth: false },
+      fieldProps: { placeholder: '有效/注销/待查', popupMatchSelectWidth: false },
       request: certStatusOptions,
       renderText: (_, record: ManagerDto) => renderStatus(record?.cert_status),
     },
@@ -144,19 +144,9 @@ export default function Page() {
       title: '项目分类',
       dataIndex: 'proj_type',
       request: projTypeOptions,
+      hideInTable: true,
       valueType: 'select',
-      fieldProps: { popupMatchSelectWidth: false },
-      colSize: 0.9,
-      hideInSearch: false,
-      copyable: false,
-      ellipsis: false,
-    },
-    {
-      title: '注册专业',
-      dataIndex: 'major',
-      request: majorOptions,
-      valueType: 'select',
-      fieldProps: { popupMatchSelectWidth: false },
+      fieldProps: { placeholder: '请选择项目分类', popupMatchSelectWidth: false },
       colSize: 0.9,
       hideInSearch: false,
       copyable: false,
@@ -164,9 +154,15 @@ export default function Page() {
     },
     {
       title: '注册轨迹',
-      hideInSearch: true,
       align: 'center',
-      renderText: (_, record: ManagerDto) => renderTags(record?.experiences?.length),
+      valueType: 'select',
+      dataIndex: 'exp_count',
+      fieldProps: { placeholder: '请选择注册轨迹', popupMatchSelectWidth: false },
+      order: 8,
+      colSize: 0.9,
+      request: projCountOptions,
+      hideInSearch: false,
+      renderText: (_, record: ManagerDto) => renderTags(record?.exp_count),
     },
     {
       title: '个人业绩',
@@ -197,7 +193,6 @@ export default function Page() {
       dataIndex: 'cert_name',
       fieldProps: { placeholder: '请选择资格证书名称', popupMatchSelectWidth: false },
       colSize: 1.1,
-      order: 6,
       hideInSearch: false,
       copyable: true,
       ellipsis: false,
@@ -212,6 +207,31 @@ export default function Page() {
         }
       },
       request: certNameOptions,
+    },
+    {
+      title: '注册专业',
+      dataIndex: 'major',
+      request: majorOptions,
+      valueType: 'select',
+      fieldProps: { popupMatchSelectWidth: false },
+      colSize: 0.9,
+      hideInSearch: false,
+      copyable: false,
+      ellipsis: false,
+      render: (_, record: ManagerDto) => {
+        if (record?.certs?.length) {
+          return record?.certs?.map((cert, index) => {
+            const contents = [];
+            for (let i = 1; i <= 5; i++) {
+              const content = i === 1 ? cert.major : eval(`cert.major_${i}`);
+              contents.push(<Copyable key={index} content={content} />);
+            }
+            return contents;
+          });
+        } else {
+          return null;
+        }
+      },
     },
     {
       title: '注册编号',

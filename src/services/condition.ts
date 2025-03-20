@@ -4,7 +4,7 @@ import HttpService from '@/utils/http-service';
 import { getStorage } from '@/utils/storage';
 import { objectToQueryString } from '@/utils/strings';
 
-const httpService = new HttpService(process.env.NEXT_PUBLIC_HOST2!);
+const httpService = new HttpService(process.env.NEXT_PUBLIC_HOST!);
 const headers = { 'Access-Token': process.env.NEXT_PUBLIC_ACCESS_KEY! };
 
 export const queryAreas = (input: AreaReq): Promise<BaseResp<AreaDto[]>> => {
