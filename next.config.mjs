@@ -1,18 +1,13 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
-  eslint: { ignoreDuringBuilds: true },
+  eslint: { ignoreDuringBuilds: true, dirs: ['src/app', 'src/components', 'src/constants', 'src/services', 'src/utils'] },
   output: 'standalone',
-  reactStrictMode: false,
+  reactStrictMode: true,
   images: {
-    // 允许远程的图片
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'img.freepik.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'static.askme.run',
       },
     ],
   },

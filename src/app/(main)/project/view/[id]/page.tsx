@@ -1,10 +1,12 @@
 'use client';
 
-import { BuildOutlined, HomeOutlined } from '@ant-design/icons';
 import { ProFormRadio, ProFormText } from '@ant-design/pro-components';
-import { Breadcrumb, Descriptions, Divider, message, RadioChangeEvent, RadioGroupProps, Space, Table, TableProps, Tag } from 'antd';
+import { Breadcrumb, Descriptions, Divider, message, RadioChangeEvent, Space, Table, TableProps } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { Fragment, useEffect, useState } from 'react';
+
+import { breadcrumbItems } from '../components/breadcrumbs';
+import { conclusionOptions } from '../components/options';
 
 import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
@@ -38,33 +40,6 @@ export default function ProjectView() {
       });
   };
 
-  const breadcrumbItems = [
-    {
-      href: '/',
-      title: (
-        <>
-          <HomeOutlined />
-          <span>首页</span>
-        </>
-      ),
-    },
-    {
-      href: '/project',
-      title: (
-        <>
-          <BuildOutlined />
-          <span>工程项目</span>
-        </>
-      ),
-    },
-    { title: <Copyable content={detail?.proj_name} /> },
-  ];
-
-  const conclusionOptions: RadioGroupProps['options'] = [
-    { value: 'pass', label: <Tag color="green">通过</Tag> },
-    { value: 'pending', label: <Tag color="orange">待补充材料</Tag> },
-    { value: 'scrap', label: <Tag color="red">废弃</Tag> },
-  ];
   const unitColumns: TableProps<ProjUnit>['columns'] = [
     { title: '单体建（构）筑物名称', dataIndex: 'unit_name', key: 'unit_name', render: (value: string) => <Copyable content={value} /> },
     { title: '工程单体造价(万元)', dataIndex: 'unit_cost', key: 'unit_cost', render: (value: string) => <Copyable content={value} /> },
@@ -139,16 +114,11 @@ export default function ProjectView() {
     {
       title: '项目经理',
       render: (value: ConstructionPermit) =>
-        value.managers?.map((item) => {
-          return <Copyable key={item?.manager?.id} content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} target={'_blank'} />;
-        }),
+        value.managers?.map((item) => <Copyable key={item?.manager?.id} content={item?.manager?.name} link={`/manager/view/${item?.manager?.id}`} target={'_blank'} />),
     },
     {
       title: '身份证号',
-      render: (value: ConstructionPermit) =>
-        value.managers?.map((item) => {
-          return <Copyable key={item?.manager?.id} content={item?.manager?.id_card} />;
-        }),
+      render: (value: ConstructionPermit) => value.managers?.map((item) => <Copyable key={item?.manager?.id} content={item?.manager?.id_card} />),
     },
   ];
   const wbColumns: TableProps<WinningBidder>['columns'] = [
@@ -200,13 +170,6 @@ export default function ProjectView() {
   if (!detail?.winning_bidder?.[0]?.wb_date) {
     conclusion.push({ position: 'wb', msg: '招投标日期不达标', value: false });
   }
-  let wbResultText = conclusion
-    .filter((item) => !item.value && item.position === 'wb')
-    .map((item) => item.msg)
-    .join('，');
-  if (!wbResultText) {
-    wbResultText = '招投标信息达标';
-  }
 
   // 合同登记
   if (detail?.contracts?.[0]?.data_level !== 'A' && detail?.contracts?.[0]?.data_level !== 'B') {
@@ -255,15 +218,8 @@ export default function ProjectView() {
 
   const onConclusionChange = async (e: RadioChangeEvent) => {
     if (detail) {
-      await upsertProject({
-        id: detail.id,
-        proj_no: detail.proj_no,
-        proj_name: detail.proj_name,
-        proj_type: detail.proj_type,
-        total_area: detail.total_area,
-        data_level: detail.data_level,
-        conclusion: e.target.value,
-      });
+      const { id, proj_no, proj_name, proj_type, total_area, data_level } = detail;
+      await upsertProject({ id, proj_no, proj_name, proj_type, total_area, data_level, conclusion: e.target.value });
     }
   };
 
@@ -271,7 +227,7 @@ export default function ProjectView() {
     <>
       {contextHolder}
       <Space direction={'vertical'} size={'small'}>
-        <Breadcrumb items={breadcrumbItems} />
+        <Breadcrumb items={breadcrumbItems(detail?.proj_name)} />
         <Descriptions title="工程基本信息">
           <Descriptions.Item label="项目编号">
             <Copyable content={detail?.proj_no} link={!detail?.source_id ? `https://jzsc.mohurd.gov.cn/data/project?complexname=${detail?.proj_no}` : ''} target={'_blank'} />
@@ -370,11 +326,6 @@ export default function ProjectView() {
         <Descriptions title="技术业绩指标">
           {detail?.proj_tech_kpis?.map((item) => {
             const manager = detail?.mgr_tech_kpis.find((m) => m.proj_role === '项目经理')?.manager;
-            // 不注释的话会显示错误，如果技术业绩指标没有，就要补采
-            // if (!manager && detail?.managers?.length > 1) {
-            //   manager = detail?.managers?.pop()?.manager;
-            // }
-
             return (
               <Fragment key={item?.kpi_no}>
                 <Descriptions.Item label="业绩记录编号">

@@ -7,6 +7,8 @@ import { Divider, message, Tag, theme } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useRef, useState } from 'react';
 
+import { certNames, DataLevel, majors, projTypes, provinces } from './components/const';
+
 import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
@@ -20,86 +22,22 @@ export default function Page() {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
 
-  const certNameOptions = async () =>
-    [
-      '一级注册建造师',
-      '一级注册建筑师',
-      '一级注册结构工程师',
-      '一级注册造价工程师',
-      '二级注册建造师',
-      '二级注册结构工程师',
-      '二级注册造价工程师',
-      '注册监理工程师',
-      '注册公用设备工程师',
-      '注册土木工程师',
-    ].map((value) => ({ label: value, value }));
+  const certNameOptions = async () => certNames.map((value) => ({ label: value, value }));
   const projCountOptions = async () => [2, 3, 5, 8].map((value) => ({ label: `${value}条及以上`, value }));
   const techKpiCountOptions = async () => [1, 2, 3, 5].map((value) => ({ label: `${value}条及以上`, value }));
   const certStatusOptions = async () => ['有效', '注销', '待查'].map((value) => ({ label: value, value }));
-  const projTypes = ['市政工程', '房屋建筑工程', '其他', '化工石化医药工程', '电力工程', '机电工程', '冶金工程', '煤炭矿山工程', '商物粮工程'];
   const projTypeOptions = async () => projTypes.map((value) => ({ label: value, value }));
-
-  const majors = [
-    '建筑工程',
-    '房屋建筑工程',
-    '市政公用工程',
-    '化工石油工程',
-    '机电工程',
-    '电力工程',
-    '铁路工程',
-    '港口与航道工程',
-    '冶炼工程',
-    '农林工程',
-    '公路工程',
-    '民航机场工程',
-    '土建',
-    '机电安装工程',
-    '通信工程',
-    '安装',
-    '矿业工程',
-    '通信与广电工程',
-    '矿山工程',
-  ];
   const majorOptions = async () => majors.map((value) => ({ label: value, value }));
 
-  const provinces = [
-    '北京',
-    '天津',
-    '河北',
-    '山西',
-    '内蒙古',
-    '辽宁',
-    '吉林',
-    '黑龙江',
-    '上海',
-    '江苏',
-    '浙江',
-    '安徽',
-    '福建',
-    '江西',
-    '山东',
-    '河南',
-    '湖北',
-    '湖南',
-    '广东',
-    '广西',
-    '海南',
-    '重庆',
-    '四川',
-    '贵州',
-    '云南',
-    '西藏',
-    '陕西',
-    '甘肃',
-    '青海',
-    '宁夏',
-    '新疆',
-    '台湾',
-    '香港',
-    '澳门',
-  ];
-
   const provinceOptions = async () => provinces.map((value) => ({ label: value, value }));
+
+  const dataLevelCommon = {
+    colSize: 0.9,
+    hideInSearch: false,
+    hideInTable: true,
+    fieldProps: { popupMatchSelectWidth: false },
+    request: async () => Object.keys(DataLevel).map((value) => ({ label: value !== 'A' ? `${value}及以上` : value, value })),
+  };
 
   const renderTags = (len: number) => {
     let color = 'default';
@@ -129,23 +67,8 @@ export default function Page() {
       renderText: (text: string) => <Ellipsis text={text} />,
       align: 'left',
     },
-    {
-      title: '性别',
-      dataIndex: 'gender',
-      hideInSearch: true,
-      copyable: false,
-      ellipsis: false,
-      align: 'center',
-    },
-    {
-      title: '身份证号',
-      colSize: 1.1,
-      order: 10,
-      dataIndex: 'id_card',
-      hideInSearch: false,
-      copyable: true,
-      ellipsis: false,
-    },
+    { title: '性别', dataIndex: 'gender', hideInSearch: true, copyable: false, ellipsis: false, align: 'center' },
+    { title: '身份证号', colSize: 1.1, order: 10, dataIndex: 'id_card', hideInSearch: false, copyable: true, ellipsis: false },
     {
       title: '四库状态',
       order: 9,
@@ -242,7 +165,7 @@ export default function Page() {
             const contents = [];
             for (let i = 1; i <= 5; i++) {
               const content = i === 1 ? cert.major : eval(`cert.major_${i}`);
-              contents.push(<Copyable key={index} content={content} />);
+              contents.push(<Copyable key={`${index}-${i}`} content={content} />);
             }
             return contents;
           });
@@ -262,28 +185,14 @@ export default function Page() {
       copyable: false,
       ellipsis: false,
     },
-    {
-      title: '注册单位',
-      dataIndex: 'lending_to',
-      hideInSearch: true,
-      copyable: true,
-      ellipsis: false,
-    },
-    {
-      title: '有效期至',
-      dataIndex: 'valid_date',
-      valueType: 'date',
-      hideInSearch: true,
-      copyable: false,
-      ellipsis: false,
-    },
-    {
-      title: '更新日期',
-      dataIndex: 'updated_at',
-      hideInSearch: true,
-      valueType: 'dateTime',
-      align: 'center',
-    },
+    { title: '注册单位', dataIndex: 'lending_to', hideInSearch: true, copyable: true, ellipsis: false },
+    { title: '有效期至', dataIndex: 'valid_date', valueType: 'date', hideInSearch: true, copyable: false, ellipsis: false },
+    { title: '招投标数据等级', dataIndex: 'wb_data_level', ...dataLevelCommon },
+    { title: '合同数据等级', dataIndex: 'contract_data_level', ...dataLevelCommon },
+    { title: '施工许可数据等级', dataIndex: 'cp_data_level', ...dataLevelCommon },
+    { title: '竣工数据等级', dataIndex: 'af_data_level', ...dataLevelCommon },
+    { title: '技术指标数据等级', dataIndex: 'tech_data_level', ...dataLevelCommon },
+    { title: '更新日期', dataIndex: 'updated_at', hideInSearch: true, valueType: 'dateTime', align: 'center' },
     {
       title: '操作',
       dataIndex: 'options',

@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint';
 
 export default [
   { files: ['**/*.{js,mjs,cjs,ts}'] },
-  { languageOptions: { globals: globals.browser } },
+  { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -29,6 +29,7 @@ export default [
       '@stylistic/space-in-parens': ['error', 'never'],
       '@stylistic/object-curly-spacing': ['error', 'always'],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
+      'max-lines': ['error', 400],
       'max-len': [
         'error',
         160,

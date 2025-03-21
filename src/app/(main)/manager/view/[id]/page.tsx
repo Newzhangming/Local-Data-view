@@ -38,10 +38,7 @@ export default function ManagerView() {
 
   const experienceColumns: TableProps<Experience>['columns'] = [
     { title: '序号', render: (text, record, index) => `${index + 1}` },
-    {
-      title: '公司名称',
-      render: (_, record: Experience) => <Copyable content={record.company.name} link={`/company/view/${record.company.id}`} />,
-    },
+    { title: '公司名称', render: (_, record: Experience) => <Copyable content={record.company.name} link={`/company/view/${record.company.id}`} /> },
     { title: '注册时间', dataIndex: 'start_date', render: (value: string) => year2Day(value) },
     { title: '注销时间', dataIndex: 'end_date', render: (value: string) => year2Day(value) },
     { title: '变更信息', dataIndex: 'desc', render: (value: string) => <Copyable content={value} /> },
@@ -49,24 +46,11 @@ export default function ManagerView() {
 
   const projectColumns: TableColumnsType<Project> = [
     { title: '序号', render: (text, record, index) => `${index + 1}` },
-    {
-      title: '项目名称',
-      dataIndex: ['proj_name'],
-      render: (_, record: Project) => <Copyable content={record.proj_name} link={`/project/view/${record.proj_no}`} />,
-    },
-    {
-      title: '项目编号',
-      render: (_, record: Project) => <Copyable content={record.proj_no} link={`/project/view/${record.proj_no}`} target={'_blank'} />,
-    },
+    { title: '项目名称', dataIndex: ['proj_name'], render: (_, record: Project) => <Copyable content={record.proj_name} link={`/project/view/${record.proj_no}`} /> },
+    { title: '项目编号', render: (_, record: Project) => <Copyable content={record.proj_no} link={`/project/view/${record.proj_no}`} target={'_blank'} /> },
     { title: '项目属地', dataIndex: 'region', render: (value: string) => <Copyable content={value} /> },
-    {
-      title: '开工日期',
-      render: (_, record: Project) => year2Day(record?.acceptance_filings?.[0]?.proj_start_date),
-    },
-    {
-      title: '竣工日期',
-      render: (_, record: Project) => year2Day(record?.acceptance_filings?.[0]?.af_date),
-    },
+    { title: '开工日期', render: (_, record: Project) => year2Day(record?.acceptance_filings?.[0]?.proj_start_date) },
+    { title: '竣工日期', render: (_, record: Project) => year2Day(record?.acceptance_filings?.[0]?.af_date) },
     { title: '建设规模', dataIndex: 'scale_desc', width: 400, render: (value: string) => <Ellipsis text={value} /> },
     { title: '数据等级', dataIndex: 'data_level', render: (value: string) => <Copyable content={value} /> },
     { title: '技术指标', render: (_, record: Project) => (record?.proj_tech_kpis?.length ? '有' : '无') },
