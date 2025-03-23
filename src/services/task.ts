@@ -1,26 +1,20 @@
+import { BaseService } from './base-service';
+
 import { BaseResp } from '@/constants/dto';
 import { TaskDto, TaskReq } from '@/constants/task';
-import HttpService from '@/utils/http-service';
-import { getStorage } from '@/utils/storage';
-import { objectToQueryString } from '@/utils/strings';
 
-const httpService = new HttpService(process.env.NEXT_PUBLIC_HOST!);
-const headers = { 'Access-Token': process.env.NEXT_PUBLIC_ACCESS_KEY! };
+export class TaskService extends BaseService {
+  async queryTasks(input: TaskReq): Promise<BaseResp<TaskDto[]>> {
+    const pageIndex = input.current || 1;
+    const query = this.objectToQueryString({ pageIndex, ...input });
+    return this.http.get(`/v1/tasks?${query}`, this.createConfig());
+  }
 
-export const queryTasks = (input: TaskReq): Promise<BaseResp<TaskDto[]>> => {
-  const pageIndex = input.current || 1;
-  delete input.current;
-  const url = `/v1/tasks?${objectToQueryString({ pageIndex, ...input })}`;
-  return httpService.get<BaseResp<TaskDto[]>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
-};
+  async addTasks(input: { proj_name: string[] }): Promise<BaseResp<TaskDto>> {
+    return this.http.post(`/v1/tasks`, { proj_name: input.proj_name }, this.createConfig());
+  }
 
-export const addTasks = (input: { proj_name: string[] }): Promise<BaseResp<TaskDto>> => {
-  const url = `/v1/tasks`;
-  const data = { proj_name: input.proj_name };
-  return httpService.post<BaseResp<TaskDto>>(url, data, { headers: { ...headers, Authorization: getStorage('token') } });
-};
-
-export const updateTask = (input: Partial<TaskDto & { action: string }>): Promise<BaseResp<TaskDto>> => {
-  const url = `/v1/task?id=${input.id}`;
-  return httpService.put<BaseResp<TaskDto>>(url, input, { headers: { ...headers, Authorization: getStorage('token') } });
-};
+  async updateTask(input: Partial<TaskDto & { action: string }>): Promise<BaseResp<TaskDto>> {
+    return this.http.put(`/v1/task?=id${input.id}`, input, this.createConfig());
+  }
+}

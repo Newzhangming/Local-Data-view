@@ -8,18 +8,19 @@ import React, { useCallback } from 'react';
 
 import { IdReq } from '@/constants/dto';
 import { ManagerDto } from '@/constants/manager';
-import { queryManager, updateManager } from '@/services/manager';
+import { ManagerService } from '@/services/manager';
 import { closeWindow } from '@/utils/close-window';
 
 export default function ManagerEdit() {
   const [messageApi, contextHolder] = message.useMessage();
   const params: Partial<IdReq> = useParams();
+  const service = new ManagerService();
 
-  const getRequestData = (params: IdReq) => useCallback(async () => queryManager(params).then((res) => res.data), []);
+  const getRequestData = (params: IdReq) => useCallback(async () => service.queryManager(params).then((res) => res.data), []);
 
   const onFinish = useCallback(async (fromData: ManagerDto) => {
     const input = { ...params, ...fromData };
-    const result = await updateManager(input);
+    const result = await service.updateManager(input);
     if (result.msg === 'success') {
       messageApi.success('保存成功', 3);
     } else {

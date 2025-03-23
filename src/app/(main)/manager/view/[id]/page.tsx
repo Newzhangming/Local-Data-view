@@ -9,8 +9,10 @@ import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
 import { locale } from '@/components/table-props';
 import { Experience, ManagerDto, Project } from '@/constants/manager';
-import { queryManager } from '@/services/manager';
+import { ManagerService } from '@/services/manager';
 import { year2Day, year2Sec } from '@/utils/date';
+
+const managerService = new ManagerService();
 
 export default function ManagerView() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -22,7 +24,7 @@ export default function ManagerView() {
 
   const getDetailData = () => {
     setLoading(true);
-    queryManager({ id: params.id as string })
+    managerService.queryManager({ id: params.id as string })
       .then((res) => {
         setLoading(false);
         if (res.msg === 'success') {

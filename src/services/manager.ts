@@ -1,31 +1,21 @@
-import { BaseResp, HumanReq, IdReq, ManagerReq, ManagerResp } from '@/constants/dto';
+import { BaseService } from './base-service';
+
+import { BaseResp, IdReq, ManagerReq } from '@/constants/dto';
 import { ManagerDto, ManagerUpdateReq } from '@/constants/manager';
-import HttpService from '@/utils/http-service';
-import { getStorage } from '@/utils/storage';
-import { objectToQueryString } from '@/utils/strings';
 
-const httpService = new HttpService(process.env.NEXT_PUBLIC_HOST!);
-const headers = { 'Access-Token': process.env.NEXT_PUBLIC_ACCESS_KEY! };
+export class ManagerService extends BaseService {
+  async queryManagers(input: ManagerReq): Promise<BaseResp<ManagerDto[]>> {
+    const pageIndex = input.current || 1;
+    const query = this.objectToQueryString({ pageIndex, ...input });
+    return this.http.get(`/v1/managers?${query}`, this.createConfig());
+  }
 
-export const queryHuman = (input: HumanReq): Promise<BaseResp<ManagerResp[]>> => {
-  const url = `/v1/fastgpt`;
-  return httpService.post<BaseResp<ManagerResp[]>>(url, input, { headers: { ...headers, Authorization: getStorage('token') } });
-};
+  async queryManager(input: IdReq): Promise<BaseResp<ManagerDto>> {
+    return this.http.get(`/v1/manager?id=${input.id}`, this.createConfig());
+  }
 
-export const queryManagers = (input: ManagerReq): Promise<BaseResp<ManagerDto[]>> => {
-  const pageIndex = input.current || 1;
-  delete input.current;
-  const url = `/v1/managers?${objectToQueryString({ pageIndex, ...input })}`;
-  return httpService.get<BaseResp<ManagerDto[]>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
-};
-
-export const queryManager = (input: IdReq): Promise<BaseResp<ManagerDto>> => {
-  const url = `/v1/manager?id=${input.id}`;
-  return httpService.get<BaseResp<ManagerDto>>(url, { headers: { ...headers, Authorization: getStorage('token') } });
-};
-
-export const updateManager = (input: IdReq & ManagerUpdateReq): Promise<BaseResp<ManagerDto>> => {
-  const { id, ...data } = input;
-  const url = `/v1/manager?id=${id}`;
-  return httpService.put<BaseResp<ManagerDto>>(url, data, { headers: { ...headers, Authorization: getStorage('token') } });
-};
+  async updateManager(input: IdReq & ManagerUpdateReq): Promise<BaseResp<ManagerDto>> {
+    const { id, ...data } = input;
+    return this.http.put(`/v1/manager?id=${id}`, data, this.createConfig());
+  }
+}

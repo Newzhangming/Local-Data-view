@@ -13,8 +13,10 @@ import Ellipsis from '@/components/ellipsis';
 import { locale } from '@/components/table-props';
 import { IdReq } from '@/constants/dto';
 import { AcceptanceFiling, ConstructionPermit, ProjectDetailDto, ProjUnit, WinningBidder } from '@/constants/project';
-import { getProject, upsertProject } from '@/services/project';
+import { ProjectService } from '@/services/project';
 import { year2Day } from '@/utils/date';
+
+const service = new ProjectService();
 
 export default function ProjectView() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -26,7 +28,8 @@ export default function ProjectView() {
 
   const getDetailData = () => {
     setLoading(true);
-    getProject(params.id as string)
+    service
+      .getProject(params.id as string)
       .then((res) => {
         setLoading(false);
         if (res.msg === 'success') {
@@ -219,7 +222,7 @@ export default function ProjectView() {
   const onConclusionChange = async (e: RadioChangeEvent) => {
     if (detail) {
       const { id, proj_no, proj_name, proj_type, total_area, data_level } = detail;
-      await upsertProject({ id, proj_no, proj_name, proj_type, total_area, data_level, conclusion: e.target.value });
+      await service.upsertProject({ id, proj_no, proj_name, proj_type, total_area, data_level, conclusion: e.target.value });
     }
   };
 

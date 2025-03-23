@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 
 import { UserReq } from '@/constants/user';
-import { login } from '@/services/user';
+import { UserService } from '@/services/user';
 import { setStorage } from '@/utils/storage';
+
+const userService = new UserService();
 
 export default function Page() {
   const { token } = theme.useToken();
@@ -18,7 +20,7 @@ export default function Page() {
 
   const getRequestData = useCallback(async (formData: UserReq) => {
     setLoading(true);
-    const result = await login(formData);
+    const result = await userService.login(formData);
     if (!result || !result.data) {
       messageApi.error('服务器错误', 3);
       setLoading(false);

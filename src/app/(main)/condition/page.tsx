@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 import { ConditionDto, ProjectRoleDto } from '@/constants/condition';
-import { queryAreas, queryConditions, queryProjectRoles, removeCondition } from '@/services/condition';
+import { ConditionService } from '@/services/condition';
+
+const service = new ConditionService();
 
 export default function ConditionPage() {
   const router = useRouter();
@@ -27,7 +29,8 @@ export default function ConditionPage() {
 
   const getAreaData = () => {
     setLoading(true);
-    queryAreas({})
+    service
+      .queryAreas({})
       .then((res) => {
         setLoading(false);
         if (res.msg === '鉴权码缺失') {
@@ -49,7 +52,7 @@ export default function ConditionPage() {
 
   const getProjectRolesData = () => {
     if (!areaId) return;
-    queryProjectRoles({ area_id: areaId }).then((res) => {
+    service.queryProjectRoles({ area_id: areaId }).then((res) => {
       if (res.msg !== 'success') {
         messageApi.error(res.msg || '服务端错误', 5).then(() => {});
       } else {
@@ -62,7 +65,7 @@ export default function ConditionPage() {
 
   const getConditionsData = () => {
     if (!areaId || !projRoleId) return;
-    queryConditions({ area_id: areaId, role_id: projRoleId }).then((res) => {
+    service.queryConditions({ area_id: areaId, role_id: projRoleId }).then((res) => {
       if (res.msg !== 'success') {
         messageApi.error(res.msg || '服务端错误', 5).then(() => {});
       } else {
@@ -77,7 +80,7 @@ export default function ConditionPage() {
 
   const onDelete = (type: string, id: string) => async () => {
     if (type === 'condition') {
-      await removeCondition({ id });
+      await service.removeCondition({ id });
       getConditionsData();
     }
   };

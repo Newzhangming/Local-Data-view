@@ -3,9 +3,9 @@
 ## Docker
 ### Build
 > 开发环境
-- `docker rm -f cpm-admin;docker rmi -f cpm-admin;docker build -t cpm-admin -f Dockerfile --no-cache --progress=plain .`
+- `docker rm -f cpm-admin;docker rmi -f cpm-admin;docker buildx build -t cpm-admin -f Dockerfile --no-cache --progress=plain .`
 > 生成环境
-- `docker build -t cpm-admin:latest .`
+- `docker buildx build -t cpm-admin:latest .`
 
 ### Run
 > 生成环境

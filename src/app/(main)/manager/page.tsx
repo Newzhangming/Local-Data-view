@@ -14,13 +14,15 @@ import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { ManagerReq } from '@/constants/dto';
 import { ManagerDto } from '@/constants/manager';
-import { queryManagers } from '@/services/manager';
 import { getStorage, setStorage } from '@/utils/storage';
+import { ManagerService } from '@/services/manager';
+
+const managerService = new ManagerService();
 
 export default function Page() {
   const router = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
-  const { token } = theme.useToken();
+  const { token } = theme.useToken(); 
 
   const certNameOptions = async () => certNames.map((value) => ({ label: value, value }));
   const projCountOptions = async () => [2, 3, 5, 8].map((value) => ({ label: `${value}条及以上`, value }));
@@ -187,6 +189,7 @@ export default function Page() {
     },
     { title: '注册单位', dataIndex: 'lending_to', hideInSearch: true, copyable: true, ellipsis: false },
     { title: '有效期至', dataIndex: 'valid_date', valueType: 'date', hideInSearch: true, copyable: false, ellipsis: false },
+    { title: '数据等级', dataIndex: 'data_level', ...dataLevelCommon },
     { title: '招投标数据等级', dataIndex: 'wb_data_level', ...dataLevelCommon },
     { title: '合同数据等级', dataIndex: 'contract_data_level', ...dataLevelCommon },
     { title: '施工许可数据等级', dataIndex: 'cp_data_level', ...dataLevelCommon },
@@ -219,7 +222,7 @@ export default function Page() {
 
   const getRequestData = useCallback(async (params: ManagerReq) => {
     const input = { ...params, from: 'list' };
-    return queryManagers(input).then((res) => {
+    return managerService.queryManagers(input).then((res) => {
       if (res.msg === '鉴权码缺失') {
         messageApi.error(res.msg).then(() => {
           router.replace('/auth', { scroll: false });

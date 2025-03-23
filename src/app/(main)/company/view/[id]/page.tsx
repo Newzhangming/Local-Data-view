@@ -8,8 +8,10 @@ import React, { useEffect, useState } from 'react';
 import Copyable from '@/components/copyable';
 import { locale } from '@/components/table-props';
 import { Certificate, CompanyDto, ManagerDto } from '@/constants/company';
-import { queryCompany } from '@/services/company';
+import { CompanyService } from '@/services/company';
 import { year2Day } from '@/utils/date';
+
+const companyService = new CompanyService();
 
 export default function CompanyEdit() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -21,7 +23,7 @@ export default function CompanyEdit() {
 
   const getDetailData = () => {
     setLoading(true);
-    queryCompany({ id: params.id as string })
+    companyService.queryCompany({ id: params.id as string })
       .then((res) => {
         setLoading(false);
         if (res.msg === 'success') {

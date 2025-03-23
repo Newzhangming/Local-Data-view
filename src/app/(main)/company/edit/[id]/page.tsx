@@ -8,17 +8,19 @@ import React, { useCallback } from 'react';
 
 import { CompanyDto } from '@/constants/company';
 import { IdReq } from '@/constants/dto';
-import { queryCompany, updateCompany } from '@/services/company';
+import {CompanyService } from '@/services/company';
 import { closeWindow } from '@/utils/close-window';
+
+const companyService = new CompanyService();
 
 export default function CompanyEdit() {
   const [messageApi, contextHolder] = message.useMessage();
   const params: Partial<IdReq> = useParams();
-  const getRequestData = (params: IdReq) => useCallback(async () => queryCompany(params).then(({ data }) => data), []);
+  const getRequestData = (params: IdReq) => useCallback(async () =>  companyService.queryCompany(params).then(({ data }) => data), []);
 
   const onFinish = useCallback(async (fromData: CompanyDto) => {
     const input = { ...params, ...fromData };
-    const result = await updateCompany(input);
+    const result = await companyService.updateCompany(input);
     if (result.msg === 'success') {
       messageApi.success('保存成功', 3);
     } else {

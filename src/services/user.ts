@@ -1,12 +1,10 @@
+import { BaseService } from './base-service';
+
 import { BaseResp } from '@/constants/dto';
 import { UserDto, UserReq } from '@/constants/user';
-import HttpService from '@/utils/http-service';
-import { getStorage } from '@/utils/storage';
 
-const httpService = new HttpService(process.env.NEXT_PUBLIC_HOST!);
-const headers = { 'Access-Token': process.env.NEXT_PUBLIC_ACCESS_KEY! };
-
-export const login = (input: UserReq): Promise<BaseResp<UserDto>> => {
-  const url = `/v1/user/login`;
-  return httpService.post<BaseResp<UserDto>>(url, input, { headers: { ...headers, Authorization: getStorage('token') } });
-};
+export class UserService extends BaseService {
+  async login(input: UserReq): Promise<BaseResp<UserDto>> {
+    return this.http.post(`/v1/user/login`, input, this.createConfig());
+  }
+}

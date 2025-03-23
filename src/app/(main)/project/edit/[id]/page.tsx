@@ -8,8 +8,10 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { IdReq } from '@/constants/dto';
 import { ProjectDetailDto, ProjUnit } from '@/constants/project';
-import { queryProject, upsertProject, upsertUnit } from '@/services/project';
+import { ProjectService } from '@/services/project';
 import { closeWindow } from '@/utils/close-window';
+
+const service = new ProjectService();
 
 export default function ProjectEdit() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -21,7 +23,7 @@ export default function ProjectEdit() {
 
   const getRequestData = () =>
     useCallback(async () => {
-      const result = await queryProject(params.id as string);
+      const result = await service.queryProject(params.id as string);
       setLoading(false);
       setProjUnits(result.data?.proj_units || []);
       return result.data;
@@ -30,7 +32,7 @@ export default function ProjectEdit() {
   const onFinish = useCallback(async (fromData: ProjectDetailDto) => {
     try {
       setLoading(true);
-      const [result] = await Promise.all([upsertProject(fromData), upsertUnit(fromData)]);
+      const [result] = await Promise.all([service.upsertProject(fromData), service.upsertUnit(fromData)]);
       if (result.msg === 'success') {
         messageApi.success('保存成功', 3);
         setLoading(false);

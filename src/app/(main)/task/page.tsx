@@ -21,7 +21,9 @@ import React, { useCallback, useRef, useState } from 'react';
 import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { TaskDto, TaskReq } from '@/constants/task';
-import { addTasks, queryTasks, updateTask } from '@/services/task';
+import { TaskService } from '@/services/task';
+
+const taskService = new TaskService();
 import { MDHHmmss } from '@/utils/date';
 import { getStorage, setStorage } from '@/utils/storage';
 
@@ -36,12 +38,12 @@ export default function Page() {
   const actionRef = useRef<ActionType>(null);
 
   const onUpdate = (id: string, action: 'up' | 'down' | 'reset') => async () => {
-    await updateTask({ id, action });
+    await taskService.updateTask({ id, action });
     actionRef.current?.reload();
   };
 
   const onFixTask = async (values: TaskDto) => {
-    await updateTask(values);
+    await taskService.updateTask(values);
     actionRef.current?.reload();
     return true;
   };
@@ -190,7 +192,7 @@ export default function Page() {
   const getRequestData = useCallback(async (params: TaskReq) => {
     setLoading(true);
     const input = { ...params, from: 'list' };
-    return queryTasks(input).then((res) => {
+    return taskService.queryTasks(input).then((res) => {
       setLoading(false);
       if (res.msg === '鉴权码缺失') {
         messageApi.error(res.msg).then(() => {
@@ -209,7 +211,7 @@ export default function Page() {
     const names = rawNames.map((name) => name.trim()).filter((name) => (name.length > 3 ? name : ''));
     const uniqueNames = [...new Set(names)];
 
-    const result = await addTasks({ proj_name: uniqueNames });
+    const result = await taskService.addTasks({ proj_name: uniqueNames });
     if (result?.msg === 'success') {
       messageApi.success('添加成功');
       actionRef.current?.reload();

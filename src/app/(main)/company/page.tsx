@@ -11,7 +11,9 @@ import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { CompanyDto } from '@/constants/company';
 import { CompanyReq } from '@/constants/dto';
-import { queryCompanies } from '@/services/company';
+import { CompanyService } from '@/services/company';
+
+const companyService = new CompanyService();
 import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
@@ -106,7 +108,7 @@ export default function Page() {
 
   const getRequestData = useCallback(async (params: CompanyReq) => {
     const input = { ...params, from: 'list' };
-    return queryCompanies(input).then((res) => {
+    return companyService.queryCompanies(input).then((res) => {
       if (res.msg === '鉴权码缺失') {
         messageApi.error(res.msg).then(() => {
           router.replace('/auth', { scroll: false });

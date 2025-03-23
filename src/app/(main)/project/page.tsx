@@ -10,8 +10,10 @@ import React, { useCallback, useRef, useState } from 'react';
 import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { ProjectDto, ProjectReq } from '@/constants/dto';
-import { getProjects } from '@/services/project';
+import { ProjectService } from '@/services/project';
 import { getStorage, setStorage } from '@/utils/storage';
+
+const service = new ProjectService();
 
 export default function ProjectList() {
   const { token } = theme.useToken();
@@ -170,7 +172,7 @@ export default function ProjectList() {
   ];
 
   const getRequestData = useCallback(async (params: ProjectReq) => {
-    return getProjects(params).then((res) => {
+    return service.getProjects(params).then((res) => {
       if (res.msg === '鉴权码缺失') {
         messageApi.error(res.msg).then(() => {
           router.replace('/auth', { scroll: false });
