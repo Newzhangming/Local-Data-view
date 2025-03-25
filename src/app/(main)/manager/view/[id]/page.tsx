@@ -24,7 +24,8 @@ export default function ManagerView() {
 
   const getDetailData = () => {
     setLoading(true);
-    managerService.queryManager({ id: params.id as string })
+    managerService
+      .queryManager({ id: params.id as string })
       .then((res) => {
         setLoading(false);
         if (res.msg === 'success') {

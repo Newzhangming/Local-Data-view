@@ -14,15 +14,15 @@ import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { ManagerReq } from '@/constants/dto';
 import { ManagerDto } from '@/constants/manager';
-import { getStorage, setStorage } from '@/utils/storage';
 import { ManagerService } from '@/services/manager';
+import { getStorage, setStorage } from '@/utils/storage';
 
 const managerService = new ManagerService();
 
 export default function Page() {
   const router = useRouter();
   const [messageApi, contextHolder] = message.useMessage();
-  const { token } = theme.useToken(); 
+  const { token } = theme.useToken();
 
   const certNameOptions = async () => certNames.map((value) => ({ label: value, value }));
   const projCountOptions = async () => [2, 3, 5, 8].map((value) => ({ label: `${value}条及以上`, value }));

@@ -23,7 +23,8 @@ export default function CompanyEdit() {
 
   const getDetailData = () => {
     setLoading(true);
-    companyService.queryCompany({ id: params.id as string })
+    companyService
+      .queryCompany({ id: params.id as string })
       .then((res) => {
         setLoading(false);
         if (res.msg === 'success') {

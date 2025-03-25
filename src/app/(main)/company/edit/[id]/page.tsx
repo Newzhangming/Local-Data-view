@@ -8,7 +8,7 @@ import React, { useCallback } from 'react';
 
 import { CompanyDto } from '@/constants/company';
 import { IdReq } from '@/constants/dto';
-import {CompanyService } from '@/services/company';
+import { CompanyService } from '@/services/company';
 import { closeWindow } from '@/utils/close-window';
 
 const companyService = new CompanyService();
@@ -16,7 +16,7 @@ const companyService = new CompanyService();
 export default function CompanyEdit() {
   const [messageApi, contextHolder] = message.useMessage();
   const params: Partial<IdReq> = useParams();
-  const getRequestData = (params: IdReq) => useCallback(async () =>  companyService.queryCompany(params).then(({ data }) => data), []);
+  const getRequestData = (params: IdReq) => useCallback(async () => companyService.queryCompany(params).then(({ data }) => data), []);
 
   const onFinish = useCallback(async (fromData: CompanyDto) => {
     const input = { ...params, ...fromData };
