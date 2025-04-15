@@ -1,12 +1,14 @@
 import pluginJs from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import prettier from 'eslint-plugin-prettier';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-export default [
+export default defineConfig([
+  globalIgnores(['src/generated/*']),
   { files: ['**/*.{js,mjs,cjs,ts}'] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
@@ -64,4 +66,4 @@ export default [
       ],
     },
   },
-];
+]);
