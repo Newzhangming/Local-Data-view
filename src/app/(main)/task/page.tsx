@@ -13,19 +13,19 @@ import {
   SyncOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
-import { ActionType, ModalForm, ProColumns, ProFormDigit, ProFormSelect, ProFormText, ProFormTextArea, ProTable } from '@ant-design/pro-components';
+import { ActionType, ModalForm, ProColumns, ProFormDigit, ProFormInstance, ProFormSelect, ProFormText, ProFormTextArea, ProTable } from '@ant-design/pro-components';
 import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { TaskDto, TaskReq } from '@/constants/task';
 import { TaskService } from '@/services/task';
+import { MDHHmmss } from '@/utils/date';
+import { getStorage, removeStorage, setStorage } from '@/utils/storage';
 
 const taskService = new TaskService();
-import { MDHHmmss } from '@/utils/date';
-import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
 
   const actionRef = useRef<ActionType>(null);
-
+  const formRef = useRef<ProFormInstance>(undefined);
   const onUpdate = (id: string, action: 'up' | 'down' | 'reset') => async () => {
     await taskService.updateTask({ id, action });
     actionRef.current?.reload();
@@ -220,6 +220,14 @@ export default function Page() {
     }
   }, []);
 
+  useEffect(() => {
+    const saved = getStorage('searchParamsTask');
+    if (saved) {
+      const values = JSON.parse(saved);
+      formRef.current?.setFieldsValue(values);
+    }
+  }, []);
+
   const props: UploadProps = {
     name: 'file',
     action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
@@ -292,6 +300,7 @@ export default function Page() {
         loading={loading}
         columns={columns}
         actionRef={actionRef}
+        formRef={formRef}
         request={getRequestData}
         rowKey="id"
         locale={locale}
@@ -308,7 +317,11 @@ export default function Page() {
           },
         }}
         dateFormatter="string"
-        onReset={actionRef.current?.reload}
+        onSubmit={(params) => setStorage('searchParamsTask', JSON.stringify(params), 5 * 60 * 1000)}
+        onReset={() => {
+          removeStorage('searchParamsTask');
+          actionRef.current?.reload();
+        }}
       />
     </>
   );

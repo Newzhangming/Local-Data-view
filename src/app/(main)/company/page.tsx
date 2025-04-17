@@ -1,20 +1,20 @@
 'use client';
 
 import { EditTwoTone, EyeTwoTone } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import type { ActionType, ProColumns, ProFormInstance } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { Divider, message, theme } from 'antd';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { CompanyDto } from '@/constants/company';
 import { CompanyReq } from '@/constants/dto';
 import { CompanyService } from '@/services/company';
+import { getStorage, removeStorage, setStorage } from '@/utils/storage';
 
 const companyService = new CompanyService();
-import { getStorage, setStorage } from '@/utils/storage';
 
 export default function Page() {
   const router = useRouter();
@@ -104,6 +104,7 @@ export default function Page() {
     current: 1,
     pageSize: Number(getStorage('listPageSize')) || 10,
   });
+  const formRef = useRef<ProFormInstance>(undefined);
   const actionRef = useRef<ActionType>(null);
 
   const getRequestData = useCallback(async (params: CompanyReq) => {
@@ -121,12 +122,21 @@ export default function Page() {
     });
   }, []);
 
+  useEffect(() => {
+    const saved = getStorage('searchParamsCompany');
+    if (saved) {
+      const values = JSON.parse(saved);
+      formRef.current?.setFieldsValue(values);
+    }
+  }, []);
+
   return (
     <>
       {contextHolder}
       <ProTable<CompanyDto>
         columns={columns}
         actionRef={actionRef}
+        formRef={formRef}
         request={getRequestData}
         rowKey="id"
         locale={locale}
@@ -143,7 +153,11 @@ export default function Page() {
           },
         }}
         dateFormatter="string"
-        onReset={actionRef.current?.reload}
+        onSubmit={(params) => setStorage('searchParamsCompany', JSON.stringify(params), 5 * 60 * 1000)}
+        onReset={() => {
+          removeStorage('searchParamsCompany');
+          actionRef.current?.reload();
+        }}
         tooltip={undefined}
       />
     </>
