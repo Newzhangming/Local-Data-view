@@ -77,6 +77,7 @@ export default function ProjectList() {
       ellipsis: false,
     },
     { title: '工程用途', dataIndex: 'proj_use', valueType: 'text', fieldProps: { placeholder: '支持模糊搜索' }, order: 8, hideInSearch: false, copyable: false, ellipsis: false },
+    { title: '行政区划', dataIndex: 'region', valueType: 'text', fieldProps: { placeholder: '支持模糊搜索' }, order: 8, copyable: false, ellipsis: false },
     { title: '总面积(平方米)', dataIndex: 'total_area', hideInSearch: true, copyable: true, ellipsis: false, sorter: (a, b) => a.total_area - b.total_area },
     {
       title: '项目结论',

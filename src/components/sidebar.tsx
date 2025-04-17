@@ -23,7 +23,6 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col h-full bg-white border-r px-4 py-6 gap-2 shadow-sm">
       {menuItems.map((item) => {
-        console.log(pathname);
         const isActive = pathname.startsWith(item.href);
         return (
           <Link
