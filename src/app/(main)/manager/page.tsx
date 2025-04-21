@@ -243,7 +243,7 @@ export default function Page() {
         actionRef={actionRef}
         locale={locale}
         request={getRequestData}
-        rowKey="name"
+        rowKey="id"
         search={search}
         beforeSearchSubmit={beforeSearchSubmit}
         toolBarRender={undefined}
