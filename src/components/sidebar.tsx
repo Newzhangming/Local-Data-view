@@ -17,6 +17,7 @@ export default function Sidebar() {
       { href: '/company', icon: <BgColorsOutlined />, label: '施工单位' },
       { href: '/project', icon: <BuildOutlined />, label: '工程项目' },
       { href: '/condition', icon: <ContactsOutlined />, label: '用人要求' },
+      { href: '/performance', icon: <ContactsOutlined />, label: '项目业绩' },
     ];
   }, []);
 

@@ -15,48 +15,11 @@ export interface IdReq {
 
 // JSON 对象转 TypeScript 定义 https://app.quicktype.io/?l=ts
 
-export interface MessagesReq extends PageReq {
-  id?: string;
-  nickname?: string;
-  to?: string;
-  room_id?: string;
-  content?: string;
-  note?: string;
-}
-
-export interface MessageBaseDto {
-  id: string;
-  nickname: string;
-  to: string;
-  room_id: string;
-  content: string;
-  note: string;
-}
-
-export type RoomsReq = PageReq;
-
-export interface RoomBaseDto {
-  id: string;
-  room_name: string;
-}
-
-export interface HumanReq {
-  content: string;
-}
-
-export interface HumanResp {
-  role: string;
-  content: string;
-}
-
 export type ManagerReq = PageReq;
 
-export interface ManagerResp {
-  result: boolean;
-  msg: string;
-}
-
 export type ProjectReq = PageReq;
+
+export type PerformanceReq = PageReq & { keyword?: string };
 
 export interface ProjectDto {
   id: string;

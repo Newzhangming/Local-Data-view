@@ -170,3 +170,25 @@ export interface ManagerTechKpi {
   proj_role: string;
   manager: ManagerBase;
 }
+
+export type PerformanceType = {
+  proj_name: string;
+  proj_no: string;
+  total_area: number;
+  data_level: string;
+  managers: {
+    manager: {
+      name: string;
+      certs: { company: { name: string }; experiences: { start_date: string; end_date: string }[] }[];
+    };
+  }[];
+  construction_permits: { cp_date: string }[];
+  acceptance_filings: {
+    actual_area: number;
+    data_level: string;
+    managers: { manager: { name: string } }[];
+    companies: { company: { name: string } }[];
+    proj_start_date: string;
+    af_date: string;
+  }[];
+};
