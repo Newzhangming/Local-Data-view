@@ -15,12 +15,12 @@ export default function Page() {
     { key: 'page3', label: '市政条件' },
   ]);
 
-  const [tabId, setTabId] = useState<string>();
+  const [tabId, setTabId] = useState<string>('single_condition');
   const handleTabChange = useCallback((activeKey: string) => setTabId(activeKey), []);
 
   return (
     <>
-      <Tabs defaultActiveKey="single_condition" type="card" size={'large'} style={{ marginBottom: 32 }} items={tabs} onChange={handleTabChange} />
+      <Tabs defaultActiveKey="single_condition" type="card" size={'large'} items={tabs} onChange={handleTabChange} />
       {tabId === 'single_condition' && <Page1 />}
       {tabId === 'double_condition' && <Page2 />}
       {tabId === 'page3' && <Page3 />}

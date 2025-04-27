@@ -1,3 +1,5 @@
+import { PageReq } from '@/constants/dto';
+
 export interface ProjectDetailDto {
   id: string;
   proj_no: string;
@@ -170,6 +172,8 @@ export interface ManagerTechKpi {
   proj_role: string;
   manager: ManagerBase;
 }
+
+export type PerformanceReq = PageReq & { keyword?: string };
 
 export type PerformanceType = {
   proj_name: string;

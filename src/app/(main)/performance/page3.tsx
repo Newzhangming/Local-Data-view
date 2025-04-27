@@ -9,8 +9,7 @@ import React, { useCallback, useRef, useState } from 'react';
 
 import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination } from '@/components/table-props';
-import { PerformanceReq } from '@/constants/dto';
-import { PerformanceType } from '@/constants/project';
+import { PerformanceReq, PerformanceType } from '@/constants/project';
 import { ProjectService } from '@/services/project';
 import { getStorage, setStorage } from '@/utils/storage';
 
@@ -88,6 +87,8 @@ export default function Page3() {
     });
   }, []);
 
+  const titleElement = () => <div className="text-lg font-normal">{`①工程基本信息和竣工等级C级以上；②两条业绩开工-竣工时间不重叠；③开工-竣工时间在施工单位注册轨迹内；④提示未批先建时间`}</div>;
+
   return (
     <>
       {contextHolder}
@@ -96,6 +97,7 @@ export default function Page3() {
         actionRef={actionRef}
         request={getRequestData}
         rowKey="id"
+        title={titleElement}
         locale={locale}
         search={false}
         beforeSearchSubmit={beforeSearchSubmit}
