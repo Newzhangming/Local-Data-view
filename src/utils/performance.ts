@@ -73,7 +73,7 @@ export function validateProjectData(projectData: ProjectType) {
     return { isValid: false, message: '时间逻辑错误' };
   }
 
-  if (cpDate && new Date(projStartDate) < new Date(cpDate)) {
+  if (new Date(projStartDate) < new Date(cpDate)) {
     return { isValid: false, message: '项目未批先建' };
   }
 

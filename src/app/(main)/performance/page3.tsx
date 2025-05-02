@@ -11,6 +11,7 @@ import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination } from '@/components/table-props';
 import { PerformanceReq, PerformanceType } from '@/constants/project';
 import { ProjectService } from '@/services/project';
+import { validateProjectData } from '@/utils/performance';
 import { getStorage, setStorage } from '@/utils/storage';
 
 const service = new ProjectService();
@@ -48,13 +49,28 @@ export default function Page3() {
       renderText: (text: string) => <Ellipsis text={text} lines={2} />,
       align: 'left',
     },
-    { title: '总面积(平方米)', dataIndex: 'total_area', hideInSearch: true, copyable: true, ellipsis: false, sorter: (a, b) => a.total_area - b.total_area },
     {
       title: '数据等级',
       dataIndex: 'data_level',
       ...dataLevelCommon,
       hideInTable: false,
       render: (_, record) => <Tag color={DataLevel[record.data_level as keyof typeof DataLevel]}>{record.data_level}</Tag>,
+    },
+    {
+      title: '初步结论',
+      hideInTable: false,
+      render: (_, record) => {
+        const data = validateProjectData(record);
+        let color = data.isValid ? 'green' : 'red';
+        if (data.message.includes('未批先建')) {
+          color = 'orange';
+        }
+        return (
+          <div>
+            <Tag color={color}>{data.message}</Tag>
+          </div>
+        );
+      },
     },
     {
       title: '操作',
@@ -73,7 +89,7 @@ export default function Page3() {
   ];
 
   const getRequestData = useCallback(async (params: PerformanceReq) => {
-    const input = { ...params, keyword: params?.keyword || 'single_condition' };
+    const input = { ...params, keyword: params?.keyword || 'city' };
     return service.performance(input).then((res) => {
       if (res.msg === '鉴权码缺失') {
         messageApi.error(res.msg).then(() => {
