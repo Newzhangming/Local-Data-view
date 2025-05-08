@@ -14,7 +14,7 @@
 
 ### Push
 #### AMD64
-- `docker buildx build --platform linux/amd64 --tag kennytian/cpm-admin:0.0.6 --tag kennytian/cpm-admin:latest --push .`
+- `docker buildx build --platform linux/amd64 --tag kennytian/cpm-admin:0.2.16 --tag kennytian/cpm-admin:latest --push .`
 #### ARM64
-- `docker buildx build --platform linux/arm64 --tag kennytian/cpm-admin:0.0.6 --tag kennytian/cpm-admin:latest --push .`
+- `docker buildx build --platform linux/arm64 --tag kennytian/cpm-admin:0.2.16 --tag kennytian/cpm-admin:latest --push .`
 
