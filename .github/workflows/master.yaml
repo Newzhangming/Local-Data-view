@@ -40,11 +40,6 @@ jobs:
           echo ${{secrets.ENV_CONTENT}} | tee .env
           cat .env
 
-      - name: Download the environment file
-        shell: bash
-        run: |
-          curl ${{vars.ENV_URL}} > .env
-
       - name: get-npm-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.3.1
