@@ -12,7 +12,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const menuItems = useMemo(() => {
     return [
-      { href: '/task', icon: <SyncOutlined />, label: '采集任务' },
+      { href: '/task', icon: <SyncOutlined />, label: '任务采集' },
       { href: '/manager', icon: <UsergroupAddOutlined />, label: '项目经理' },
       { href: '/company', icon: <BgColorsOutlined />, label: '施工单位' },
       { href: '/project', icon: <BuildOutlined />, label: '工程项目' },

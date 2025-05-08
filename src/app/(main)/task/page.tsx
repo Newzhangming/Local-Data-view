@@ -5,7 +5,6 @@ import {
   ArrowUpOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
-  DownloadOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
   PlusOutlined,
@@ -14,7 +13,7 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { ActionType, ModalForm, ProColumns, ProFormDigit, ProFormInstance, ProFormSelect, ProFormText, ProFormTextArea, ProTable } from '@ant-design/pro-components';
-import { Avatar, Button, Divider, message, Popconfirm, Space, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
+import { Avatar, Button, Divider, message, Popconfirm, StepProps, Steps, Tag, theme, Upload, UploadProps } from 'antd';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -45,7 +44,6 @@ export default function Page() {
   const onFixTask = async (values: TaskDto) => {
     await taskService.updateTask(values);
     actionRef.current?.reload();
-    return true;
   };
 
   const taskStatus = async () => [
@@ -208,7 +206,7 @@ export default function Page() {
 
   const onAddTask = useCallback(async (params: { proj_name: string }) => {
     const rawNames = params.proj_name.split('\n');
-    const names = rawNames.map((name) => name.trim()).filter((name) => (name.length > 3 ? name : ''));
+    const names = rawNames.map((name) => name.trim()).filter((name) => (name.length > 2 ? name : ''));
     const uniqueNames = [...new Set(names)];
 
     const result = await taskService.addTasks({ proj_name: uniqueNames });
@@ -230,23 +228,29 @@ export default function Page() {
 
   const props: UploadProps = {
     name: 'file',
-    action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
-    headers: {
-      authorization: 'authorization-text',
+    maxCount: 1,
+    action: `${process.env.NEXT_PUBLIC_HOST}/v1/task/upload`,
+    headers: { 'Access-Token': String(process.env.NEXT_PUBLIC_ACCESS_KEY), authorization: getStorage('token') },
+    beforeUpload: (file) => {
+      if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+        messageApi.error(`${file.name} 不是 Excel 文件`).then(() => {});
+        return false;
+      }
+      return true;
     },
     onChange(info) {
-      if (info.file.status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
       if (info.file.status === 'done') {
-        messageApi.success(`${info.file.name} file uploaded successfully`);
+        messageApi.success(`成功导入${info.file.response.data}条记录`).then(() => {});
       } else if (info.file.status === 'error') {
-        messageApi.error(`${info.file.name} file upload failed.`);
+        messageApi.error(`${info.file.name} 导入失败.`).then(() => {});
       }
     },
   };
 
   const toolBarRender = () => [
+    <Upload {...props}>
+      <Button icon={<UploadOutlined />}>批量导入项目</Button>
+    </Upload>,
     <ModalForm
       layout={'horizontal'}
       title="添加项目"
@@ -267,29 +271,6 @@ export default function Page() {
         placeholder={`项目名称1\n项目名称2\n项目名称3`}
         fieldProps={{ autoSize: { minRows: 3 } }}
       />
-    </ModalForm>,
-    <ModalForm
-      layout={'horizontal'}
-      title="导入项目"
-      autoFocusFirstInput
-      modalProps={{ destroyOnClose: true }}
-      submitTimeout={5000}
-      trigger={
-        <Button type="default" icon={<UploadOutlined />}>
-          点击上传
-        </Button>
-      }
-    >
-      <Upload {...props}>
-        <Space>
-          <Button type={'dashed'} icon={<DownloadOutlined />}>
-            下载模板
-          </Button>
-          <Button type={'primary'} icon={<UploadOutlined />}>
-            导入项目
-          </Button>
-        </Space>
-      </Upload>
     </ModalForm>,
   ];
 
