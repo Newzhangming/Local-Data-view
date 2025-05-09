@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
 import { locale } from '@/components/table-props';
-import { Experience, ManagerDto, Project } from '@/constants/manager';
+import { Experience, ManagerDto, Project, SigningStatus, signingStatusMapping } from '@/constants/manager';
 import { ManagerService } from '@/services/manager';
 import { year2Day, year2Sec } from '@/utils/date';
 
@@ -123,6 +123,9 @@ export default function ManagerView() {
           </Descriptions.Item>
           <Descriptions.Item label="注册省份">
             <Copyable content={detail?.lending_province} />
+          </Descriptions.Item>
+          <Descriptions.Item label="签约情况">
+            <Copyable content={signingStatusMapping[detail?.signing_status as SigningStatus] || ''} />
           </Descriptions.Item>
           <Descriptions.Item label="初采时间">{year2Sec(detail?.created_at)}</Descriptions.Item>
           <Descriptions.Item label="更新时间">{year2Sec(detail?.updated_at)}</Descriptions.Item>

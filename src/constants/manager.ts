@@ -4,6 +4,7 @@ export interface ManagerUpdateReq {
   id_card: string;
   cert_name?: string;
   cert_status?: string;
+  signing_status?: string;
 }
 
 export interface CertDto {
@@ -36,6 +37,7 @@ export interface ManagerDto {
   lending_province: string;
   source_id: string;
   cert_status: string;
+  signing_status: string;
   proj_count: number;
   exp_count: number;
   tech_kpi_count: number;
@@ -46,6 +48,9 @@ export interface ManagerDto {
   created_at: Date;
   updated_at: Date;
 }
+
+export const signingStatusMapping = { signed: '已签约', not_signed: '未签约', unknown: '未知' };
+export type SigningStatus = keyof typeof signingStatusMapping;
 
 export interface Experience {
   start_date: Date;

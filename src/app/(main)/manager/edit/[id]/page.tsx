@@ -1,13 +1,13 @@
 'use client';
 
 import { EditTwoTone, HomeOutlined, UsergroupAddOutlined } from '@ant-design/icons';
-import { ProForm, ProFormRadio, ProFormText } from '@ant-design/pro-components';
+import { ProForm, ProFormRadio, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import { Breadcrumb, message, Space } from 'antd';
 import { useParams } from 'next/navigation';
 import React, { useCallback } from 'react';
 
 import { IdReq } from '@/constants/dto';
-import { ManagerDto } from '@/constants/manager';
+import { ManagerDto, signingStatusMapping } from '@/constants/manager';
 import { ManagerService } from '@/services/manager';
 import { closeWindow } from '@/utils/close-window';
 
@@ -57,6 +57,8 @@ export default function ManagerEdit() {
     },
   ];
 
+  const getSigningStatus = async () => Object.entries(signingStatusMapping).map(([key, value]) => ({ label: value, value: key }));
+
   return (
     <>
       {contextHolder}
@@ -75,7 +77,7 @@ export default function ManagerEdit() {
               name="lending_no"
               label="注册编号"
               tooltip={'如：鄂1422017201828198'}
-              rules={[{ required: true, message: '请输入正确的注册编号', min: 10, max: 80 }]}
+              rules={[{ required: false, message: '请输入正确的注册编号', min: 10, max: 80 }]}
               placeholder="注册编号必须是10~20个汉字"
             />
             <ProFormText width="md" name="lending_to" label="注册单位" rules={[{ required: false, message: '请输入正确的注册单位', min: 6, max: 54 }]} placeholder="注册单位必须是6~40个汉字" />
@@ -99,6 +101,7 @@ export default function ManagerEdit() {
               placeholder="请输入四库ID"
               tooltip={'请确认后再填写'}
             />
+            <ProFormSelect name="signing_status" label="签约情况" request={getSigningStatus} placeholder={'请选择签约情况'} tooltip={'不做修改就选未知'} />
           </ProForm.Group>
         </ProForm>
       </Space>

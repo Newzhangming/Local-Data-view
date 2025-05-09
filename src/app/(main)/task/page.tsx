@@ -255,7 +255,7 @@ export default function Page() {
       layout={'horizontal'}
       title="添加项目"
       autoFocusFirstInput
-      modalProps={{ destroyOnClose: true }}
+      modalProps={{ destroyOnHidden: true }}
       onFinish={onAddTask}
       submitTimeout={5000}
       trigger={

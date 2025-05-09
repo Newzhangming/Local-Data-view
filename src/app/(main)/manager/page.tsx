@@ -13,7 +13,7 @@ import Copyable from '@/components/copyable';
 import Ellipsis from '@/components/ellipsis';
 import { beforeSearchSubmit, locale, pagination, search } from '@/components/table-props';
 import { ManagerReq } from '@/constants/dto';
-import { ManagerDto } from '@/constants/manager';
+import { ManagerDto, SigningStatus, signingStatusMapping } from '@/constants/manager';
 import { ManagerService } from '@/services/manager';
 import { getStorage, setStorage } from '@/utils/storage';
 
@@ -188,6 +188,7 @@ export default function Page() {
       ellipsis: false,
     },
     { title: '注册单位', dataIndex: 'lending_to', hideInSearch: true, copyable: true, ellipsis: false },
+    { title: '签约情况', dataIndex: 'signing_status', hideInSearch: true, copyable: false, ellipsis: false, renderText: (text: SigningStatus) => signingStatusMapping[text] },
     { title: '有效期至', dataIndex: 'valid_date', valueType: 'date', hideInSearch: true, copyable: false, ellipsis: false },
     { title: '数据等级', dataIndex: 'data_level', ...dataLevelCommon },
     { title: '招投标数据等级', dataIndex: 'wb_data_level', ...dataLevelCommon },
