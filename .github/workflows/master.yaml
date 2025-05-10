@@ -65,6 +65,20 @@ jobs:
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest"
             "${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ steps.package-version.outputs.current-version }}"
 
+      - name: WeChat Work sent a failure notification
+        if: failure()
+        uses: chf007/action-wechat-work@master
+        env:
+          WECHAT_WORK_BOT_WEBHOOK: ${{ secrets.WECHAT_WORK_BOT_WEBHOOK }}
+        with:
+          msgtype: markdown
+          content: |
+            # 部署失败通知
+            **仓库：** ${{ github.repository }}
+            **工作流：** ${{ github.workflow }}
+            **触发事件：** ${{ github.event_name }}
+            [查看详情](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
       - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@v1
         with:
