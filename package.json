@@ -1,6 +1,6 @@
 {
   "name": "cpm-admin",
-  "version": "0.2.17",
+  "version": "0.2.18",
   "description": "全国建筑人才AI分析管理系统",
   "private": true,
   "scripts": {
