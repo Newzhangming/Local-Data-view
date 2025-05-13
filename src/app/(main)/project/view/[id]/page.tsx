@@ -50,7 +50,7 @@ export default function ProjectView() {
     { title: '高度(米)', dataIndex: 'height', key: 'height', render: (value: string) => <Copyable content={value} /> },
   ];
   const afColumns: TableProps<AcceptanceFiling>['columns'] = [
-    { title: '施工许可证编号', dataIndex: 'af_no', key: 'af_no', render: (value: string) => <Copyable content={value} /> },
+    { title: '施工许可证编号', dataIndex: 'cp_no', key: 'cp_no', render: (value: string) => <Copyable content={value} /> },
     { title: '实际造价(万元)', dataIndex: 'actual_cost', key: 'actual_cost', render: (value: string) => <Copyable content={value} /> },
     { title: '实际面积(平方米)', dataIndex: 'actual_area', key: 'actual_area', render: (value: string) => <Copyable content={value} /> },
     { title: '实际开工日期', dataIndex: 'proj_start_date', key: 'proj_start_date', render: (value: string) => <Copyable content={year2Day(value)} /> },
