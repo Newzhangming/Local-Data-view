@@ -44,7 +44,7 @@ export default function Page() {
         logo={'https://images.unsplash.com/photo-1534239697798-120952b76f2b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1280&q=80'}
         onFinish={getRequestData}
         title={process.env.NEXT_PUBLIC_APP_NAME}
-        subTitle="您要找的建筑项目、建筑公司和高级项目经理都在这儿"
+        subTitle="储存信息用的"
         actions={undefined}
         loading={loading}
       >

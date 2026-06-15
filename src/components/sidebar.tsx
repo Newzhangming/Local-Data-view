@@ -16,7 +16,7 @@ export default function Sidebar() {
       { href: '/manager', icon: <UsergroupAddOutlined />, label: '项目经理' },
       { href: '/company', icon: <BgColorsOutlined />, label: '施工单位' },
       { href: '/project', icon: <BuildOutlined />, label: '工程项目' },
-      // { href: '/condition', icon: <ContactsOutlined />, label: '用人要求' },
+      // { href: '/customer', icon: <UsergroupAddOutlined />, label: '客户信息' },
       { href: '/performance', icon: <ContactsOutlined />, label: '项目业绩' },
     ];
   }, []);
