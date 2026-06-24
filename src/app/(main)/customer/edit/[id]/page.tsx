@@ -3,7 +3,6 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CustomerService } from '@/services/customer';
-import { CustomerCreateReq } from '@/constants/customer';
 import {
   ArrowLeftIcon,
   PhoneIcon,
@@ -16,7 +15,6 @@ import {
   LinkIcon,
   UsersIcon,
   ShoppingBagIcon,
-  CheckIcon,
 } from '@heroicons/react/24/outline';
 
 const customerService = new CustomerService();
@@ -37,13 +35,11 @@ const tierMap: Record<number, string> = {
 export default function CustomerEditPage() {
   const params = useParams();
   const router = useRouter();
+  const id = params?.id as string | undefined;
 
-  const idParam = params?.id as string | undefined;
-  const isNew = !idParam || idParam === 'new';
-
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState<CustomerCreateReq & { id?: string; tier?: number }>({
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState<any>({
     name: '',
     contact_person: '',
     contact_title: '',
@@ -66,63 +62,78 @@ export default function CustomerEditPage() {
     tier: 1,
   });
 
-  // 加载已有客户数据（编辑模式）
   useEffect(() => {
-    if (!isNew && idParam) {
-      const fetchData = async () => {
-        setLoading(true);
-        try {
-          const res = await customerService.queryCustomer({ id: idParam });
-          if (res.msg === 'success' && res.data) {
-            setForm(res.data);
-          } else {
-            alert('未找到该客户');
-            router.push('/customer');
-          }
-        } catch (error) {
-          console.error(error);
-          alert('加载客户数据失败，请刷新重试');
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchData();
+    if (!id) {
+      alert('缺少客户ID');
+      router.back();
+      return;
     }
-  }, [idParam, isNew, router]);
+
+    const fetchData = async () => {
+      try {
+        const res = await customerService.queryCustomer({ id });
+        if (res.msg === 'success' && res.data) {
+          setFormData(res.data);
+        } else {
+          alert('未找到该客户');
+          router.back();
+        }
+      } catch (error) {
+        console.error(error);
+        alert('加载客户数据失败，请刷新重试');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id, router]);
 
   const handleChange = (field: string, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name?.trim()) {
-      alert('请填写客户名称');
+    if (!id) {
+      alert('缺少客户ID');
+      return;
+    }
+    if (!formData.name?.trim()) {
+      alert('客户名称不能为空');
       return;
     }
 
-    setSaving(true);
-    try {
-      if (isNew) {
-        await customerService.createCustomer(form);
-        alert('客户创建成功！');
-      } else {
-        if (!form.id) throw new Error('缺少客户ID');
-        const { id, ...patchData } = form;
-        await customerService.patchCustomer({ id, ...patchData });
-        alert('客户更新成功！');
+    const patchData: any = {};
+    const fields = [
+      'name', 'contact_person', 'contact_title', 'phone', 'email',
+      'website', 'salesperson_name', 'facebook', 'linkedin', 'main_products',
+      'address_line1', 'city', 'postal_code', 'country',
+      'level', 'source', 'remark', 'language', 'parent_id'
+    ];
+    for (const key of fields) {
+      if (formData[key] !== undefined) {
+        patchData[key] = formData[key];
       }
-      router.push('/customer');
+    }
+    if (patchData.parent_id === '') {
+      patchData.parent_id = null;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await customerService.patchCustomer({ id, ...patchData });
+      if (res.msg === 'success') {
+        alert('更新成功！');
+        router.push(`/customer/view/${id}`);
+      } else {
+        alert(res.msg || '更新失败');
+      }
     } catch (error: any) {
       console.error('提交失败:', error);
-      // ✅ 关键：从 axios 错误中提取后端返回的错误信息
-      const msg =
-        error?.response?.data?.msg ||  // 后端返回的 msg
-        error?.message ||
-        (isNew ? '创建失败，请稍后重试' : '更新失败，请稍后重试');
+      const msg = error?.response?.data?.msg || error?.message || '网络请求异常';
       alert('保存失败：' + msg);
     } finally {
-      setSaving(false);
+      setSubmitting(false);
     }
   };
 
@@ -134,10 +145,17 @@ export default function CustomerEditPage() {
     );
   }
 
+  if (!formData.name && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-slate-400">客户不存在</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* 头部 */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => router.back()}
@@ -146,22 +164,12 @@ export default function CustomerEditPage() {
             <ArrowLeftIcon className="w-5 h-5" />
             <span>返回</span>
           </button>
-          <h1 className="text-xl font-semibold text-slate-700">
-            {isNew ? '新增客户' : '编辑客户'}
-          </h1>
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition shadow-sm disabled:opacity-50"
-          >
-            <CheckIcon className="w-5 h-5" />
-            {saving ? '保存中...' : '保存'}
-          </button>
+          <h1 className="text-xl font-semibold text-slate-700">编辑客户</h1>
+          <div className="w-20" />
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-            {/* 头部 */}
             <div className="px-8 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex-1 min-w-[200px]">
@@ -170,7 +178,7 @@ export default function CustomerEditPage() {
                   </label>
                   <input
                     type="text"
-                    value={form.name || ''}
+                    value={formData.name || ''}
                     onChange={(e) => handleChange('name', e.target.value)}
                     className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-800"
                     placeholder="请输入客户名称"
@@ -179,7 +187,7 @@ export default function CustomerEditPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <select
-                    value={form.level || 'D'}
+                    value={formData.level || 'D'}
                     onChange={(e) => handleChange('level', e.target.value)}
                     className="px-3 py-1.5 border border-slate-300 rounded-full text-sm font-medium bg-white focus:ring-2 focus:ring-blue-500"
                   >
@@ -189,9 +197,9 @@ export default function CustomerEditPage() {
                       </option>
                     ))}
                   </select>
-                  {!isNew && form.tier && (
+                  {formData.tier && (
                     <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-700">
-                      {tierMap[form.tier] || `第${form.tier}级`}
+                      {tierMap[formData.tier] || `第${formData.tier}级`}
                     </span>
                   )}
                 </div>
@@ -209,13 +217,13 @@ export default function CustomerEditPage() {
                   <FormField
                     icon={<PhoneIcon className="w-5 h-5 text-slate-400" />}
                     label="电话"
-                    value={form.phone || ''}
+                    value={formData.phone || ''}
                     onChange={(val) => handleChange('phone', val)}
                   />
                   <FormField
                     icon={<EnvelopeIcon className="w-5 h-5 text-slate-400" />}
                     label="邮箱"
-                    value={form.email || ''}
+                    value={formData.email || ''}
                     onChange={(val) => handleChange('email', val)}
                     type="email"
                   />
@@ -224,13 +232,13 @@ export default function CustomerEditPage() {
                   <FormField
                     icon={<BriefcaseIcon className="w-5 h-5 text-slate-400" />}
                     label="联系人"
-                    value={form.contact_person || ''}
+                    value={formData.contact_person || ''}
                     onChange={(val) => handleChange('contact_person', val)}
                   />
                   <FormField
                     icon={<BuildingOfficeIcon className="w-5 h-5 text-slate-400" />}
                     label="联系人职位"
-                    value={form.contact_title || ''}
+                    value={formData.contact_title || ''}
                     onChange={(val) => handleChange('contact_title', val)}
                   />
                 </div>
@@ -246,13 +254,13 @@ export default function CustomerEditPage() {
                   <FormField
                     icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />}
                     label="网站"
-                    value={form.website || ''}
+                    value={formData.website || ''}
                     onChange={(val) => handleChange('website', val)}
                   />
                   <FormField
                     icon={<ShoppingBagIcon className="w-5 h-5 text-slate-400" />}
                     label="主营产品"
-                    value={form.main_products || ''}
+                    value={formData.main_products || ''}
                     onChange={(val) => handleChange('main_products', val)}
                   />
                 </div>
@@ -260,23 +268,23 @@ export default function CustomerEditPage() {
                   <FormField
                     icon={<UsersIcon className="w-5 h-5 text-slate-400" />}
                     label="业务员"
-                    value={form.salesperson_name || ''}
+                    value={formData.salesperson_name || ''}
                     onChange={(val) => handleChange('salesperson_name', val)}
                   />
                   <FormField
                     label="Facebook"
-                    value={form.facebook || ''}
+                    value={formData.facebook || ''}
                     onChange={(val) => handleChange('facebook', val)}
                   />
                   <FormField
                     label="LinkedIn"
-                    value={form.linkedin || ''}
+                    value={formData.linkedin || ''}
                     onChange={(val) => handleChange('linkedin', val)}
                   />
                 </div>
               </section>
 
-              {/* 地址 */}
+              {/* 地址信息 */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -286,16 +294,16 @@ export default function CustomerEditPage() {
                   <FormField
                     icon={<MapPinIcon className="w-5 h-5 text-slate-400" />}
                     label="地址"
-                    value={form.address_line1 || ''}
+                    value={formData.address_line1 || ''}
                     onChange={(val) => handleChange('address_line1', val)}
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <FormField label="城市" value={form.city || ''} onChange={(val) => handleChange('city', val)} />
-                  <FormField label="邮政编码" value={form.postal_code || ''} onChange={(val) => handleChange('postal_code', val)} />
+                  <FormField label="城市" value={formData.city || ''} onChange={(val) => handleChange('city', val)} />
+                  <FormField label="邮政编码" value={formData.postal_code || ''} onChange={(val) => handleChange('postal_code', val)} />
                 </div>
                 <div className="mt-4">
-                  <FormField label="国家" value={form.country || ''} onChange={(val) => handleChange('country', val)} />
+                  <FormField label="国家" value={formData.country || ''} onChange={(val) => handleChange('country', val)} />
                 </div>
               </section>
 
@@ -309,16 +317,14 @@ export default function CustomerEditPage() {
                   <FormField
                     icon={<LinkIcon className="w-5 h-5 text-slate-400" />}
                     label="上级客户ID（留空或填null为顶级）"
-                    value={form.parent_id || ''}
+                    value={formData.parent_id || ''}
                     onChange={(val) => handleChange('parent_id', val)}
                     placeholder="输入已存在的客户ID"
                   />
-                  {!isNew && form.tier !== undefined && (
-                    <div className="text-sm text-slate-500">
-                      当前层级：<span className="font-medium">{tierMap[form.tier] || `第${form.tier}级`}</span>
-                      <span className="ml-2 text-xs text-slate-400">（由上级自动计算，不可手动修改）</span>
-                    </div>
-                  )}
+                  <div className="text-sm text-slate-500">
+                    当前层级：<span className="font-medium">{tierMap[formData.tier] || `第${formData.tier}级`}</span>
+                    <span className="ml-2 text-xs text-slate-400">（由上级自动计算，不可手动修改）</span>
+                  </div>
                 </div>
               </section>
 
@@ -332,20 +338,20 @@ export default function CustomerEditPage() {
                   <FormField
                     icon={<TagIcon className="w-5 h-5 text-slate-400" />}
                     label="客户来源"
-                    value={form.source || ''}
+                    value={formData.source || ''}
                     onChange={(val) => handleChange('source', val)}
                   />
                   <FormField
                     icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />}
                     label="语言偏好"
-                    value={form.language || ''}
+                    value={formData.language || ''}
                     onChange={(val) => handleChange('language', val)}
                   />
                 </div>
                 <div className="mt-4">
                   <FormField
                     label="备注"
-                    value={form.remark || ''}
+                    value={formData.remark || ''}
                     onChange={(val) => handleChange('remark', val)}
                     multiline
                   />
@@ -353,7 +359,6 @@ export default function CustomerEditPage() {
               </section>
             </div>
 
-            {/* 底部按钮 */}
             <div className="px-8 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
               <button
                 type="button"
@@ -364,10 +369,10 @@ export default function CustomerEditPage() {
               </button>
               <button
                 type="submit"
-                disabled={saving}
+                disabled={submitting}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {saving ? (
+                {submitting ? (
                   <>
                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -387,7 +392,6 @@ export default function CustomerEditPage() {
   );
 }
 
-// 统一的 FormField 组件
 function FormField({
   icon,
   label,

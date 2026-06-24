@@ -1,25 +1,36 @@
 'use client';
 
-import { BgColorsOutlined, BuildOutlined, ContactsOutlined, SyncOutlined, UsergroupAddOutlined } from '@ant-design/icons';
+import {
+  ContactsOutlined,
+  UsergroupAddOutlined,
+  DashboardOutlined,
+  UserOutlined,
+  FileTextOutlined,
+} from '@ant-design/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useMemo } from 'react';
-
-// 阿里 icons
-// https://ant.design/components/icon
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { isAdmin } = useAuth();
+
   const menuItems = useMemo(() => {
-    return [
-      { href: '/task', icon: <SyncOutlined />, label: '任务采集' },
-      { href: '/manager', icon: <UsergroupAddOutlined />, label: '项目经理' },
-      { href: '/company', icon: <BgColorsOutlined />, label: '施工单位' },
-      { href: '/project', icon: <BuildOutlined />, label: '工程项目' },
-      // { href: '/customer', icon: <UsergroupAddOutlined />, label: '客户信息' },
-      { href: '/performance', icon: <ContactsOutlined />, label: '项目业绩' },
+    const items = [
+      { href: '/customer', icon: <UsergroupAddOutlined />, label: '客户信息' },
+      { href: '/customer/level', icon: <ContactsOutlined />, label: '客户信息树状图' },
     ];
-  }, []);
+    // 管理员专属菜单
+    if (isAdmin) {
+      items.push(
+        { href: '/admin/dashboard', icon: <DashboardOutlined />, label: '仪表板' },
+        { href: '/admin/users', icon: <UserOutlined />, label: '用户管理' },
+        { href: '/admin/logs', icon: <FileTextOutlined />, label: '操作日志' }
+      );
+    }
+    return items;
+  }, [isAdmin]);
 
   return (
     <div className="flex flex-col h-full bg-white border-r px-4 py-6 gap-2 shadow-sm">

@@ -74,3 +74,12 @@
       @apply bg-background text-foreground;
     }
   }
+
+  @layer utilities {
+    /* 全屏模式下隐藏侧边栏，请将 .sidebar 替换为您的实际侧边栏选择器 */
+    .fullscreen-mode .sidebar {
+      display: none;
+    }
+    /* 如果侧边栏是 aside 元素，也可以使用： */
+    /* .fullscreen-mode aside { display: none; } */
+  }

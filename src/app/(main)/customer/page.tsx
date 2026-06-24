@@ -21,7 +21,7 @@ export default function CustomerListPage() {
     setLoading(true);
     try {
       const res = await customerService.queryCustomers(params);
-      if (res.code === 0) {
+      if (res.msg === 'success') {
         setCustomers(res.data);
         setTotal(res.total || 0);
       } else {
@@ -42,7 +42,7 @@ export default function CustomerListPage() {
     if (!confirm(`确定删除客户“${name}”吗？`)) return;
     try {
       const res = await customerService.deleteCustomer({ id });
-      if (res.code === 0) {
+      if (res.msg === 'success') {
         if (customers.length === 1 && current > 1) setCurrent(current - 1);
         else fetchCustomers({ current, pageSize, search: search.trim() || undefined });
       } else {
@@ -54,6 +54,13 @@ export default function CustomerListPage() {
     }
   };
 
+  // 层级文本映射
+  const tierMap: Record<number, string> = {
+    1: '一级（大客户）',
+    2: '二级',
+    3: '三级',
+  };
+
   const totalPages = Math.ceil(total / pageSize);
 
   return (
@@ -63,7 +70,7 @@ export default function CustomerListPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">客户管理</h1>
           <button
-            onClick={() => router.push('/customer/edit/new')}
+            onClick={() => router.push('/customer/edit')}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition shadow-sm"
           >
             <PlusIcon className="w-5 h-5" />
@@ -99,20 +106,21 @@ export default function CustomerListPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户名称</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">联系人</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">电话</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邮箱</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">国家</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">等级</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">层级</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-400">加载中...</td>
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">加载中...</td>
                   </tr>
                 ) : customers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-400">暂无数据</td>
+                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">暂无数据</td>
                   </tr>
                 ) : (
                   customers.map((c) => (
@@ -120,6 +128,7 @@ export default function CustomerListPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{c.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.contact_person || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.phone || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.email || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.country || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -130,12 +139,8 @@ export default function CustomerListPage() {
                           {c.level}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          c.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {c.status === 'active' ? '启用' : '停用'}
-                        </span>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {tierMap[c.tier] || `第${c.tier}级`}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">
