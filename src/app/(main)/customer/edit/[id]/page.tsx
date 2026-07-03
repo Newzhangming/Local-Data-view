@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { CustomerService } from '@/services/customer';
 import {
   ArrowLeftIcon,
@@ -15,21 +15,41 @@ import {
   LinkIcon,
   UsersIcon,
   ShoppingBagIcon,
+  CheckIcon,
 } from '@heroicons/react/24/outline';
+import { Combobox, ComboboxInput, ComboboxOptions, ComboboxOption, ComboboxButton } from '@headlessui/react';
+import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
 
 const customerService = new CustomerService();
 
 const LEVEL_OPTIONS = [
-  { value: 'A', label: 'A级' },
-  { value: 'B', label: 'B级' },
-  { value: 'C', label: 'C级' },
-  { value: 'D', label: 'D级' },
+  { value: 'THREE', label: '⭐⭐⭐' },
+  { value: 'FOUR',  label: '⭐⭐⭐⭐' },
+  { value: 'FIVE',  label: '⭐⭐⭐⭐⭐' },
+];
+
+// 阶段建议列表（仅作为提示，用户可自由输入）
+const STAGE_SUGGESTIONS = [
+  '潜在客户',
+  '已联系',
+  '合格意向',
+  '已报价',
+  '谈判中',
+  '成交',
+  '丢失',
 ];
 
 const tierMap: Record<number, string> = {
   1: '一级（大客户）',
   2: '二级',
   3: '三级',
+  4: '四级',
+  5: '五级',
+  6: '六级',
+  7: '七级',
+  8: '八级',
+  9: '九级',
+  10: '十级',
 };
 
 export default function CustomerEditPage() {
@@ -44,6 +64,7 @@ export default function CustomerEditPage() {
     contact_person: '',
     contact_title: '',
     phone: '',
+    whatsapp: '',
     email: '',
     website: '',
     salesperson_name: '',
@@ -54,14 +75,74 @@ export default function CustomerEditPage() {
     city: '',
     postal_code: '',
     country: '',
-    level: 'D',
+    level: 'THREE',
+    stage: '',
     source: '',
     remark: '',
     language: 'en',
     parent_id: null,
+    parent_name: '',
     tier: 1,
   });
 
+  // ---------- 上级客户搜索相关状态 ----------
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+    };
+  }, []);
+
+  const searchCustomers = useCallback(
+    (keyword: string) => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+
+      if (!keyword.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      debounceTimer.current = setTimeout(async () => {
+        try {
+          const res = await customerService.queryCustomers({
+            search: keyword.trim(),
+            current: 1,
+            pageSize: 10,
+          });
+          if (isMountedRef.current) {
+            setSearchResults(res.data || []);
+          }
+        } catch (error) {
+          if (isMountedRef.current) {
+            console.error('搜索上级客户失败', error);
+            setSearchResults([]);
+          }
+        } finally {
+          if (isMountedRef.current) {
+            setIsSearching(false);
+          }
+        }
+      }, 300);
+    },
+    []
+  );
+
+  // 加载客户详情
   useEffect(() => {
     if (!id) {
       alert('缺少客户ID');
@@ -74,6 +155,19 @@ export default function CustomerEditPage() {
         const res = await customerService.queryCustomer({ id });
         if (res.msg === 'success' && res.data) {
           setFormData(res.data);
+
+          if (res.data.parent_id) {
+            try {
+              const parentRes = await customerService.queryCustomer({ id: res.data.parent_id });
+              if (parentRes.msg === 'success' && parentRes.data) {
+                const parent = parentRes.data;
+                setSelectedCustomer({ id: parent.id, name: parent.name });
+                setFormData((prev: any) => ({ ...prev, parent_name: parent.name }));
+              }
+            } catch (err) {
+              console.warn('获取上级客户名称失败', err);
+            }
+          }
         } else {
           alert('未找到该客户');
           router.back();
@@ -105,18 +199,21 @@ export default function CustomerEditPage() {
 
     const patchData: any = {};
     const fields = [
-      'name', 'contact_person', 'contact_title', 'phone', 'email',
+      'name', 'contact_person', 'contact_title', 'phone', 'whatsapp', 'email',
       'website', 'salesperson_name', 'facebook', 'linkedin', 'main_products',
       'address_line1', 'city', 'postal_code', 'country',
-      'level', 'source', 'remark', 'language', 'parent_id'
+      'level', 'stage', 'source', 'remark', 'language', 'parent_id', 'parent_name'
     ];
     for (const key of fields) {
       if (formData[key] !== undefined) {
         patchData[key] = formData[key];
       }
     }
-    if (patchData.parent_id === '') {
-      patchData.parent_id = null;
+    if (patchData.parent_id === '' || patchData.parent_id === null) {
+      delete patchData.parent_id;
+    }
+    if (!patchData.parent_name) {
+      delete patchData.parent_name;
     }
 
     setSubmitting(true);
@@ -170,6 +267,7 @@ export default function CustomerEditPage() {
 
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+            {/* 头部：客户名称 + 等级 + 阶段（输入框） */}
             <div className="px-8 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex-1 min-w-[200px]">
@@ -186,17 +284,39 @@ export default function CustomerEditPage() {
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <select
-                    value={formData.level || 'D'}
-                    onChange={(e) => handleChange('level', e.target.value)}
-                    className="px-3 py-1.5 border border-slate-300 rounded-full text-sm font-medium bg-white focus:ring-2 focus:ring-blue-500"
-                  >
-                    {LEVEL_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                  {/* 等级下拉 */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">等级</label>
+                    <select
+                      value={formData.level || 'THREE'}
+                      onChange={(e) => handleChange('level', e.target.value)}
+                      className="px-3 py-1.5 border border-slate-300 rounded-full text-sm font-medium bg-white focus:ring-2 focus:ring-blue-500"
+                    >
+                      {LEVEL_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* 阶段输入框（自由文本，与创建页面一致） */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">客户阶段</label>
+                    <input
+                      type="text"
+                      value={formData.stage || ''}
+                      onChange={(e) => handleChange('stage', e.target.value)}
+                      placeholder="如：潜在客户"
+                      className="px-3 py-1.5 border border-slate-300 rounded-full text-sm font-medium bg-white focus:ring-2 focus:ring-blue-500 w-36"
+                      list="stage-suggestions-edit"
+                    />
+                    <datalist id="stage-suggestions-edit">
+                      {STAGE_SUGGESTIONS.map((s) => (
+                        <option key={s} value={s} />
+                      ))}
+                    </datalist>
+                  </div>
+                  {/* 层级标签（只读） */}
                   {formData.tier && (
                     <span className="px-3 py-1.5 rounded-full text-sm font-medium bg-purple-100 text-purple-700">
                       {tierMap[formData.tier] || `第${formData.tier}级`}
@@ -240,6 +360,14 @@ export default function CustomerEditPage() {
                     label="联系人职位"
                     value={formData.contact_title || ''}
                     onChange={(val) => handleChange('contact_title', val)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <FormField
+                    icon={<PhoneIcon className="w-5 h-5 text-slate-400" />}
+                    label="WhatsApp"
+                    value={formData.whatsapp || ''}
+                    onChange={(val) => handleChange('whatsapp', val)}
                   />
                 </div>
               </section>
@@ -307,28 +435,95 @@ export default function CustomerEditPage() {
                 </div>
               </section>
 
-              {/* 层级管理 */}
+              {/* 客户层级 */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
                   客户层级
                 </h2>
                 <div className="grid grid-cols-1 gap-6">
-                  <FormField
-                    icon={<LinkIcon className="w-5 h-5 text-slate-400" />}
-                    label="上级客户ID（留空或填null为顶级）"
-                    value={formData.parent_id || ''}
-                    onChange={(val) => handleChange('parent_id', val)}
-                    placeholder="输入已存在的客户ID"
-                  />
-                  <div className="text-sm text-slate-500">
-                    当前层级：<span className="font-medium">{tierMap[formData.tier] || `第${formData.tier}级`}</span>
-                    <span className="ml-2 text-xs text-slate-400">（由上级自动计算，不可手动修改）</span>
+                  <div className="flex items-center gap-3">
+                    <LinkIcon className="w-5 h-5 text-slate-400" />
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">
+                        上级客户（请输入名称搜索）
+                      </label>
+                      <Combobox
+                        value={selectedCustomer}
+                        onChange={(customer) => {
+                          setSelectedCustomer(customer);
+                          if (customer) {
+                            handleChange('parent_id', customer.id);
+                            handleChange('parent_name', customer.name);
+                          } else {
+                            handleChange('parent_id', null);
+                            handleChange('parent_name', '');
+                          }
+                        }}
+                      >
+                        <div className="relative">
+                          <ComboboxInput
+                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-700"
+                            placeholder="输入客户名称搜索"
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setQuery(value);
+                              searchCustomers(value);
+                            }}
+                            displayValue={(customer: any) => customer?.name || ''}
+                          />
+                          <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <ChevronUpDownIcon className="h-5 w-5 text-slate-400" />
+                          </ComboboxButton>
+                          <ComboboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            {isSearching && (
+                              <div className="px-3 py-2 text-sm text-slate-500">搜索中...</div>
+                            )}
+                            {!isSearching && searchResults.length === 0 && query.trim() !== '' && (
+                              <div className="px-3 py-2 text-sm text-slate-500">未找到匹配客户</div>
+                            )}
+                            {searchResults.map((customer) => (
+                              <ComboboxOption
+                                key={customer.id}
+                                value={customer}
+                                className={({ active }) =>
+                                  `relative cursor-default select-none py-2 pl-3 pr-9 ${
+                                    active ? 'bg-blue-50 text-blue-900' : 'text-slate-700'
+                                  }`
+                                }
+                              >
+                                {({ active, selected }) => (
+                                  <>
+                                    <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                                      {customer.name}
+                                    </span>
+                                    {selected && (
+                                      <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                        <CheckIcon className="h-5 w-5" />
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </ComboboxOption>
+                            ))}
+                          </ComboboxOptions>
+                        </div>
+                      </Combobox>
+                      {selectedCustomer && (
+                        <div className="mt-1 text-sm text-slate-500">
+                          已选：{selectedCustomer.name}（ID: {selectedCustomer.id}）
+                        </div>
+                      )}
+                      <div className="mt-2 text-sm text-slate-500">
+                        当前层级：<span className="font-medium">{tierMap[formData.tier] || `第${formData.tier}级`}</span>
+                        <span className="ml-2 text-xs text-slate-400">（由上级自动计算，不可手动修改）</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </section>
 
-              {/* 其他信息 */}
+              {/* 其他信息（已移除阶段输入框） */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -378,10 +573,10 @@ export default function CustomerEditPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
-                    保存中...
+                    修改中...
                   </>
                 ) : (
-                  '保存'
+                  '修改'
                 )}
               </button>
             </div>
@@ -392,6 +587,7 @@ export default function CustomerEditPage() {
   );
 }
 
+// FormField 组件（增加 placeholder 支持）
 function FormField({
   icon,
   label,

@@ -59,6 +59,40 @@ export default function CustomerListPage() {
     1: '一级（大客户）',
     2: '二级',
     3: '三级',
+    4: '四级',
+    5: '五级',
+    6: '六级',
+    7: '七级',
+    8: '八级',
+    9: '九级',
+    10: '十级',
+  };
+
+  // 等级显示映射
+  const levelDisplay: Record<string, { label: string; className: string }> = {
+    THREE: { label: '⭐⭐⭐', className: 'bg-yellow-100 text-yellow-800' },
+    FOUR: { label: '⭐⭐⭐⭐', className: 'bg-blue-100 text-blue-800' },
+    FIVE: { label: '⭐⭐⭐⭐⭐', className: 'bg-green-100 text-green-800' },
+  };
+
+  // 客户阶段显示映射（兼容自由文本和旧枚举值）
+  const stageDisplayMap: Record<string, { label: string; className: string }> = {
+    // 预设中文阶段
+    '潜在客户': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
+    '已联系':   { label: '已联系', className: 'bg-blue-100 text-blue-700' },
+    '合格意向': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
+    '已报价':   { label: '已报价', className: 'bg-orange-100 text-orange-700' },
+    '谈判中':   { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
+    '成交':     { label: '成交', className: 'bg-green-100 text-green-700' },
+    '丢失':     { label: '丢失', className: 'bg-red-100 text-red-700' },
+    // 兼容旧枚举值（如果数据库中仍有英文值）
+    'LEAD':     { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
+    'CONTACTED':{ label: '已联系', className: 'bg-blue-100 text-blue-700' },
+    'QUALIFIED':{ label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
+    'QUOTED':   { label: '已报价', className: 'bg-orange-100 text-orange-700' },
+    'NEGOTIATING': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
+    'WON':      { label: '成交', className: 'bg-green-100 text-green-700' },
+    'LOST':     { label: '丢失', className: 'bg-red-100 text-red-700' },
   };
 
   const totalPages = Math.ceil(total / pageSize);
@@ -85,7 +119,7 @@ export default function CustomerListPage() {
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="搜索客户名称、联系人、电话或邮箱..."
+                placeholder="搜索客户名称、联系人、电话、邮箱、国家、业务员、客户来源或备注..."
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -105,10 +139,11 @@ export default function CustomerListPage() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户名称</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">联系人</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">电话</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">业务员</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">邮箱</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">国家</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">等级</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">客户阶段</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">层级</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
                 </tr>
@@ -116,59 +151,71 @@ export default function CustomerListPage() {
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">加载中...</td>
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-400">加载中...</td>
                   </tr>
                 ) : customers.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-400">暂无数据</td>
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-400">暂无数据</td>
                   </tr>
                 ) : (
-                  customers.map((c) => (
-                    <tr key={c.id} className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{c.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.contact_person || '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.phone || '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.email || '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.country || '-'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          c.level === 'A' ? 'bg-green-100 text-green-800' :
-                          c.level === 'B' ? 'bg-blue-100 text-blue-800' :
-                          c.level === 'C' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {c.level}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {tierMap[c.tier] || `第${c.tier}级`}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => router.push(`/customer/view/${c.id}`)}
-                            className="text-gray-400 hover:text-blue-600 transition"
-                            title="查看"
-                          >
-                            <EyeIcon className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => router.push(`/customer/edit/${c.id}`)}
-                            className="text-gray-400 hover:text-amber-600 transition"
-                            title="编辑"
-                          >
-                            <PencilIcon className="w-5 h-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(c.id, c.name)}
-                            className="text-gray-400 hover:text-red-600 transition"
-                            title="删除"
-                          >
-                            <TrashIcon className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  customers.map((c) => {
+                    const levelInfo = levelDisplay[c.level] || levelDisplay.THREE;
+                    // 阶段显示：优先使用映射，否则直接显示原文并应用默认样式
+                    const stageInfo = c.stage
+                      ? (stageDisplayMap[c.stage] || { label: c.stage, className: 'bg-gray-100 text-gray-600' })
+                      : null;
+                    return (
+                      <tr key={c.id} className="hover:bg-gray-50 transition">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{c.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.contact_person || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.salesperson_name || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.email || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{c.country || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${levelInfo.className}`}>
+                            {levelInfo.label}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {stageInfo ? (
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageInfo.className}`}>
+                              {stageInfo.label}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {tierMap[c.tier] || `第${c.tier}级`}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => router.push(`/customer/view/${c.id}`)}
+                              className="text-gray-400 hover:text-blue-600 transition"
+                              title="查看"
+                            >
+                              <EyeIcon className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => router.push(`/customer/edit/${c.id}`)}
+                              className="text-gray-400 hover:text-amber-600 transition"
+                              title="编辑"
+                            >
+                              <PencilIcon className="w-5 h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(c.id, c.name)}
+                              className="text-gray-400 hover:text-red-600 transition"
+                              title="删除"
+                            >
+                              <TrashIcon className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

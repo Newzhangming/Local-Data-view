@@ -9,9 +9,9 @@ import { BaseResp, IdReq } from '@/constants/dto';
 
 export class CustomerService extends BaseService {
   /**
-   * 查询客户列表（支持分页、搜索、筛选、层级过滤）
+   * 查询客户列表（支持分页、搜索、筛选、层级过滤、阶段、WhatsApp）
    */
-   async queryCustomers(input: CustomerListReq): Promise<BaseResp<CustomerDto[]>> {
+  async queryCustomers(input: CustomerListReq): Promise<BaseResp<CustomerDto[]>> {
     const params: any = {
       pageIndex: input.current || 1,
       pageSize: input.pageSize || 10,
@@ -25,15 +25,19 @@ export class CustomerService extends BaseService {
     if (input.level) {
       params.level = input.level;
     }
+    if (input.stage) {
+      params.stage = input.stage;           // 新增：阶段精确筛选
+    }
+    if (input.whatsapp) {
+      params.whatsapp = input.whatsapp;     // 新增：WhatsApp 精确筛选
+    }
     if (input.parentId !== undefined) {
-      // 直接传递 null，axios 会将其序列化为 'null'（但需确认 paramsSerializer）
-      params.parentId = input.parentId; // 直接赋值 null
+      params.parentId = input.parentId;
     }
     if (input.tier !== undefined) {
       params.tier = input.tier;
     }
-  
-    // 使用 axios 的 params 配置，而不是手动拼接
+
     return this.http.get(`/v1/customers`, { ...this.createConfig(), params });
   }
 
@@ -77,5 +81,31 @@ export class CustomerService extends BaseService {
    */
   async deleteCustomer(input: IdReq): Promise<BaseResp<{ id: string }>> {
     return this.http.delete(`/v1/customer?id=${input.id}`, this.createConfig());
+  }
+
+  /**
+   * 获取思维导图持久化状态
+   */
+  async getTreeState(rootId: string): Promise<BaseResp<{
+    expandedNodeIds: string[];
+    drawingHistory: any[];
+    viewState: { translate: { x: number; y: number }; scale: number };
+  }>> {
+    return this.http.get('/v1/customer/tree-state', {
+      ...this.createConfig(),
+      params: { rootId },
+    });
+  }
+
+  /**
+   * 保存思维导图持久化状态
+   */
+  async saveTreeState(input: {
+    rootId: string;
+    expandedNodeIds: string[];
+    drawingHistory: any[];
+    viewState: any;
+  }): Promise<BaseResp<{ success: boolean }>> {
+    return this.http.put('/v1/customer/tree-state', input, this.createConfig());
   }
 }

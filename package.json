@@ -4,16 +4,17 @@
   "description": "客户信息统计管理系统",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p 4032",
-    "build": "next build --debug",
-    "start": "next start",
+    "dev": "next dev -H 0.0.0.0 -p 4033",
+    "build": "next build",
+    "start": "next start -p 4032",
     "lint": "next lint --fix",
-    "test": "test"
+    "test": "echo \"No tests specified\" && exit 0"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
     "@ant-design/nextjs-registry": "^1.0.2",
     "@ant-design/pro-components": "^2.8.7",
+    "@headlessui/react": "^2.2.10",
     "@heroicons/react": "^2.2.0",
     "antd": "^5.25.1",
     "axios": "^1.9.0",
