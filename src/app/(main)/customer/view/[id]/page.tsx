@@ -17,6 +17,8 @@ import {
   UsersIcon,
   UserGroupIcon,
   PencilIcon,
+  ChevronRightIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const customerService = new CustomerService();
@@ -24,31 +26,34 @@ const customerService = new CustomerService();
 // 等级显示映射
 const levelDisplayMap: Record<string, { label: string; className: string }> = {
   THREE: { label: '⭐⭐⭐', className: 'bg-yellow-100 text-yellow-800' },
-  FOUR:  { label: '⭐⭐⭐⭐', className: 'bg-blue-100 text-blue-800' },
-  FIVE:  { label: '⭐⭐⭐⭐⭐', className: 'bg-green-100 text-green-800' },
+  FOUR: { label: '⭐⭐⭐⭐', className: 'bg-blue-100 text-blue-800' },
+  FIVE: { label: '⭐⭐⭐⭐⭐', className: 'bg-green-100 text-green-800' },
 };
 
-// 客户阶段显示映射（支持中文和旧枚举值）
+// 客户阶段显示映射
 const stageDisplayMap: Record<string, { label: string; className: string }> = {
-  // 预设中文阶段
   '潜在客户': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
-  '已联系':   { label: '已联系', className: 'bg-blue-100 text-blue-700' },
+  '已联系': { label: '已联系', className: 'bg-blue-100 text-blue-700' },
   '合格意向': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
-  '已报价':   { label: '已报价', className: 'bg-orange-100 text-orange-700' },
-  '谈判中':   { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
-  '成交':     { label: '成交', className: 'bg-green-100 text-green-700' },
-  '丢失':     { label: '丢失', className: 'bg-red-100 text-red-700' },
-  // 兼容旧枚举值
-  'LEAD':     { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
-  'CONTACTED':{ label: '已联系', className: 'bg-blue-100 text-blue-700' },
-  'QUALIFIED':{ label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
-  'QUOTED':   { label: '已报价', className: 'bg-orange-100 text-orange-700' },
-  'NEGOTIATING': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
-  'WON':      { label: '成交', className: 'bg-green-100 text-green-700' },
-  'LOST':     { label: '丢失', className: 'bg-red-100 text-red-700' },
+  '已报价': { label: '已报价', className: 'bg-orange-100 text-orange-700' },
+  '谈判中': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
+  '成交': { label: '成交', className: 'bg-green-100 text-green-700' },
+  '丢失': { label: '丢失', className: 'bg-red-100 text-red-700' },
+  LEAD: { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
+  CONTACTED: { label: '已联系', className: 'bg-blue-100 text-blue-700' },
+  QUALIFIED: { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
+  QUOTED: { label: '已报价', className: 'bg-orange-100 text-orange-700' },
+  NEGOTIATING: { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
+  WON: { label: '成交', className: 'bg-green-100 text-green-700' },
+  LOST: { label: '丢失', className: 'bg-red-100 text-red-700' },
 };
 
-// 层级文本映射
+// 回复状态显示映射
+const replyStatusMap: Record<string, { label: string; className: string }> = {
+  REPLIED: { label: '有回复', className: 'bg-green-100 text-green-800' },
+  NO_REPLY: { label: '无回复', className: 'bg-gray-100 text-gray-600' },
+};
+
 const tierMap: Record<number, string> = {
   1: '一级（大客户）',
   2: '二级',
@@ -68,17 +73,40 @@ export default function CustomerViewPage() {
   const idParam = params?.id as string | undefined;
   const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState<any>(null);
+  const [parents, setParents] = useState<any[]>([]);
+  const [children, setChildren] = useState<any[]>([]);
+  const [contacts, setContacts] = useState<any[]>([]);
+
+  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   useEffect(() => {
     if (idParam) {
       const fetchData = async () => {
         try {
-          const res = await customerService.queryCustomer({ id: params.id as string });
-          if (res.msg === 'success' && res.data) {
-            setCustomer(res.data);
+          const [customerRes, parentsRes, childrenRes, contactsRes] = await Promise.all([
+            customerService.queryCustomer({ id: idParam }),
+            customerService.getParents(idParam),
+            customerService.getChildren(idParam),
+            customerService.getContacts(idParam),
+          ]);
+
+          if (customerRes.msg === 'success' && customerRes.data) {
+            setCustomer(customerRes.data);
           } else {
             alert('未找到该客户');
             router.back();
+            return;
+          }
+
+          if (parentsRes.msg === 'success') {
+            setParents(parentsRes.data || []);
+          }
+          if (childrenRes.msg === 'success') {
+            setChildren(childrenRes.data || []);
+          }
+          if (contactsRes.msg === 'success') {
+            setContacts(contactsRes.data || []);
           }
         } catch (error) {
           console.error(error);
@@ -100,6 +128,16 @@ export default function CustomerViewPage() {
     }
   };
 
+  const openContactModal = (contact: any) => {
+    setSelectedContact(contact);
+    setShowContactModal(true);
+  };
+
+  const closeContactModal = () => {
+    setShowContactModal(false);
+    setSelectedContact(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
@@ -116,21 +154,24 @@ export default function CustomerViewPage() {
     );
   }
 
-  // 获取等级显示信息
   const levelInfo = levelDisplayMap[customer.level] || {
     label: customer.level || '未设置',
     className: 'bg-gray-100 text-gray-600',
   };
 
-  // 获取阶段显示信息：优先使用映射，若无匹配则显示原文+默认样式
   const stageInfo = customer.stage
-    ? (stageDisplayMap[customer.stage] || { label: customer.stage, className: 'bg-gray-100 text-gray-600' })
+    ? stageDisplayMap[customer.stage] || { label: customer.stage, className: 'bg-gray-100 text-gray-600' }
     : null;
+
+  const replyStatusInfo = replyStatusMap[customer.reply_status] || {
+    label: '无回复',
+    className: 'bg-gray-100 text-gray-600',
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* 头部：返回 + 标题 + 操作 */}
+        {/* 头部 */}
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => router.back()}
@@ -150,9 +191,8 @@ export default function CustomerViewPage() {
           </div>
         </div>
 
-        {/* 主卡片 */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-          {/* 头部：客户名称 + 状态标签 */}
+        {/* 主卡片：基本信息 */}
+        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden mb-6">
           <div className="px-8 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
@@ -174,19 +214,21 @@ export default function CustomerViewPage() {
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                {/* 等级标签 */}
                 {customer.level && (
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${levelInfo.className}`}>
                     {levelInfo.label}
                   </span>
                 )}
-                {/* 阶段标签 */}
                 {stageInfo && (
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${stageInfo.className}`}>
                     {stageInfo.label}
                   </span>
                 )}
-                {/* 层级标签 */}
+                {customer.reply_status && (
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${replyStatusInfo.className}`}>
+                    {replyStatusInfo.label}
+                  </span>
+                )}
                 {customer.tier && (
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-700">
                     {tierMap[customer.tier] || `第${customer.tier}级`}
@@ -196,9 +238,8 @@ export default function CustomerViewPage() {
             </div>
           </div>
 
-          {/* 内容区 */}
           <div className="px-8 py-6 space-y-8">
-            {/* 联系方式 —— 新增 WhatsApp 字段 */}
+            {/* 联系方式 */}
             <section>
               <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -221,9 +262,7 @@ export default function CustomerViewPage() {
                 <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
                 主营产品
               </h2>
-              <div className="grid grid-cols-1 gap-6">
-                <InfoItem label="主营产品" value={customer.main_products} multiline />
-              </div>
+              <InfoItem label="主营产品" value={customer.main_products} multiline />
             </section>
 
             {/* 地址信息 */}
@@ -258,12 +297,227 @@ export default function CustomerViewPage() {
             </section>
           </div>
         </div>
+
+        {/* 上下级关系卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {/* 上级客户 */}
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-slate-200">
+              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <UsersIcon className="w-5 h-5 text-purple-500" />
+                上级客户 ({parents.length})
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              {parents.length === 0 ? (
+                <p className="text-sm text-slate-400">暂无上级客户</p>
+              ) : (
+                <ul className="space-y-2">
+                  {parents.map((parent: any) => (
+                    <li key={parent.id}>
+                      <button
+                        onClick={() => router.push(`/customer/view/${parent.id}`)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <BuildingOfficeIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
+                          <span className="text-sm text-slate-700 group-hover:text-blue-600 truncate max-w-[150px]">
+                            {parent.name}
+                          </span>
+                        </div>
+                        <ChevronRightIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* 下级客户 */}
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-slate-200">
+              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <UsersIcon className="w-5 h-5 text-green-500" />
+                下级客户 ({children.length})
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              {children.length === 0 ? (
+                <p className="text-sm text-slate-400">暂无下级客户</p>
+              ) : (
+                <ul className="space-y-2">
+                  {children.map((child: any) => (
+                    <li key={child.id}>
+                      <button
+                        onClick={() => router.push(`/customer/view/${child.id}`)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <BuildingOfficeIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
+                          <span className="text-sm text-slate-700 group-hover:text-blue-600 truncate max-w-[150px]">
+                            {child.name}
+                          </span>
+                        </div>
+                        <ChevronRightIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-500" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* 联系人 */}
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
+            <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
+              <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <UserGroupIcon className="w-5 h-5 text-blue-500" />
+                联系人 ({contacts.length})
+              </h2>
+            </div>
+            <div className="px-6 py-4">
+              {contacts.length === 0 ? (
+                <p className="text-sm text-slate-400">暂无联系人</p>
+              ) : (
+                <div className="max-h-64 overflow-y-auto pr-2">
+                  <ul className="space-y-2">
+                    {contacts.map((contact: any) => (
+                      <li key={contact.id}>
+                        <button
+                          onClick={() => openContactModal(contact)}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 transition group"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <UserIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0" />
+                            <span className="text-sm text-slate-700 group-hover:text-blue-600 truncate max-w-[100px]">
+                              {contact.name}
+                            </span>
+                            {contact.title && (
+                              <span className="text-xs text-slate-400 truncate max-w-[80px]">
+                                ({contact.title})
+                              </span>
+                            )}
+                          </div>
+                          <ChevronRightIcon className="w-4 h-4 text-slate-400 group-hover:text-blue-500 flex-shrink-0" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* 联系人详情弹窗 - 优化后布局 */}
+      {showContactModal && selectedContact && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-slate-800">联系人详情</h3>
+              <button
+                onClick={closeContactModal}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                {/* 姓名 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">姓名</label>
+                  <p className="mt-1 text-sm text-slate-700">{selectedContact.name}</p>
+                </div>
+                {/* 职位 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">职位</label>
+                  <p className="mt-1 text-sm text-slate-700">{selectedContact.title || '-'}</p>
+                </div>
+                {/* 电话 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">电话</label>
+                  <p className="mt-1 text-sm text-slate-700">{selectedContact.phone || '-'}</p>
+                </div>
+                {/* 邮箱 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">邮箱</label>
+                  <p className="mt-1 text-sm text-slate-700">{selectedContact.email || '-'}</p>
+                </div>
+                {/* WhatsApp */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">WhatsApp</label>
+                  <p className="mt-1 text-sm text-slate-700">{selectedContact.whatsapp || '-'}</p>
+                </div>
+                {/* 部门 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">部门</label>
+                  <p className="mt-1 text-sm text-slate-700">{selectedContact.department || '-'}</p>
+                </div>
+                {/* Facebook - 链接 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">Facebook</label>
+                  {selectedContact.facebook ? (
+                    <a
+                      href={selectedContact.facebook.startsWith('http') ? selectedContact.facebook : `https://${selectedContact.facebook}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 text-sm text-blue-600 hover:underline block truncate"
+                    >
+                      {selectedContact.facebook}
+                    </a>
+                  ) : (
+                    <p className="mt-1 text-sm text-slate-700">-</p>
+                  )}
+                </div>
+                {/* LinkedIn - 链接 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">LinkedIn</label>
+                  {selectedContact.linkedin ? (
+                    <a
+                      href={selectedContact.linkedin.startsWith('http') ? selectedContact.linkedin : `https://${selectedContact.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 text-sm text-blue-600 hover:underline block truncate"
+                    >
+                      {selectedContact.linkedin}
+                    </a>
+                  ) : (
+                    <p className="mt-1 text-sm text-slate-700">-</p>
+                  )}
+                </div>
+                {/* 主要联系人 */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">主要联系人</label>
+                  <p className="mt-1 text-sm text-slate-700">{selectedContact.is_primary ? '是' : '否'}</p>
+                </div>
+                {/* 备注（占两列） */}
+                {selectedContact.notes && (
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider">备注</label>
+                    <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{selectedContact.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-end">
+              <button
+                onClick={closeContactModal}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// 信息条目组件（增加 isLink 属性）
+// InfoItem 组件
 function InfoItem({
   icon,
   label,
@@ -278,8 +532,6 @@ function InfoItem({
   isLink?: boolean;
 }) {
   const display = value ?? '—';
-
-  // 如果是链接且值有效，渲染为超链接
   if (isLink && value && typeof value === 'string' && value.trim() !== '') {
     const href = value.startsWith('http://') || value.startsWith('https://') ? value : `https://${value}`;
     return (
@@ -301,8 +553,6 @@ function InfoItem({
       </div>
     );
   }
-
-  // 否则按普通文本渲染
   return (
     <div className="flex items-start gap-3">
       {icon && <div className="mt-1 flex-shrink-0">{icon}</div>}

@@ -4,7 +4,7 @@
   "description": "客户信息统计管理系统",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p 4033",
+    "dev": "next dev -H 127.0.0.1 -p 4033",
     "build": "next build",
     "start": "next start -p 4032",
     "lint": "next lint --fix",

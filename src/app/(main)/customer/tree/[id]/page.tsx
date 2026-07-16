@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { CustomerService } from '@/services/customer';
 import { CustomerDto } from '@/constants/customer';
@@ -41,27 +41,25 @@ type DrawAction = {
   color?: string;
 };
 
-// 预设颜色（现代化配色）
 const PRESET_COLORS = [
-  '#ef4444', // 红
-  '#f97316', // 橙
-  '#eab308', // 黄
-  '#22c55e', // 绿
-  '#3b82f6', // 蓝
-  '#8b5cf6', // 紫
-  '#ec4899', // 粉
-  '#1e293b', // 深灰
-  '#64748b', // 灰
-  '#000000', // 黑
+  '#ef4444', '#f97316', '#eab308', '#22c55e',
+  '#3b82f6', '#8b5cf6', '#ec4899', '#1e293b',
+  '#64748b', '#000000',
 ];
 
 export default function CustomerTreePage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params?.id as string;
+  const countryParam = searchParams.get('country');
+
+  // 持久化时使用的实际 rootId（国家视图用特殊标记）
+  const effectiveRootId = countryParam ? `country:${countryParam}` : id;
 
   const [loading, setLoading] = useState(true);
   const [root, setRoot] = useState<TreeNode | null>(null);
+  const [countryRoot, setCountryRoot] = useState<TreeNode | null>(null);
   const [searchKeyword, setSearchKeyword] = useState('');
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -73,11 +71,8 @@ export default function CustomerTreePage() {
   const [history, setHistory] = useState<DrawAction[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPoints, setCurrentPoints] = useState<{ x: number; y: number }[]>([]);
-
-  // 颜色状态
   const [selectedColor, setSelectedColor] = useState('#3b82f6');
 
-  // 保存状态
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const isSavingRef = useRef(false);
@@ -90,7 +85,6 @@ export default function CustomerTreePage() {
 
   const treeViewStateRef = useRef(treeViewState);
   const prevViewStateRef = useRef(treeViewState);
-  const onUpdateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafIdRef = useRef<number | null>(null);
   const pendingViewStateRef = useRef<{ translate: { x: number; y: number }; scale: number } | null>(null);
 
@@ -124,7 +118,7 @@ export default function CustomerTreePage() {
     };
   }, []);
 
-  // ---------- 绘图核心（支持真正的橡皮擦） ----------
+  // ---------- 绘图 ----------
   const drawHistoryToOffscreen = useCallback(() => {
     const offCanvas = offscreenCanvasRef.current;
     const ctx = offscreenCtxRef.current;
@@ -136,7 +130,6 @@ export default function CustomerTreePage() {
     ctx.clearRect(0, 0, offCanvas.width, offCanvas.height);
 
     const { scale } = treeViewStateRef.current;
-
     for (const action of history) {
       if (action.points.length < 2) continue;
       ctx.beginPath();
@@ -146,7 +139,6 @@ export default function CustomerTreePage() {
         const pt = treeToScreen(action.points[i].x, action.points[i].y);
         ctx.lineTo(pt.x, pt.y);
       }
-
       if (action.type === 'pen') {
         ctx.globalCompositeOperation = 'source-over';
         ctx.strokeStyle = action.color || selectedColor;
@@ -158,7 +150,6 @@ export default function CustomerTreePage() {
         ctx.stroke();
         ctx.shadowBlur = 0;
       } else {
-        // 橡皮擦：使用 destination-out 实现透明擦除
         ctx.globalCompositeOperation = 'destination-out';
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 16 * scale;
@@ -179,7 +170,6 @@ export default function CustomerTreePage() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offCanvas, 0, 0);
 
-    // 绘制当前正在画的笔触
     if (currentPoints.length >= 2) {
       ctx.beginPath();
       const start = treeToScreen(currentPoints[0].x, currentPoints[0].y);
@@ -219,7 +209,7 @@ export default function CustomerTreePage() {
   useEffect(() => {
     const loadState = async () => {
       try {
-        const res = await customerService.getTreeState(id);
+        const res = await customerService.getTreeState(effectiveRootId);
         if (res.msg === 'success' && res.data) {
           setExpandedIds(new Set(res.data.expandedNodeIds || []));
           setHistory(res.data.drawingHistory || []);
@@ -231,12 +221,9 @@ export default function CustomerTreePage() {
         console.error('Failed to load tree state', e);
       }
     };
-    if (id) loadState();
-  }, [id]);
+    if (effectiveRootId) loadState();
+  }, [effectiveRootId]);
 
-  const saveStateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // 收集所有展开节点
   const collectExpandedIds = useCallback((node: TreeNode): string[] => {
     let ids: string[] = [];
     if (node.expanded) ids.push(node.id);
@@ -248,18 +235,14 @@ export default function CustomerTreePage() {
     return ids;
   }, []);
 
-  // 自动保存（防抖）+ 防并发 + 状态反馈
   const saveState = useCallback(async () => {
-    if (!id) return;
-    if (isSavingRef.current) return; // 防止并发
-
+    if (!effectiveRootId || isSavingRef.current) return;
     isSavingRef.current = true;
     setSaveStatus('saving');
-
     try {
       const expandedNodeIds = root ? collectExpandedIds(root) : [];
       await customerService.saveTreeState({
-        rootId: id,
+        rootId: effectiveRootId,
         expandedNodeIds,
         drawingHistory: history,
         viewState: treeViewState,
@@ -272,9 +255,8 @@ export default function CustomerTreePage() {
     } finally {
       isSavingRef.current = false;
     }
-  }, [id, root, history, treeViewState, collectExpandedIds]);
+  }, [effectiveRootId, root, history, treeViewState, collectExpandedIds]);
 
-  // 手动保存（直接调用 saveState）
   const saveNow = useCallback(async () => {
     setIsSaving(true);
     try {
@@ -286,7 +268,7 @@ export default function CustomerTreePage() {
     }
   }, [saveState]);
 
-  // 防抖触发（时间调整为 800ms）
+  const saveStateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (saveStateTimerRef.current) clearTimeout(saveStateTimerRef.current);
     saveStateTimerRef.current = setTimeout(saveState, 800);
@@ -295,7 +277,7 @@ export default function CustomerTreePage() {
     };
   }, [saveState]);
 
-  // ---------- 全屏监听 ----------
+  // ---------- 全屏 ----------
   useEffect(() => {
     const onFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
@@ -305,7 +287,7 @@ export default function CustomerTreePage() {
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
   }, []);
 
-  // ---------- 加载根节点并恢复展开 ----------
+  // ---------- 加载原始根节点 ----------
   const fetchChildrenData = useCallback(async (parentId: string): Promise<TreeNode[]> => {
     try {
       const res = await customerService.queryCustomers({ parentId, pageSize: 100 });
@@ -374,6 +356,44 @@ export default function CustomerTreePage() {
     fetchRoot();
   }, [id, router, restoreExpanded, expandedIds]);
 
+  // ---------- 加载国家视图 ----------
+  useEffect(() => {
+    if (!countryParam) {
+      setCountryRoot(null);
+      return;
+    }
+    const fetchCountryCustomers = async () => {
+      try {
+        const res = await customerService.queryCustomers({
+          country: countryParam,
+          parentId: 'null',
+          pageSize: 100,
+        });
+        if (res.msg === 'success' && res.data.length > 0) {
+          const virtualRoot: TreeNode = {
+            id: '__country_root__',
+            name: `🌍 ${countryParam} (${res.data.length}个客户)`,
+            tier: 0,
+            expanded: true,
+            loading: false,
+            children: res.data.map((c) => ({
+              ...c,
+              children: undefined,
+              expanded: false,
+              loading: false,
+            })),
+          } as any;
+          setCountryRoot(virtualRoot);
+        } else {
+          setCountryRoot(null);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchCountryCustomers();
+  }, [countryParam]);
+
   const loadChildren = useCallback(async (node: TreeNode) => {
     if (node.children !== undefined || node.loading) return;
     node.loading = true;
@@ -390,9 +410,11 @@ export default function CustomerTreePage() {
   }, [fetchChildrenData]);
 
   const toggleNode = useCallback(async (targetNode: TreeNode) => {
-    if (tool !== 'select') return;
-    if (!root) return;
-    const newRoot = cloneTree(root);
+    if (tool !== 'select' || targetNode.id === '__country_root__') return;
+    if (!root && !countryRoot) return;
+    const currentRoot = root || countryRoot;
+    if (!currentRoot) return;
+    const newRoot = cloneTree(currentRoot);
     let found = false;
 
     const traverse = (node: TreeNode): boolean => {
@@ -426,14 +448,17 @@ export default function CustomerTreePage() {
     };
 
     traverse(newRoot);
-    if (found) setRoot(newRoot);
-  }, [root, loadChildren, tool, expandedIds]);
+    if (found) {
+      if (countryRoot && !root) setCountryRoot(newRoot);
+      else setRoot(newRoot);
+    }
+  }, [root, countryRoot, loadChildren, tool, expandedIds]);
 
   const expandAll = useCallback(async () => {
-    if (!root) return;
-    const newRoot = cloneTree(root);
+    const target = root || countryRoot;
+    if (!target) return;
+    const newRoot = cloneTree(target);
     const allIds = new Set<string>();
-
     const traverse = async (node: TreeNode) => {
       node.expanded = true;
       allIds.add(node.id);
@@ -447,18 +472,24 @@ export default function CustomerTreePage() {
         }
       }
     };
-
     await traverse(newRoot);
-    setRoot(newRoot);
+    if (countryRoot && !root) setCountryRoot(newRoot);
+    else setRoot(newRoot);
     setExpandedIds(allIds);
-  }, [root, fetchChildrenData]);
+  }, [root, countryRoot, fetchChildrenData]);
 
   // ---------- Tree 数据转换 ----------
   const convertToTreeDatum = (node: TreeNode): TreeNodeDatum => {
     if (!node.expanded) {
       return {
         name: node.name,
-        attributes: { id: node.id, tier: node.tier, contact: node.contact_person || '', phone: node.phone || '', raw: node },
+        attributes: {
+          id: node.id,
+          tier: node.tier,
+          contact: node.contact_person || '',
+          phone: node.phone || '',
+          raw: node,
+        },
         children: undefined,
       };
     }
@@ -466,14 +497,20 @@ export default function CustomerTreePage() {
     const displayedChildren = childNodes.map((child) => convertToTreeDatum(child));
     return {
       name: node.name,
-      attributes: { id: node.id, tier: node.tier, contact: node.contact_person || '', phone: node.phone || '', raw: node },
+      attributes: {
+        id: node.id,
+        tier: node.tier,
+        contact: node.contact_person || '',
+        phone: node.phone || '',
+        raw: node,
+      },
       children: displayedChildren.length > 0 ? displayedChildren : undefined,
     };
   };
 
-  // ===================== 修改的 renderCustomNode（加入截断） =====================
   const renderCustomNode = ({ nodeDatum }: any) => {
     const raw = nodeDatum.attributes.raw as TreeNode;
+    const isVirtual = raw.id === '__country_root__';
     const hasChildren = raw.children && raw.children.length > 0;
     const isExpanded = raw.expanded;
 
@@ -484,7 +521,11 @@ export default function CustomerTreePage() {
             raw.loading ? 'opacity-60' : ''
           } bg-gradient-to-br from-white to-gray-50 border-gray-200/80 text-sm cursor-pointer overflow-hidden`}
           style={{ minWidth: '140px', whiteSpace: 'nowrap' }}
-          onClick={(e) => { e.stopPropagation(); toggleNode(raw); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (isVirtual) return;
+            toggleNode(raw);
+          }}
         >
           <span className="w-5 h-5 flex items-center justify-center text-gray-400 flex-shrink-0">
             {raw.loading ? (
@@ -492,6 +533,8 @@ export default function CustomerTreePage() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
               </svg>
+            ) : isVirtual ? (
+              <span>🌍</span>
             ) : hasChildren ? (
               <ChevronRightIcon className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
             ) : (
@@ -500,19 +543,24 @@ export default function CustomerTreePage() {
           </span>
           <span
             className="text-blue-700 hover:text-blue-900 font-semibold truncate max-w-[100px] flex-shrink-0"
-            onClick={(e) => { e.stopPropagation(); if (tool === 'select') router.push(`/customer/view/${raw.id}`); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (tool === 'select' && !isVirtual) router.push(`/customer/view/${raw.id}`);
+            }}
           >
             {raw.name}
           </span>
-          {raw.contact_person && (
+          {!isVirtual && raw.contact_person && (
             <span className="text-xs text-gray-500 flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-full truncate max-w-[60px] flex-shrink-0">
               <UserIcon className="w-3 h-3 flex-shrink-0" /> {raw.contact_person}
             </span>
           )}
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full border flex-shrink-0 ${tierColorMap[raw.tier] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-            T{raw.tier}
-          </span>
-          {raw.phone && (
+          {!isVirtual && (
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full border flex-shrink-0 ${tierColorMap[raw.tier] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+              T{raw.tier}
+            </span>
+          )}
+          {!isVirtual && raw.phone && (
             <span className="text-xs text-gray-400 hidden sm:inline bg-gray-100 px-2 py-0.5 rounded-full truncate max-w-[80px] flex-shrink-0">
               📞 {raw.phone}
             </span>
@@ -521,27 +569,30 @@ export default function CustomerTreePage() {
       </foreignObject>
     );
   };
-  // ======================================================================
 
   const filteredRoot = useCallback(() => {
-    if (!root || !searchKeyword.trim()) return root;
+    const currentRoot = root || countryRoot;
+    if (!currentRoot || !searchKeyword.trim()) return currentRoot;
     const keyword = searchKeyword.trim().toLowerCase();
     const filterNode = (node: TreeNode): TreeNode | null => {
       const match = node.name.toLowerCase().includes(keyword);
       let filteredChildren: TreeNode[] = [];
       if (node.children) {
-        filteredChildren = node.children.map((child) => filterNode(child)).filter((child): child is TreeNode => child !== null);
+        filteredChildren = node.children
+          .map((child) => filterNode(child))
+          .filter((child): child is TreeNode => child !== null);
       }
       if (match || filteredChildren.length > 0) {
         return { ...node, children: filteredChildren.length > 0 ? filteredChildren : node.children };
       }
       return null;
     };
-    const filtered = filterNode(root);
-    return filtered || root;
-  }, [root, searchKeyword]);
+    const filtered = filterNode(currentRoot);
+    return filtered || currentRoot;
+  }, [root, countryRoot, searchKeyword]);
 
-  const treeData = filteredRoot() ? convertToTreeDatum(filteredRoot()!) : null;
+  const displayRoot = countryRoot || root;
+  const treeData = displayRoot ? convertToTreeDatum(displayRoot) : null;
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
@@ -580,10 +631,7 @@ export default function CustomerTreePage() {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -630,9 +678,7 @@ export default function CustomerTreePage() {
     const px = state.translate?.x ?? 0;
     const py = state.translate?.y ?? 0;
     const scale = state.zoom ?? 1;
-
     pendingViewStateRef.current = { translate: { x: px, y: py }, scale };
-
     if (rafIdRef.current === null) {
       rafIdRef.current = requestAnimationFrame(() => {
         if (pendingViewStateRef.current) {
@@ -659,7 +705,7 @@ export default function CustomerTreePage() {
     );
   }
 
-  if (!root) {
+  if (!root && !countryRoot) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-400">客户不存在</div>
@@ -674,7 +720,9 @@ export default function CustomerTreePage() {
           <button onClick={() => router.back()} className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 transition">
             ← 返回
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">客户关系思维导图</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            {countryParam ? `${countryParam} 客户关系图` : '客户关系思维导图'}
+          </h1>
           <span className="text-sm text-gray-400 ml-auto">点击节点展开/折叠</span>
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -693,13 +741,11 @@ export default function CustomerTreePage() {
           className="bg-gradient-to-br from-white via-gray-50 to-gray-100/50 rounded-2xl shadow-2xl border border-gray-200/50 relative overflow-hidden"
           style={{ height: 'calc(100vh - 180px)', minHeight: '500px' }}
         >
-          {/* 工具栏 */}
           <div className="absolute top-0 left-0 right-0 z-10 flex items-center gap-1.5 bg-white/80 backdrop-blur-md p-2 border-b border-gray-200/60 shadow-sm flex-wrap">
             <button onClick={() => setTool('select')} className={`p-1.5 rounded-lg transition-all ${tool === 'select' ? 'bg-blue-100 text-blue-600 shadow-sm' : 'hover:bg-gray-100'}`} title="选择">🖱️</button>
             <button onClick={() => setTool('pen')} className={`p-1.5 rounded-lg transition-all ${tool === 'pen' ? 'bg-blue-100 text-blue-600 shadow-sm' : 'hover:bg-gray-100'}`} title="画笔">✏️</button>
             <button onClick={() => setTool('eraser')} className={`p-1.5 rounded-lg transition-all ${tool === 'eraser' ? 'bg-blue-100 text-blue-600 shadow-sm' : 'hover:bg-gray-100'}`} title="橡皮擦">🧹</button>
 
-            {/* 固定颜色选择器（仅在画笔工具时显示） */}
             {tool === 'pen' && (
               <div className="flex items-center gap-1 ml-1">
                 {PRESET_COLORS.map((color) => (
@@ -707,9 +753,7 @@ export default function CustomerTreePage() {
                     key={color}
                     onClick={() => setSelectedColor(color)}
                     className={`w-6 h-6 rounded-full border-2 transition-all ${
-                      selectedColor === color
-                        ? 'border-blue-500 scale-110 shadow-md'
-                        : 'border-transparent hover:scale-110'
+                      selectedColor === color ? 'border-blue-500 scale-110 shadow-md' : 'border-transparent hover:scale-110'
                     }`}
                     style={{ backgroundColor: color }}
                     title={color}
@@ -723,7 +767,6 @@ export default function CustomerTreePage() {
             <button onClick={saveNow} className="p-1.5 rounded-lg hover:bg-gray-100 transition-all disabled:opacity-30" title="手动保存" disabled={isSaving}>
               {isSaving ? '⏳' : '💾'}
             </button>
-            {/* 保存状态提示 */}
             {saveStatus === 'saving' && <span className="text-xs text-blue-500 animate-pulse ml-1">保存中...</span>}
             {saveStatus === 'saved' && <span className="text-xs text-green-500 ml-1">✓ 已保存</span>}
 
