@@ -1,5 +1,5 @@
 // ========== 客户等级枚举（与后端 StarLevel 一致） ==========
-export type DataLevel = 'THREE' | 'FOUR' | 'FIVE';
+export type DataLevel = 'ONE'|'TWO'|'THREE' | 'FOUR' | 'FIVE';
 
 // ========== 客户阶段（自由文本，不再使用枚举限制） ==========
 export const STAGE_SUGGESTIONS = [
@@ -18,21 +18,27 @@ export type ReplyStatus = 'REPLIED' | 'NO_REPLY';
 
 // ========== 客户列表查询参数 ==========
 export interface CustomerListReq {
-  search?: string;           // 搜索关键字（name/contact_person/phone/email）
+  search?: string;           // 搜索关键字
   country?: string;          // 国家筛选
   level?: DataLevel;         // 数据等级筛选
   stage?: string;            // 客户阶段（自由文本，精确匹配）
   whatsapp?: string;         // WhatsApp 号精确匹配
-  reply_status?: ReplyStatus; // 新增：回复状态筛选
+  reply_status?: ReplyStatus; // 回复状态筛选
   parentId?: string;         // 按上级客户ID筛选（精确匹配）
-  tier?: 1 | 2 | 3;          // 按层级筛选（1=大客户，2=二级，3=三级）
-  current?: number;          // 当前页码，从1开始（对应后端 pageIndex）
+  tier?: number;             // 按层级筛选（1~10）
+  current?: number;          // 当前页码
   pageSize?: number;         // 每页数量
-  createdAtFrom?: string;
-  createdAtTo?: string;
-  updatedAtFrom?: string;
-  updatedAtTo?: string;
-  salesperson?: string;       // 业务员姓名
+  createdAtFrom?: string;    // 创建时间起
+  createdAtTo?: string;      // 创建时间止
+  updatedAtFrom?: string;    // 更新时间起
+  updatedAtTo?: string;      // 更新时间止
+  salesperson?: string;      // 业务员姓名
+  // ---------- 新增社交媒体及跟进时间筛选 ----------
+  instagram?: string;        // Instagram 精确匹配
+  tiktok?: string;           // TikTok 精确匹配
+  youtube?: string;          // YouTube 精确匹配
+  follow_up_date_from?: string; // 跟进时间起
+  follow_up_date_to?: string;   // 跟进时间止
 }
 
 // ========== 客户数据对象（完整响应） ==========
@@ -48,6 +54,10 @@ export interface CustomerDto {
   salesperson_name: string;
   facebook: string;
   linkedin: string;
+  instagram: string;          // 新增
+  tiktok: string;             // 新增
+  youtube: string;            // 新增
+  follow_up_date: string | null; // 新增，ISO 日期字符串或 null
   main_products: string;
   address_line1: string;
   city: string;
@@ -55,7 +65,7 @@ export interface CustomerDto {
   country: string;
   level: DataLevel;
   stage: string;
-  reply_status: ReplyStatus;   // 新增：回复状态
+  reply_status: ReplyStatus;
   source: string;
   remark: string | null;
   language: string;
@@ -65,11 +75,11 @@ export interface CustomerDto {
   // ---- 可选的关联对象 ----
   parent?: CustomerDto | null;
   children?: CustomerDto[];
-  // ---- 可选的关联联系人（当 includeContacts=true 时返回） ----
+  // ---- 可选的关联联系人 ----
   contacts?: CustomerContact[];
   // ---- 系统字段 ----
   sort: number;
-  deleted: string;           // 'no' 或 'yes'
+  deleted: string;
   created_at: string;
   updated_at: string;
 }
@@ -86,6 +96,10 @@ export interface CustomerCreateReq {
   salesperson_name?: string;
   facebook?: string;
   linkedin?: string;
+  instagram?: string;        // 新增
+  tiktok?: string;           // 新增
+  youtube?: string;          // 新增
+  follow_up_date?: string | null; // 新增，ISO 日期字符串或 null
   main_products?: string;
   address_line1?: string;
   city?: string;
@@ -93,7 +107,7 @@ export interface CustomerCreateReq {
   country?: string;
   level?: DataLevel;
   stage?: string;
-  reply_status?: ReplyStatus;   // 新增，默认为 'NO_REPLY'（后端处理）
+  reply_status?: ReplyStatus;
   source?: string;
   remark?: string | null;
   language?: string;
@@ -112,6 +126,10 @@ export interface CustomerUpdateReq {
   salesperson_name?: string;
   facebook?: string;
   linkedin?: string;
+  instagram?: string;        // 新增
+  tiktok?: string;           // 新增
+  youtube?: string;          // 新增
+  follow_up_date?: string | null; // 新增
   main_products?: string;
   address_line1?: string;
   city?: string;
@@ -119,14 +137,14 @@ export interface CustomerUpdateReq {
   country?: string;
   level?: DataLevel;
   stage?: string;
-  reply_status?: ReplyStatus;   // 新增
+  reply_status?: ReplyStatus;
   source?: string;
   remark?: string | null;
   language?: string;
   parent_id?: string | null;
 }
 
-// ========== 部分更新参数（同 CustomerUpdateReq，但至少一个字段） ==========
+// ========== 部分更新参数 ==========
 export type CustomerPatchReq = CustomerUpdateReq;
 
 // ========== 联系人相关类型 ==========
@@ -176,7 +194,7 @@ export const LEVEL_DISPLAY: Record<DataLevel, { label: string; className: string
   FIVE:  { label: '⭐⭐⭐⭐⭐', className: 'bg-green-100 text-green-800' },
 };
 
-// 阶段显示映射（建议值，用于展示已有的阶段文本）
+// 阶段显示映射
 export const STAGE_DISPLAY: Record<string, { label: string; className: string }> = {
   '潜在客户': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
   '已联系':   { label: '已联系', className: 'bg-blue-100 text-blue-700' },
@@ -185,7 +203,6 @@ export const STAGE_DISPLAY: Record<string, { label: string; className: string }>
   '谈判中':   { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
   '成交':     { label: '成交', className: 'bg-green-100 text-green-700' },
   '丢失':     { label: '丢失', className: 'bg-red-100 text-red-700' },
-  // 兼容旧英文枚举
   'LEAD':     { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
   'CONTACTED':{ label: '已联系', className: 'bg-blue-100 text-blue-700' },
   'QUALIFIED':{ label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
@@ -195,7 +212,7 @@ export const STAGE_DISPLAY: Record<string, { label: string; className: string }>
   'LOST':     { label: '丢失', className: 'bg-red-100 text-red-700' },
 };
 
-// 回复状态显示映射（可选）
+// 回复状态显示映射
 export const REPLY_STATUS_DISPLAY: Record<ReplyStatus, { label: string; className: string }> = {
   REPLIED:  { label: '已回复', className: 'bg-green-100 text-green-800' },
   NO_REPLY: { label: '无回复', className: 'bg-gray-100 text-gray-600' },

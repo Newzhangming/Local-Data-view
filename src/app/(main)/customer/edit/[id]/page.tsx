@@ -27,19 +27,18 @@ import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
 const customerService = new CustomerService();
 
 const LEVEL_OPTIONS = [
+  { value: 'ONE', label: '⭐' },
+  { value: 'TWO',  label: '⭐⭐' },
   { value: 'THREE', label: '⭐⭐⭐' },
   { value: 'FOUR',  label: '⭐⭐⭐⭐' },
   { value: 'FIVE',  label: '⭐⭐⭐⭐⭐' },
 ];
 
 const STAGE_SUGGESTIONS = [
-  '潜在客户',
-  '已联系',
-  '合格意向',
-  '已报价',
-  '谈判中',
-  '成交',
-  '丢失',
+  '开发',
+  '询盘',
+  '深度联系',
+  '成单',
 ];
 
 const REPLY_STATUS_OPTIONS = [
@@ -48,7 +47,7 @@ const REPLY_STATUS_OPTIONS = [
 ];
 
 const tierMap: Record<number, string> = {
-  1: '一级（大客户）',
+  1: '一级',
   2: '二级',
   3: '三级',
   4: '四级',
@@ -62,7 +61,7 @@ const tierMap: Record<number, string> = {
 
 // 联系人表单类型
 interface ContactFormData {
-  id?: string;               // 已有联系人的 id
+  id?: string;
   name: string;
   title: string;
   phone: string;
@@ -103,6 +102,10 @@ export default function CustomerEditPage() {
     whatsapp: '',
     facebook: '',
     linkedin: '',
+    instagram: '',
+    tiktok: '',
+    youtube: '',
+    follow_up_date: '',
     email: '',
     website: '',
     salesperson_name: '',
@@ -145,12 +148,16 @@ export default function CustomerEditPage() {
   const [extraSearching, setExtraSearching] = useState(false);
   const extraDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
+  // 控制主上级 Combobox 下拉展开
+  const [isMainOpen, setIsMainOpen] = useState(false);
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       if (extraDebounceTimer.current) clearTimeout(extraDebounceTimer.current);
+      setIsMainOpen(false);
     };
   }, []);
 
@@ -198,25 +205,26 @@ export default function CustomerEditPage() {
     if (!id) { alert('缺少客户ID'); router.back(); return; }
     const fetchData = async () => {
       try {
-        // 1. 加载客户基本信息
         const res = await customerService.queryCustomer({ id });
         if (res.msg === 'success' && res.data) {
-          setFormData(res.data);
-          // 加载主上级
-          if (res.data.parent_id) {
+          const data = { ...res.data };
+          if (data.follow_up_date) {
+            data.follow_up_date = new Date(data.follow_up_date).toISOString().split('T')[0];
+          }
+          setFormData(data);
+          if (data.parent_id) {
             try {
-              const parentRes = await customerService.queryCustomer({ id: res.data.parent_id });
+              const parentRes = await customerService.queryCustomer({ id: data.parent_id });
               if (parentRes.msg === 'success' && parentRes.data) {
                 setSelectedCustomer({ id: parentRes.data.id, name: parentRes.data.name });
               }
             } catch (e) { /* ignore */ }
           }
-          // 加载额外上级
           try {
             const parentsRes = await customerService.getParents(id);
             if (parentsRes.msg === 'success') {
               const allParents = parentsRes.data || [];
-              const mainParentId = res.data.parent_id;
+              const mainParentId = data.parent_id;
               const extras = allParents
                 .filter((p: any) => p.id !== mainParentId)
                 .map((p: any) => ({
@@ -228,7 +236,6 @@ export default function CustomerEditPage() {
             }
           } catch (e) { /* ignore */ }
 
-          // 2. 加载联系人列表
           try {
             const contactsRes = await customerService.getContacts(id);
             if (contactsRes.msg === 'success') {
@@ -246,7 +253,6 @@ export default function CustomerEditPage() {
                 notes: c.notes || '',
               }));
               setContacts(contactList);
-              // 保存原始映射用于 diff
               const map = new Map();
               contactList.forEach((c: any) => map.set(c.id, { ...c }));
               setOriginalContactsMap(map);
@@ -342,8 +348,9 @@ export default function CustomerEditPage() {
 
     const patchData: any = {};
     const fields = [
-      'name', 'contact_person', 'contact_title', 'phone', 'whatsapp', 'facebook', 'linkedin', 'email',
-      'website', 'salesperson_name', 'main_products',
+      'name', 'contact_person', 'contact_title', 'phone', 'whatsapp', 'facebook', 'linkedin',
+      'instagram', 'tiktok', 'youtube', 'follow_up_date',
+      'email', 'website', 'salesperson_name', 'main_products',
       'address_line1', 'city', 'postal_code', 'country',
       'level', 'stage', 'reply_status', 'source', 'remark', 'language', 'parent_id', 'parent_name'
     ];
@@ -357,9 +364,18 @@ export default function CustomerEditPage() {
       patchData.parent_name = '';
     }
 
+    // ========== 关键修复：仅日期字段需要特殊处理，其他字段清空即为空字符串 ==========
+    // 文本字段（source、remark、stage 等）保持原样（空字符串即可，符合 Zod 定义）
+    // 日期字段必须转为 ISO 字符串或 null
+    if (patchData.follow_up_date) {
+      patchData.follow_up_date = new Date(patchData.follow_up_date + 'T00:00:00.000Z').toISOString();
+    } else {
+      patchData.follow_up_date = null;   // 清空日期
+    }
+    // =====================================================================
+
     setSubmitting(true);
     try {
-      // 1. 更新客户基本信息
       const res = await customerService.patchCustomer({ id, ...patchData });
       if (res.msg !== 'success') {
         alert(res.msg || '更新失败');
@@ -367,32 +383,28 @@ export default function CustomerEditPage() {
         return;
       }
 
-      // 2. 同步额外上级（新增）
+      // 同步额外上级（新增）
       const newExtraParents = extraParents.filter(p => !p.relationId);
       for (const parent of newExtraParents) {
         await customerService.addRelation(parent.id, id!);
       }
 
-      // 3. 同步联系人变更
+      // 同步联系人变更
       const currentIds = new Set(contacts.map(c => c.id).filter(Boolean));
       const originalIds = new Set(originalContactsMap.keys());
 
-      // 3.1 删除已移除的联系人
       for (const origId of originalIds) {
         if (!currentIds.has(origId)) {
           await customerService.deleteContact(origId);
         }
       }
 
-      // 3.2 新增或更新联系人
       for (const contact of contacts) {
         if (contact.id) {
-          // 更新：只传变更字段
           const updateData: any = { ...contact };
           delete updateData.id;
           await customerService.updateContact(contact.id, updateData);
         } else {
-          // 新增
           const createData = {
             customer_id: id!,
             name: contact.name,
@@ -412,6 +424,7 @@ export default function CustomerEditPage() {
       }
 
       alert('更新成功！');
+      setIsMainOpen(false);
       router.push(`/customer/view/${id}`);
     } catch (error: any) {
       console.error(error);
@@ -526,7 +539,7 @@ export default function CustomerEditPage() {
             </div>
 
             <div className="px-8 py-6 space-y-8">
-              {/* 联系方式（包含 Facebook 和 LinkedIn） */}
+              {/* 联系方式 */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -541,15 +554,20 @@ export default function CustomerEditPage() {
                   <FormField icon={<BuildingOfficeIcon className="w-5 h-5 text-slate-400" />} label="联系人职位" value={formData.contact_title || ''} onChange={(val) => handleChange('contact_title', val)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <FormField icon={<PhoneIcon className="w-5 h-5 text-slate-400" />} label="WhatsApp" value={formData.whatsapp || ''} onChange={(val) => handleChange('whatsapp', val)} placeholder="请输入WhatsApp" />
-                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="Facebook" value={formData.facebook || ''} onChange={(val) => handleChange('facebook', val)} placeholder="Facebook 链接或账号" />
+                  <FormField icon={<PhoneIcon className="w-5 h-5 text-slate-400" />} label="WhatsApp" value={formData.whatsapp || ''} onChange={(val) => handleChange('whatsapp', val)} />
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="Facebook" value={formData.facebook || ''} onChange={(val) => handleChange('facebook', val)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="LinkedIn" value={formData.linkedin || ''} onChange={(val) => handleChange('linkedin', val)} placeholder="LinkedIn 链接或账号" />
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="Instagram" value={formData.instagram || ''} onChange={(val) => handleChange('instagram', val)} />
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="TikTok" value={formData.tiktok || ''} onChange={(val) => handleChange('tiktok', val)} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="YouTube" value={formData.youtube || ''} onChange={(val) => handleChange('youtube', val)} />
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="LinkedIn" value={formData.linkedin || ''} onChange={(val) => handleChange('linkedin', val)} />
                 </div>
               </section>
 
-              {/* 业务信息（已移除 Facebook 和 LinkedIn） */}
+              {/* 业务信息 */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -557,7 +575,15 @@ export default function CustomerEditPage() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="网站" value={formData.website || ''} onChange={(val) => handleChange('website', val)} />
-                  <FormField icon={<ShoppingBagIcon className="w-5 h-5 text-slate-400" />} label="主营产品" value={formData.main_products || ''} onChange={(val) => handleChange('main_products', val)} />
+                  <FormField
+                    icon={<ShoppingBagIcon className="w-5 h-5 text-slate-400" />}
+                    label="主营产品"
+                    value={formData.main_products || ''}
+                    onChange={(val) => handleChange('main_products', val)}
+                    multiline
+                    rows={3}
+                    placeholder="请输入主营产品"
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   <FormField icon={<UsersIcon className="w-5 h-5 text-slate-400" />} label="业务员" value={formData.salesperson_name || ''} onChange={(val) => handleChange('salesperson_name', val)} />
@@ -582,7 +608,7 @@ export default function CustomerEditPage() {
                 </div>
               </section>
 
-              {/* 客户层级：主上级 + 额外上级 */}
+              {/* 客户层级 */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -608,6 +634,8 @@ export default function CustomerEditPage() {
                           handleChange('parent_name', '');
                         }
                       }}
+                      open={isMainOpen}
+                      onOpenChange={setIsMainOpen}
                     >
                       <div className="relative">
                         <ComboboxInput
@@ -777,19 +805,19 @@ export default function CustomerEditPage() {
                     <table className="min-w-full divide-y divide-slate-200">
                       <thead className="bg-slate-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">姓名</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">职位</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">主要</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Facebook</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">LinkedIn</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[120px] truncate">姓名</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[100px] truncate">职位</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[60px]">主要</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[120px] truncate">Facebook</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[120px] truncate">LinkedIn</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider w-24">操作</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-slate-100">
                         {contacts.map((contact, index) => (
                           <tr key={contact.id || `new-${index}`} className="hover:bg-slate-50 transition-colors duration-150">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-800">{contact.name}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{contact.title || '-'}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-800 max-w-[120px] truncate">{contact.name}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 max-w-[100px] truncate">{contact.title || '-'}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm">
                               {contact.is_primary ? (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">是</span>
@@ -797,21 +825,21 @@ export default function CustomerEditPage() {
                                 <span className="text-slate-400">-</span>
                               )}
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 max-w-[120px] truncate">
                               {contact.facebook ? (
-                                <a href={contact.facebook.startsWith('http') ? contact.facebook : `https://${contact.facebook}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                <a href={contact.facebook.startsWith('http') ? contact.facebook : `https://${contact.facebook}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate block">
                                   {contact.facebook}
                                 </a>
                               ) : '-'}
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 max-w-[120px] truncate">
                               {contact.linkedin ? (
-                                <a href={contact.linkedin.startsWith('http') ? contact.linkedin : `https://${contact.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                <a href={contact.linkedin.startsWith('http') ? contact.linkedin : `https://${contact.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate block">
                                   {contact.linkedin}
                                 </a>
                               ) : '-'}
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
+                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm w-24">
                               <button
                                 type="button"
                                 onClick={() => openContactModal(index)}
@@ -846,6 +874,17 @@ export default function CustomerEditPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField icon={<TagIcon className="w-5 h-5 text-slate-400" />} label="客户来源" value={formData.source || ''} onChange={(val) => handleChange('source', val)} />
                   <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="语言偏好" value={formData.language || ''} onChange={(val) => handleChange('language', val)} />
+                </div>
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">跟进时间</label>
+                  <input
+                    type="date"
+                    value={formData.follow_up_date || ''}
+                    onChange={(e) => handleChange('follow_up_date', e.target.value)}
+                    onKeyDown={(e) => e.preventDefault()}
+                    onClick={(e) => e.currentTarget.showPicker?.()}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-700"
+                  />
                 </div>
                 <div className="mt-4">
                   <FormField label="备注" value={formData.remark || ''} onChange={(val) => handleChange('remark', val)} multiline />
@@ -994,7 +1033,7 @@ export default function CustomerEditPage() {
   );
 }
 
-// FormField 组件（增强 rows 和 required）
+// FormField 组件
 function FormField({
   icon,
   label,

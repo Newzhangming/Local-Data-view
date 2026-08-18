@@ -25,6 +25,8 @@ const customerService = new CustomerService();
 
 // 等级显示映射
 const levelDisplayMap: Record<string, { label: string; className: string }> = {
+  ONE:   { label: '⭐',   className: 'bg-gray-100 text-gray-600' },   
+  TWO:   { label: '⭐⭐',  className: 'bg-cyan-100 text-cyan-700' },
   THREE: { label: '⭐⭐⭐', className: 'bg-yellow-100 text-yellow-800' },
   FOUR: { label: '⭐⭐⭐⭐', className: 'bg-blue-100 text-blue-800' },
   FIVE: { label: '⭐⭐⭐⭐⭐', className: 'bg-green-100 text-green-800' },
@@ -39,6 +41,11 @@ const stageDisplayMap: Record<string, { label: string; className: string }> = {
   '谈判中': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
   '成交': { label: '成交', className: 'bg-green-100 text-green-700' },
   '丢失': { label: '丢失', className: 'bg-red-100 text-red-700' },
+   // ---------- 新增 ----------
+  '开发': { label: '开发', className: 'bg-indigo-100 text-indigo-700' },
+  '询盘': { label: '询盘', className: 'bg-pink-100 text-pink-700' },
+  '深度联系': { label: '深度联系', className: 'bg-amber-100 text-amber-700' },
+  '成单': { label: '成单', className: 'bg-green-100 text-green-700' },
   LEAD: { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
   CONTACTED: { label: '已联系', className: 'bg-blue-100 text-blue-700' },
   QUALIFIED: { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
@@ -55,7 +62,7 @@ const replyStatusMap: Record<string, { label: string; className: string }> = {
 };
 
 const tierMap: Record<number, string> = {
-  1: '一级（大客户）',
+  1: '一级',
   2: '二级',
   3: '三级',
   4: '四级',
@@ -252,6 +259,9 @@ export default function CustomerViewPage() {
                 <InfoItem icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="网站" value={customer.website} isLink />
                 <InfoItem icon={<UserGroupIcon className="w-5 h-5 text-slate-400" />} label="业务员" value={customer.salesperson_name} />
                 <InfoItem icon={<LinkIcon className="w-5 h-5 text-slate-400" />} label="Facebook" value={customer.facebook} isLink />
+                <InfoItem icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="Instagram" value={customer.instagram} isLink />
+                <InfoItem icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="TikTok" value={customer.tiktok} isLink />
+                <InfoItem icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="YouTube" value={customer.youtube} isLink />
                 <InfoItem icon={<LinkIcon className="w-5 h-5 text-slate-400" />} label="Linkedin" value={customer.linkedin} isLink />
               </div>
             </section>
@@ -288,6 +298,10 @@ export default function CustomerViewPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoItem icon={<TagIcon className="w-5 h-5 text-slate-400" />} label="客户来源" value={customer.source} />
                 <InfoItem icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="语言偏好" value={customer.language} />
+              </div>
+              {/* 跟进时间 */}
+              <div className="mt-4">
+                <InfoItem label="跟进时间" value={customer.follow_up_date ? new Date(customer.follow_up_date).toLocaleDateString() : '-'} />
               </div>
               {customer.remark && (
                 <div className="mt-4">

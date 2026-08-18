@@ -28,6 +28,8 @@ const customerService = new CustomerService();
 
 // 等级选项
 const LEVEL_OPTIONS = [
+  { value: 'ONE', label: '⭐' },
+  { value: 'TWO',  label: '⭐⭐' },
   { value: 'THREE', label: '⭐⭐⭐' },
   { value: 'FOUR',  label: '⭐⭐⭐⭐' },
   { value: 'FIVE',  label: '⭐⭐⭐⭐⭐' },
@@ -35,13 +37,10 @@ const LEVEL_OPTIONS = [
 
 // 阶段建议列表
 const STAGE_SUGGESTIONS = [
-  '潜在客户',
-  '已联系',
-  '合格意向',
-  '已报价',
-  '谈判中',
-  '成交',
-  '丢失',
+  '开发',
+  '询盘',
+  '深度联系',
+  '成单',
 ];
 
 // 回复状态选项
@@ -88,6 +87,10 @@ export default function CustomerCreatePage() {
     whatsapp: '',
     facebook: '',
     linkedin: '',
+    instagram: '',
+    tiktok: '',
+    youtube: '',
+    follow_up_date: '',
     email: '',
     website: '',
     salesperson_name: '',
@@ -241,6 +244,12 @@ export default function CustomerCreatePage() {
     }
     if (!submitData.parent_name) {
       delete submitData.parent_name;
+    }
+    // 关键修复：将 follow_up_date 转换为 ISO 字符串以满足后端 Zod 校验
+    if (submitData.follow_up_date) {
+      submitData.follow_up_date = new Date(submitData.follow_up_date + 'T00:00:00.000Z').toISOString();
+    } else {
+      submitData.follow_up_date = null;
     }
 
     setSaving(true);
@@ -414,7 +423,7 @@ export default function CustomerCreatePage() {
             </div>
 
             <div className="px-8 py-6 space-y-8">
-              {/* 联系方式（包含 Facebook 和 LinkedIn） */}
+              {/* 联系方式（包含所有社交账号） */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -433,11 +442,16 @@ export default function CustomerCreatePage() {
                   <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="Facebook" value={form.facebook || ''} onChange={(val) => handleChange('facebook', val)} placeholder="Facebook 链接或账号" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="Instagram" value={form.instagram || ''} onChange={(val) => handleChange('instagram', val)} placeholder="Instagram 链接或账号" />
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="TikTok" value={form.tiktok || ''} onChange={(val) => handleChange('tiktok', val)} placeholder="TikTok 链接或账号" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="YouTube" value={form.youtube || ''} onChange={(val) => handleChange('youtube', val)} placeholder="YouTube 链接或账号" />
                   <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="LinkedIn" value={form.linkedin || ''} onChange={(val) => handleChange('linkedin', val)} placeholder="LinkedIn 链接或账号" />
                 </div>
               </section>
 
-              {/* 业务信息（已移除 Facebook 和 LinkedIn） */}
+              {/* 业务信息 */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -445,7 +459,16 @@ export default function CustomerCreatePage() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="网站" value={form.website || ''} onChange={(val) => handleChange('website', val)} />
-                  <FormField icon={<ShoppingBagIcon className="w-5 h-5 text-slate-400" />} label="主营产品" value={form.main_products || ''} onChange={(val) => handleChange('main_products', val)} />
+                  {/* 修改点：主营产品改为多行文本 */}
+                  <FormField
+                    icon={<ShoppingBagIcon className="w-5 h-5 text-slate-400" />}
+                    label="主营产品"
+                    value={form.main_products || ''}
+                    onChange={(val) => handleChange('main_products', val)}
+                    multiline
+                    rows={3}
+                    placeholder="请输入主营产品"
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                   <FormField icon={<UsersIcon className="w-5 h-5 text-slate-400" />} label="业务员" value={form.salesperson_name || ''} onChange={(val) => handleChange('salesperson_name', val)} />
@@ -470,7 +493,7 @@ export default function CustomerCreatePage() {
                 </div>
               </section>
 
-              {/* 客户层级：主上级 + 额外上级 */}
+              {/* 客户层级 */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -560,7 +583,6 @@ export default function CustomerCreatePage() {
                       额外上级（可多选）
                     </label>
                     
-                    {/* 已选择的额外上级 */}
                     {extraParents.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2">
                         {extraParents.map((parent) => (
@@ -578,7 +600,6 @@ export default function CustomerCreatePage() {
                       </div>
                     )}
 
-                    {/* 搜索并添加额外上级 */}
                     <div className="relative">
                       <div className="flex gap-2">
                         <input
@@ -646,19 +667,19 @@ export default function CustomerCreatePage() {
                     <table className="min-w-full divide-y divide-slate-200">
                       <thead className="bg-slate-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">姓名</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">职位</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">主要</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Facebook</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">LinkedIn</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">操作</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[120px] truncate">姓名</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[100px] truncate">职位</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[60px]">主要</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[120px] truncate">Facebook</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider max-w-[120px] truncate">LinkedIn</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider w-24">操作</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-slate-100">
                         {contacts.map((contact, index) => (
                           <tr key={index} className="hover:bg-slate-50 transition-colors duration-150">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-800">{contact.name}</td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">{contact.title || '-'}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-800 max-w-[120px] truncate">{contact.name}</td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 max-w-[100px] truncate">{contact.title || '-'}</td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm">
                               {contact.is_primary ? (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">是</span>
@@ -666,21 +687,21 @@ export default function CustomerCreatePage() {
                                 <span className="text-slate-400">-</span>
                               )}
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 max-w-[120px] truncate">
                               {contact.facebook ? (
-                                <a href={contact.facebook.startsWith('http') ? contact.facebook : `https://${contact.facebook}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                <a href={contact.facebook.startsWith('http') ? contact.facebook : `https://${contact.facebook}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate block">
                                   {contact.facebook}
                                 </a>
                               ) : '-'}
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600">
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 max-w-[120px] truncate">
                               {contact.linkedin ? (
-                                <a href={contact.linkedin.startsWith('http') ? contact.linkedin : `https://${contact.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                <a href={contact.linkedin.startsWith('http') ? contact.linkedin : `https://${contact.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate block">
                                   {contact.linkedin}
                                 </a>
                               ) : '-'}
                             </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm">
+                            <td className="px-4 py-3 whitespace-nowrap text-right text-sm w-24">
                               <button
                                 type="button"
                                 onClick={() => openContactModal(index)}
@@ -706,7 +727,7 @@ export default function CustomerCreatePage() {
                 )}
               </section>
 
-              {/* 其他信息 */}
+              {/* 其他信息（含跟进时间） */}
               <section>
                 <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
@@ -715,6 +736,18 @@ export default function CustomerCreatePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField icon={<TagIcon className="w-5 h-5 text-slate-400" />} label="客户来源" value={form.source || ''} onChange={(val) => handleChange('source', val)} />
                   <FormField icon={<GlobeAltIcon className="w-5 h-5 text-slate-400" />} label="语言偏好" value={form.language || ''} onChange={(val) => handleChange('language', val)} />
+                </div>
+                {/* 跟进时间 */}
+                <div className="mt-4">
+                  <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1">跟进时间</label>
+                  <input
+                    type="date"
+                    value={form.follow_up_date || ''}
+                    onChange={(e) => handleChange('follow_up_date', e.target.value)}
+                    onKeyDown={(e) => e.preventDefault()}
+                    onClick={(e) => e.currentTarget.showPicker?.()}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-700"
+                  />
                 </div>
                 <div className="mt-4">
                   <FormField label="备注" value={form.remark || ''} onChange={(val) => handleChange('remark', val)} multiline />
@@ -864,7 +897,7 @@ export default function CustomerCreatePage() {
   );
 }
 
-// FormField 组件（增强 rows 支持）
+// FormField 组件
 function FormField({
   icon,
   label,

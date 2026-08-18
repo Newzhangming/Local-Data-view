@@ -710,6 +710,7 @@ export default function CountryTreePage() {
 
   const treeData = filteredRoot() ? convertToTreeDatum(filteredRoot()!) : null;
 
+  // ★★★ 修改点：节点名称点击 → 新窗口打开 ★★★
   const renderCustomNode = ({ nodeDatum }: any) => {
     const raw = nodeDatum.attributes.raw as TreeNode;
     const isVirtual = raw.id === '__country_root__';
@@ -732,7 +733,7 @@ export default function CountryTreePage() {
     const replyStatus = raw.reply_status;
     const isReplied = replyStatus === 'REPLIED';
     const statusColor = isReplied ? 'bg-green-500' : 'bg-gray-300';
-    const statusLabel = isReplied ? '已回复' : '无回复';
+    const statusLabel = isReplied ? '有回复' : '无回复';
 
     return (
       <foreignObject width={240} height={58} x={-120} y={-29} style={{ overflow: 'visible' }}>
@@ -770,7 +771,10 @@ export default function CountryTreePage() {
             className="text-blue-700 hover:text-blue-900 font-semibold truncate max-w-[80px] flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
-              if (tool === 'select' && !isVirtual) router.push(`/customer/view/${raw.id}`);
+              if (tool === 'select' && !isVirtual) {
+                // ★★★ 新窗口打开 ★★★
+                window.open(`/customer/view/${raw.id}`, '_blank');
+              }
             }}
           >
             {raw.name}
