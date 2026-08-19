@@ -36,23 +36,17 @@ const levelDisplayMap: Record<string, { label: string; className: string }> = {
 const stageDisplayMap: Record<string, { label: string; className: string }> = {
   '潜在客户': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
   '已联系': { label: '已联系', className: 'bg-blue-100 text-blue-700' },
-  '合格意向': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
+  // '合格意向': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
   '已报价': { label: '已报价', className: 'bg-orange-100 text-orange-700' },
-  '谈判中': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
+  // '谈判中': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
   '成交': { label: '成交', className: 'bg-green-100 text-green-700' },
-  '丢失': { label: '丢失', className: 'bg-red-100 text-red-700' },
+ // '丢失': { label: '丢失', className: 'bg-red-100 text-red-700' },
    // ---------- 新增 ----------
   '开发': { label: '开发', className: 'bg-indigo-100 text-indigo-700' },
   '询盘': { label: '询盘', className: 'bg-pink-100 text-pink-700' },
   '深度联系': { label: '深度联系', className: 'bg-amber-100 text-amber-700' },
   '成单': { label: '成单', className: 'bg-green-100 text-green-700' },
-  LEAD: { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
-  CONTACTED: { label: '已联系', className: 'bg-blue-100 text-blue-700' },
-  QUALIFIED: { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
-  QUOTED: { label: '已报价', className: 'bg-orange-100 text-orange-700' },
-  NEGOTIATING: { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
-  WON: { label: '成交', className: 'bg-green-100 text-green-700' },
-  LOST: { label: '丢失', className: 'bg-red-100 text-red-700' },
+  'empty': { label: '无', className: 'bg-gray-100 text-gray-600' }
 };
 
 // 回复状态显示映射
