@@ -28,6 +28,7 @@ export default function CustomerListPage() {
   const [filterSalesperson, setFilterSalesperson] = useState('');
   const [filterReplyStatus, setFilterReplyStatus] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
+  const [filterStage, setFilterStage] = useState('');
   const [followUpFrom, setFollowUpFrom] = useState('');
   const [followUpTo, setFollowUpTo] = useState('');
   const [createdAtFrom, setCreatedAtFrom] = useState('');
@@ -89,12 +90,24 @@ export default function CustomerListPage() {
       salesperson: filterSalesperson || undefined,
       reply_status: filterReplyStatus || undefined,
       level: filterLevel || undefined,
+      stage: filterStage || undefined,
       follow_up_date_from: followUpFrom || undefined,
       follow_up_date_to: followUpTo || undefined,
       createdAtFrom: createdAtFrom || undefined,
       createdAtTo: createdAtTo || undefined,
     });
-  }, [current, search, filterCountry, filterSalesperson, filterReplyStatus, filterLevel, followUpFrom, followUpTo, createdAtFrom, createdAtTo]);
+  }, [
+    current, 
+    search, 
+    filterCountry, 
+    filterSalesperson, 
+    filterReplyStatus, 
+    filterLevel, 
+    filterStage, 
+    followUpFrom, 
+    followUpTo, 
+    createdAtFrom, 
+    createdAtTo]);
 
   // ---------- 删除 ----------
   const handleDelete = async (id: string, name: string) => {
@@ -124,6 +137,7 @@ export default function CustomerListPage() {
         salesperson: filterSalesperson || undefined,
         reply_status: filterReplyStatus || undefined,
         level: filterLevel || undefined,
+        stage: filterStage || undefined,
         follow_up_date_from: followUpFrom || undefined,
         follow_up_date_to: followUpTo || undefined,
         createdAtFrom: createdAtFrom || undefined,
@@ -171,25 +185,20 @@ export default function CustomerListPage() {
   };
 
   const stageDisplayMap: Record<string, { label: string; className: string }> = {
-    '潜在客户': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
-    '已联系': { label: '已联系', className: 'bg-blue-100 text-blue-700' },
-    '合格意向': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
-    '已报价': { label: '已报价', className: 'bg-orange-100 text-orange-700' },
-    '谈判中': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
-    '成交': { label: '成交', className: 'bg-green-100 text-green-700' },
-    '丢失': { label: '丢失', className: 'bg-red-100 text-red-700' },
-    '开发': { label: '开发', className: 'bg-indigo-100 text-indigo-700' },
-    '询盘': { label: '询盘', className: 'bg-pink-100 text-pink-700' },
-    '深度联系': { label: '深度联系', className: 'bg-amber-100 text-amber-700' },
-    '成单': { label: '成单', className: 'bg-green-100 text-green-700' },
-    'LEAD': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
-    'CONTACTED': { label: '已联系', className: 'bg-blue-100 text-blue-700' },
-    'QUALIFIED': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
-    'QUOTED': { label: '已报价', className: 'bg-orange-100 text-orange-700' },
-    'NEGOTIATING': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
-    'WON': { label: '成交', className: 'bg-green-100 text-green-700' },
-    'LOST': { label: '丢失', className: 'bg-red-100 text-red-700' },
-  };
+  '潜在客户': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
+  '已联系': { label: '已联系', className: 'bg-blue-100 text-blue-700' },
+  // '合格意向': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
+  '已报价': { label: '已报价', className: 'bg-orange-100 text-orange-700' },
+  // '谈判中': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
+  '成交': { label: '成交', className: 'bg-green-100 text-green-700' },
+ // '丢失': { label: '丢失', className: 'bg-red-100 text-red-700' },
+   // ---------- 新增 ----------
+  '开发': { label: '开发', className: 'bg-indigo-100 text-indigo-700' },
+  '询盘': { label: '询盘', className: 'bg-pink-100 text-pink-700' },
+  '深度联系': { label: '深度联系', className: 'bg-amber-100 text-amber-700' },
+  '成单': { label: '成单', className: 'bg-green-100 text-green-700' },
+  'empty': { label: '无', className: 'bg-gray-100 text-gray-600' }
+};
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -204,6 +213,7 @@ export default function CustomerListPage() {
     setFilterSalesperson('');
     setFilterReplyStatus('');
     setFilterLevel('');
+    setFilterStage('');
     setFollowUpFrom('');
     setFollowUpTo('');
     setCreatedAtFrom('');
@@ -218,6 +228,19 @@ export default function CustomerListPage() {
     { value: 'THREE', label: '⭐⭐⭐' },
     { value: 'FOUR', label: '⭐⭐⭐⭐' },
     { value: 'FIVE', label: '⭐⭐⭐⭐⭐' },
+  ];
+ 
+  // 阶段选项（固定值）
+  const stageOptions = [
+    { value: '潜在客户', label: '潜在客户' },
+    { value: '已联系', label: '已联系' },
+    { value: '已报价', label: '已报价' },
+    { value: '成交', label: '成交' },
+    { value: '开发', label: '开发' },
+    { value: '询盘', label: '询盘' },
+    { value: '深度联系', label: '深度联系' },
+    { value: '成单', label: '成单' },
+    { value: 'empty', label: '无' },
   ];
 
   return (
@@ -339,6 +362,26 @@ export default function CustomerListPage() {
                 >
                   <option value="">全部</option>
                   {levelOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 阶段 */}
+              <div className="flex items-center gap-1">
+                <label className="text-sm text-gray-600 whitespace-nowrap">阶段：</label>
+                <select
+                  value={filterStage}
+                  onChange={(e) => {
+                    setFilterStage(e.target.value);
+                    setCurrent(1);
+                  }}
+                  className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white min-w-[100px]"
+                >
+                  <option value="">全部</option>
+                  {stageOptions.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>

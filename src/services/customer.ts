@@ -28,7 +28,7 @@ export class CustomerService extends BaseService {
     if (input.level) {
       params.level = input.level;
     }
-    if (input.stage) {
+    if (input.stage !== undefined) {
       params.stage = input.stage;
     }
     if (input.whatsapp) {
