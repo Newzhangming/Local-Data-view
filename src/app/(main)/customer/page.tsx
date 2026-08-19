@@ -28,6 +28,7 @@ export default function CustomerListPage() {
   const [filterSalesperson, setFilterSalesperson] = useState('');
   const [filterReplyStatus, setFilterReplyStatus] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
+  const [filterStage, setFilterStage] = useState('');                // ★ 新增
   const [followUpFrom, setFollowUpFrom] = useState('');
   const [followUpTo, setFollowUpTo] = useState('');
   const [createdAtFrom, setCreatedAtFrom] = useState('');
@@ -41,6 +42,27 @@ export default function CustomerListPage() {
   const [countryOptions, setCountryOptions] = useState<string[]>([]);
   const [salespersonOptions, setSalespersonOptions] = useState<string[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
+
+  // ---------- 固定选项 ----------
+  const levelOptions = [
+    { value: 'ONE', label: '⭐' },
+    { value: 'TWO', label: '⭐⭐' },
+    { value: 'THREE', label: '⭐⭐⭐' },
+    { value: 'FOUR', label: '⭐⭐⭐⭐' },
+    { value: 'FIVE', label: '⭐⭐⭐⭐⭐' },
+  ];
+
+  // 阶段选项（请确保 value 与数据库中存储的值完全一致）
+  const stageOptions = [
+    { value: '潜在客户', label: '潜在客户' },
+    { value: '已联系', label: '已联系' },
+    { value: '合格意向', label: '合格意向' },
+    { value: '已报价', label: '已报价' },
+    { value: '谈判中', label: '谈判中' },
+    { value: '成交', label: '成交' },
+    { value: '丢失', label: '丢失' },
+    { value: 'enmpty', label: '无' },
+  ];
 
   // ---------- 获取筛选下拉选项 ----------
   useEffect(() => {
@@ -89,12 +111,25 @@ export default function CustomerListPage() {
       salesperson: filterSalesperson || undefined,
       reply_status: filterReplyStatus || undefined,
       level: filterLevel || undefined,
+      stage: filterStage || undefined,                          // ★ 新增
       follow_up_date_from: followUpFrom || undefined,
       follow_up_date_to: followUpTo || undefined,
       createdAtFrom: createdAtFrom || undefined,
       createdAtTo: createdAtTo || undefined,
     });
-  }, [current, search, filterCountry, filterSalesperson, filterReplyStatus, filterLevel, followUpFrom, followUpTo, createdAtFrom, createdAtTo]);
+  }, [
+    current,
+    search,
+    filterCountry,
+    filterSalesperson,
+    filterReplyStatus,
+    filterLevel,
+    filterStage,                                               // ★ 新增依赖
+    followUpFrom,
+    followUpTo,
+    createdAtFrom,
+    createdAtTo,
+  ]);
 
   // ---------- 删除 ----------
   const handleDelete = async (id: string, name: string) => {
@@ -124,6 +159,7 @@ export default function CustomerListPage() {
         salesperson: filterSalesperson || undefined,
         reply_status: filterReplyStatus || undefined,
         level: filterLevel || undefined,
+        stage: filterStage || undefined,                        // ★ 新增
         follow_up_date_from: followUpFrom || undefined,
         follow_up_date_to: followUpTo || undefined,
         createdAtFrom: createdAtFrom || undefined,
@@ -182,13 +218,8 @@ export default function CustomerListPage() {
     '询盘': { label: '询盘', className: 'bg-pink-100 text-pink-700' },
     '深度联系': { label: '深度联系', className: 'bg-amber-100 text-amber-700' },
     '成单': { label: '成单', className: 'bg-green-100 text-green-700' },
-    'LEAD': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
-    'CONTACTED': { label: '已联系', className: 'bg-blue-100 text-blue-700' },
-    'QUALIFIED': { label: '合格意向', className: 'bg-cyan-100 text-cyan-700' },
-    'QUOTED': { label: '已报价', className: 'bg-orange-100 text-orange-700' },
-    'NEGOTIATING': { label: '谈判中', className: 'bg-purple-100 text-purple-700' },
-    'WON': { label: '成交', className: 'bg-green-100 text-green-700' },
-    'LOST': { label: '丢失', className: 'bg-red-100 text-red-700' },
+    '无': { label: '无', className: 'bg-green-100 text-green-700' },
+
   };
 
   const totalPages = Math.ceil(total / pageSize);
@@ -204,21 +235,13 @@ export default function CustomerListPage() {
     setFilterSalesperson('');
     setFilterReplyStatus('');
     setFilterLevel('');
+    setFilterStage('');                                           // ★ 新增
     setFollowUpFrom('');
     setFollowUpTo('');
     setCreatedAtFrom('');
     setCreatedAtTo('');
     setCurrent(1);
   };
-
-  // 等级选项（固定值）
-  const levelOptions = [
-    { value: 'ONE', label: '⭐' },
-    { value: 'TWO',  label: '⭐⭐' },
-    { value: 'THREE', label: '⭐⭐⭐' },
-    { value: 'FOUR', label: '⭐⭐⭐⭐' },
-    { value: 'FIVE', label: '⭐⭐⭐⭐⭐' },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -346,6 +369,26 @@ export default function CustomerListPage() {
                 </select>
               </div>
 
+              {/* ★ 新增：阶段 */}
+              <div className="flex items-center gap-1">
+                <label className="text-sm text-gray-600 whitespace-nowrap">阶段：</label>
+                <select
+                  value={filterStage}
+                  onChange={(e) => {
+                    setFilterStage(e.target.value);
+                    setCurrent(1);
+                  }}
+                  className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white min-w-[100px]"
+                >
+                  <option value="">全部</option>
+                  {stageOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* 跟进时间 */}
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600 whitespace-nowrap">跟进时间：</label>
@@ -403,7 +446,7 @@ export default function CustomerListPage() {
               </div>
 
               {/* 快捷清除 */}
-              {(filterCountry || filterSalesperson || filterReplyStatus || filterLevel || followUpFrom || followUpTo || createdAtFrom || createdAtTo || search) && (
+              {(filterCountry || filterSalesperson || filterReplyStatus || filterLevel || filterStage || followUpFrom || followUpTo || createdAtFrom || createdAtTo || search) && (
                 <button
                   onClick={clearAllFilters}
                   className="text-sm text-blue-600 hover:text-blue-800"
@@ -475,7 +518,6 @@ export default function CustomerListPage() {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end gap-2">
-                            {/* ★★★ 查看按钮：新窗口打开 ★★★ */}
                             <button
                               onClick={() => window.open(`/customer/view/${c.id}`, '_blank')}
                               className="text-gray-400 hover:text-blue-600 transition"
