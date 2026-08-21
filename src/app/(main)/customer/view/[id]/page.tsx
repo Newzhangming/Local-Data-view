@@ -46,7 +46,7 @@ const stageDisplayMap: Record<string, { label: string; className: string }> = {
   '询盘': { label: '询盘', className: 'bg-pink-100 text-pink-700' },
   '深度联系': { label: '深度联系', className: 'bg-amber-100 text-amber-700' },
   '成单': { label: '成单', className: 'bg-green-100 text-green-700' },
-  'empty': { label: '无', className: 'bg-gray-100 text-gray-600' }
+  '': { label: '无', className: 'bg-gray-100 text-gray-600' }
 };
 
 // 回复状态显示映射

@@ -28,7 +28,7 @@ export default function CustomerListPage() {
   const [filterSalesperson, setFilterSalesperson] = useState('');
   const [filterReplyStatus, setFilterReplyStatus] = useState('');
   const [filterLevel, setFilterLevel] = useState('');
-  const [filterStage, setFilterStage] = useState('');                // ★ 新增
+  const [filterStage, setFilterStage] = useState('');
   const [followUpFrom, setFollowUpFrom] = useState('');
   const [followUpTo, setFollowUpTo] = useState('');
   const [createdAtFrom, setCreatedAtFrom] = useState('');
@@ -41,9 +41,10 @@ export default function CustomerListPage() {
   // ---------- 下拉选项状态 ----------
   const [countryOptions, setCountryOptions] = useState<string[]>([]);
   const [salespersonOptions, setSalespersonOptions] = useState<string[]>([]);
+  const [stageOptions, setStageOptions] = useState<string[]>([]);   // 动态阶段选项（含 'empty'）
   const [optionsLoading, setOptionsLoading] = useState(false);
 
-  // ---------- 固定选项 ----------
+  // ---------- 固定选项（等级） ----------
   const levelOptions = [
     { value: 'ONE', label: '⭐' },
     { value: 'TWO', label: '⭐⭐' },
@@ -52,19 +53,7 @@ export default function CustomerListPage() {
     { value: 'FIVE', label: '⭐⭐⭐⭐⭐' },
   ];
 
-  // 阶段选项（请确保 value 与数据库中存储的值完全一致）
-  const stageOptions = [
-    { value: '潜在客户', label: '潜在客户' },
-    { value: '已联系', label: '已联系' },
-    { value: '合格意向', label: '合格意向' },
-    { value: '已报价', label: '已报价' },
-    { value: '谈判中', label: '谈判中' },
-    { value: '成交', label: '成交' },
-    { value: '丢失', label: '丢失' },
-    { value: 'enmpty', label: '无' },
-  ];
-
-  // ---------- 获取筛选下拉选项 ----------
+  // ---------- 获取筛选下拉选项（国家、业务员、阶段） ----------
   useEffect(() => {
     const fetchOptions = async () => {
       setOptionsLoading(true);
@@ -73,6 +62,12 @@ export default function CustomerListPage() {
         if (res.msg === 'success') {
           setCountryOptions(res.data.countries || []);
           setSalespersonOptions(res.data.salespersons || []);
+          // ★ 动态获取阶段列表，并保证包含 'empty' 用于筛选空值
+          const stages = res.data.stages || [];
+          if (!stages.includes('empty')) {
+            stages.push('empty');
+          }
+          setStageOptions(stages);
         }
       } catch (error) {
         console.error('获取筛选选项失败', error);
@@ -111,7 +106,7 @@ export default function CustomerListPage() {
       salesperson: filterSalesperson || undefined,
       reply_status: filterReplyStatus || undefined,
       level: filterLevel || undefined,
-      stage: filterStage || undefined,                          // ★ 新增
+      stage: filterStage || undefined,
       follow_up_date_from: followUpFrom || undefined,
       follow_up_date_to: followUpTo || undefined,
       createdAtFrom: createdAtFrom || undefined,
@@ -124,7 +119,7 @@ export default function CustomerListPage() {
     filterSalesperson,
     filterReplyStatus,
     filterLevel,
-    filterStage,                                               // ★ 新增依赖
+    filterStage,
     followUpFrom,
     followUpTo,
     createdAtFrom,
@@ -159,7 +154,7 @@ export default function CustomerListPage() {
         salesperson: filterSalesperson || undefined,
         reply_status: filterReplyStatus || undefined,
         level: filterLevel || undefined,
-        stage: filterStage || undefined,                        // ★ 新增
+        stage: filterStage || undefined,
         follow_up_date_from: followUpFrom || undefined,
         follow_up_date_to: followUpTo || undefined,
         createdAtFrom: createdAtFrom || undefined,
@@ -184,7 +179,7 @@ export default function CustomerListPage() {
     }
   };
 
-  // ---------- 映射 ----------
+  // ---------- 显示映射 ----------
   const tierMap: Record<number, string> = {
     1: '一级',
     2: '二级',
@@ -206,6 +201,7 @@ export default function CustomerListPage() {
     FIVE: { label: '⭐⭐⭐⭐⭐', className: 'bg-green-100 text-green-800' },
   };
 
+  // 阶段样式映射（兜底，动态值若不在映射中则显示默认样式）
   const stageDisplayMap: Record<string, { label: string; className: string }> = {
     '潜在客户': { label: '潜在客户', className: 'bg-gray-100 text-gray-700' },
     '已联系': { label: '已联系', className: 'bg-blue-100 text-blue-700' },
@@ -218,8 +214,7 @@ export default function CustomerListPage() {
     '询盘': { label: '询盘', className: 'bg-pink-100 text-pink-700' },
     '深度联系': { label: '深度联系', className: 'bg-amber-100 text-amber-700' },
     '成单': { label: '成单', className: 'bg-green-100 text-green-700' },
-    '无': { label: '无', className: 'bg-green-100 text-green-700' },
-
+    '无': { label: '无', className: 'bg-green-100 text-green-700' },   // 用于空值显示
   };
 
   const totalPages = Math.ceil(total / pageSize);
@@ -235,7 +230,7 @@ export default function CustomerListPage() {
     setFilterSalesperson('');
     setFilterReplyStatus('');
     setFilterLevel('');
-    setFilterStage('');                                           // ★ 新增
+    setFilterStage('');
     setFollowUpFrom('');
     setFollowUpTo('');
     setCreatedAtFrom('');
@@ -369,7 +364,7 @@ export default function CustomerListPage() {
                 </select>
               </div>
 
-              {/* ★ 新增：阶段 */}
+              {/* ★ 动态阶段（包含 'empty' 显示为“无”） */}
               <div className="flex items-center gap-1">
                 <label className="text-sm text-gray-600 whitespace-nowrap">阶段：</label>
                 <select
@@ -381,9 +376,9 @@ export default function CustomerListPage() {
                   className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm bg-white min-w-[100px]"
                 >
                   <option value="">全部</option>
-                  {stageOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
+                  {stageOptions.map((stage) => (
+                    <option key={stage} value={stage}>
+                      {stage === 'empty' ? '无' : stage}
                     </option>
                   ))}
                 </select>
@@ -445,7 +440,7 @@ export default function CustomerListPage() {
                 />
               </div>
 
-              {/* 快捷清除 */}
+              {/* 快捷清除（当有任何筛选条件时显示） */}
               {(filterCountry || filterSalesperson || filterReplyStatus || filterLevel || filterStage || followUpFrom || followUpTo || createdAtFrom || createdAtTo || search) && (
                 <button
                   onClick={clearAllFilters}
@@ -488,9 +483,9 @@ export default function CustomerListPage() {
                 ) : (
                   customers.map((c) => {
                     const levelInfo = levelDisplay[c.level] || levelDisplay.THREE;
-                    const stageInfo = c.stage
-                      ? stageDisplayMap[c.stage] || { label: c.stage, className: 'bg-gray-100 text-gray-600' }
-                      : null;
+                    // 阶段显示：若 c.stage 为 null/undefined/'' 则显示“无”
+                    const displayStage = c.stage || '无';
+                    const stageInfo = stageDisplayMap[displayStage] || { label: displayStage, className: 'bg-gray-100 text-gray-600' };
                     return (
                       <tr key={c.id} className="hover:bg-gray-50 transition">
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800 max-w-[150px] truncate">{c.name}</td>
@@ -505,13 +500,9 @@ export default function CustomerListPage() {
                           </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          {stageInfo ? (
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageInfo.className}`}>
-                              {stageInfo.label}
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${stageInfo.className}`}>
+                            {stageInfo.label}
+                          </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                           {tierMap[c.tier] || `第${c.tier}级`}
