@@ -1,6 +1,5 @@
 // app/(main)/info/page.tsx
 'use client';
-
 import { useEffect, useState } from 'react';
 import {
   Table,
@@ -44,7 +43,7 @@ export default function InfoPage() {
 
   // 表单
   const [formSource, setFormSource] = useState('');
-  const [formDate, setFormDate] = useState('');
+  const [formDate, setFormDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [formContent, setFormContent] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -77,7 +76,6 @@ export default function InfoPage() {
         listData = (res as any).data;
         totalCount = (res as any).total || 0;
       }
-
       setList(listData);
       setTotal(totalCount);
     } catch (error) {
@@ -126,7 +124,8 @@ export default function InfoPage() {
       message.warning('请填写完整信息');
       return;
     }
-    const isoDate = new Date(formDate).toISOString();
+    // 改成带时间的完整 ISO 字符串（包含时分秒）
+    const isoDate = new Date().toISOString();  
     try {
       if (editingId) {
         await infoService.updateInfo(editingId, {
@@ -176,9 +175,9 @@ export default function InfoPage() {
       title: '日期',
       dataIndex: 'date',
       key: 'date',
-      width: 180,
+      width: 200,
       render: (value: string) =>
-        value ? dayjs(value).format('YYYY-MM-DD') : '-',
+        value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '-',
     },
     {
       title: '内容',
