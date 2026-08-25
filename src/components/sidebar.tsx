@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  InboxOutlined,
   ContactsOutlined,
   UsergroupAddOutlined,
   DashboardOutlined,
@@ -25,6 +26,7 @@ export default function Sidebar() {
     const items = [
       { href: '/customer', icon: <UsergroupAddOutlined />, label: '客户信息' },
       { href: '/customer/level', icon: <ContactsOutlined />, label: '客户信息思维导图' },
+      { href: '/info', icon: <InboxOutlined />, label: '信息库' },
     ];
     if (isAdmin) {
       items.push(
